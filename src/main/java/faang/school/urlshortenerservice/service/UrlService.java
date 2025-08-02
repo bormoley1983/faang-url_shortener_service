@@ -17,12 +17,18 @@ public class UrlService {
 
     public String getLongUrl(String hash) {
         String url = urlCacheRepository.getLongUrl(hash);
-        log.info("Found url '{}' in Redis.", url);
-        if (url != null) return url;
+        if (url != null) {
+            log.info("Found URL in Redis for hash '{}'", hash);
+            return url;
+        }
 
         log.info("URL not found in Redis. Falling back to DB.");
-        return urlRepository.findByHash(hash)
+        url = urlRepository.findByHash(hash)
                 .map(Url::getUrl)
                 .orElseThrow(() -> new UrlNotFoundException("No URL found for hash: " + hash));
+
+        log.info("Caching URL for hash '{}' to Redis", hash);
+        urlCacheRepository.cacheLongUrl(hash, url);
+        return url;
     }
 }
