@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.service;
 
+import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
@@ -20,7 +21,8 @@ public class UrlService {
         if (url != null) return url;
 
         log.info("URL not found in Redis. Falling back to DB.");
-        return urlRepository.findLongUrlByHash(hash)
+        return urlRepository.findByHash(hash)
+                .map(Url::getUrl)
                 .orElseThrow(() -> new UrlNotFoundException("No URL found for hash: " + hash));
     }
 }
