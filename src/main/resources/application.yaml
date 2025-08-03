@@ -26,6 +26,9 @@ spring:
 server:
   port: 8080
 
+app:
+  base-url: https://sh.com/
+
 hash:
   batch-size: 10_000
   cache:
