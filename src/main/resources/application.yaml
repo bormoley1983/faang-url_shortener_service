@@ -46,6 +46,9 @@ retry:
     delay: 1000
     multiplier: 2.0
 
+cleaner:
+  cron: "0 0 2 * * ?" # Каждый день в 2:00 ночи
+
 logging:
   level:
     root: info
