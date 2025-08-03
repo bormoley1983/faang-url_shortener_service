@@ -34,6 +34,8 @@ hash:
     reload-batch-size: 200
   generator:
     batch-size: 1000
+  cleaner:
+    cron: "0 0 2 * * *"
 
 async:
   executor:
