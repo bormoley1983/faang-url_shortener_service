@@ -2,12 +2,14 @@ package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.generator.HashGenerator;
 import faang.school.urlshortenerservice.repository.HashDao;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,9 +47,12 @@ public class HashCacheService {
         checkAndTriggerRefill();
 
         String hash = hashQueue.poll();
-        if (hash == null) {
-            log.error("Hash cache is empty and no hash could be provided");
-            throw new IllegalStateException("No available hashes in cache. Refill in progress or failed.");
+        if (hash != null) return hash;
+
+        log.warn("Hash cache is empty. Attempting emergency sync refill...");
+        int added = refillCacheSync();
+        if (added == 0) {
+            throw new IllegalStateException("No available hashes after emergency refill.");
         }
         return hash;
     }
@@ -62,7 +67,7 @@ public class HashCacheService {
             log.info("Triggering async cache refill");
             CompletableFuture.runAsync(() -> {
                 try {
-                    refillCache();
+                    refillCacheSync();
                     hashGenerator.generateBatch();
                 } finally {
                     isReloading.set(false);
@@ -74,16 +79,25 @@ public class HashCacheService {
         }
     }
 
-    private void refillCache() {
+    private int refillCacheSync() {
         log.info("Refilling hash cache from DB");
         int needed = Math.min(reloadBatchSize, maxCacheSize - hashQueue.size());
-        hashDao.getHashBatch(needed).forEach(hashQueue::offer);
-        log.info("Hash cache refill complete. New size: {}", hashQueue.size());
+        List<String> hashes = hashDao.getHashBatch(needed);
+        hashes.forEach(hashQueue::offer);
+        log.info("Hash cache refill complete. Added {} hashes. Total size: {}", hashes.size(), hashQueue.size());
+        return hashes.size();
     }
 
-    @PostConstruct
-    public void init() {
-        log.info("Initializing HashCacheService");
-        checkAndTriggerRefill();
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpOnStartup() {
+        log.info("Warming up hash cache on startup...");
+        hashGenerator.generateBatch();
+        int added = refillCacheSync();
+
+        if (added == 0) {
+            throw new IllegalStateException("Failed to warm up hash cache on startup");
+        }
+
+        log.info("Cache warm-up successful. Hashes ready: {}", hashQueue.size());
     }
 }
