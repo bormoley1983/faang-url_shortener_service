@@ -2,7 +2,6 @@ package faang.school.urlshortenerservice.controller;
 
 import faang.school.urlshortenerservice.dto.UrlRequestDto;
 import faang.school.urlshortenerservice.dto.UrlResponseDto;
-import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.service.UrlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,36 +25,21 @@ public class UrlController {
 
     @PostMapping("/url")
     public ResponseEntity<UrlResponseDto> createShortUrl(@Valid @RequestBody UrlRequestDto urlRequestDto) {
-        try {
-            log.debug("Received URL shortening request for: {}", urlRequestDto.getUrl());
-            UrlResponseDto response = urlService.createShortUrl(urlRequestDto.getUrl());
+        log.debug("Received URL shortening request for: {}", urlRequestDto.getUrl());
+        UrlResponseDto response = urlService.createShortUrl(urlRequestDto.getUrl());
 
-            log.debug("Created short URL with hash: {}", response.getHash());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-            log.error("Error creating short URL for: {}", urlRequestDto.getUrl(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.debug("Created short URL with hash: {}", response.getHash());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{hash}")
     public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String hash) {
-        try {
-            log.debug("Received redirect request for hash: {}", hash);
-            String originalUrl = urlService.getOriginalUrl(hash);
+        log.debug("Received redirect request for hash: {}", hash);
+        String originalUrl = urlService.getOriginalUrl(hash);
 
-            log.debug("Redirecting to URL: {}", originalUrl);
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create(originalUrl))
-                    .build();
-
-        } catch (UrlNotFoundException e) {
-            log.warn("URL not found for hash: {}", hash);
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            log.error("Error processing redirect request for hash: {}", hash, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.debug("Redirecting to URL: {}", originalUrl);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(originalUrl))
+                .build();
     }
 }
