@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.service;
 
+import faang.school.urlshortenerservice.generator.HashGenerator;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class HashCacheService {
     private final HashRepository hashRepository;
-    private final HashGeneratorService hashGenerator;
+    private final HashGenerator hashGenerator;
     private final Executor hashCacheExecutor;
 
     public HashCacheService(HashRepository hashRepository,
-                            HashGeneratorService hashGenerator,
+                            HashGenerator hashGenerator,
                             @Qualifier("hashCacheExecutor") Executor hashCacheExecutor) {
         this.hashRepository = hashRepository;
         this.hashGenerator = hashGenerator;
@@ -62,7 +63,7 @@ public class HashCacheService {
             CompletableFuture.runAsync(() -> {
                 try {
                     refillCache();
-                    hashGenerator.generateAndSaveHashesAsync();
+                    hashGenerator.generateBatch();
                 } finally {
                     isReloading.set(false);
                 }

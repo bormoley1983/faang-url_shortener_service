@@ -32,6 +32,8 @@ hash:
     max-size: 100
     reload-threshold: 0.2
     reload-batch-size: 200
+  generator:
+    batch-size: 1000
 
 async:
   executor:
