@@ -10,6 +10,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -50,11 +51,12 @@ public class HashCacheService {
         if (hash != null) return hash;
 
         log.warn("Hash cache is empty. Attempting emergency sync refill...");
-        int added = refillCacheSync();
-        if (added == 0) {
+        if (refillCacheSync() == 0) {
             throw new IllegalStateException("No available hashes after emergency refill.");
         }
-        return hash;
+
+        return Optional.ofNullable(hashQueue.poll())
+                .orElseThrow(() -> new IllegalStateException("Refill succeeded but no hash was retrieved."));
     }
 
     private void checkAndTriggerRefill() {
