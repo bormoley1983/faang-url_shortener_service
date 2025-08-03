@@ -1,7 +1,7 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.generator.HashGenerator;
-import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.HashDao;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,14 +17,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @Slf4j
 public class HashCacheService {
-    private final HashRepository hashRepository;
+    private final HashDao hashDao;
     private final HashGenerator hashGenerator;
     private final Executor hashCacheExecutor;
 
-    public HashCacheService(HashRepository hashRepository,
+    public HashCacheService(HashDao hashDao,
                             HashGenerator hashGenerator,
                             @Qualifier("hashCacheExecutor") Executor hashCacheExecutor) {
-        this.hashRepository = hashRepository;
+        this.hashDao = hashDao;
         this.hashGenerator = hashGenerator;
         this.hashCacheExecutor = hashCacheExecutor;
     }
@@ -76,9 +76,8 @@ public class HashCacheService {
 
     private void refillCache() {
         log.info("Refilling hash cache from DB");
-        int needed = maxCacheSize - hashQueue.size();
-        hashRepository.fetchHashes(Math.min(reloadBatchSize, needed))
-                .forEach(hashQueue::offer);
+        int needed = Math.min(reloadBatchSize, maxCacheSize - hashQueue.size());
+        hashDao.getHashBatch(needed).forEach(hashQueue::offer);
         log.info("Hash cache refill complete. New size: {}", hashQueue.size());
     }
 

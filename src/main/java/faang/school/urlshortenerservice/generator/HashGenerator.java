@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.generator;
 
-import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.HashDao;
 import faang.school.urlshortenerservice.util.Base62Encoder;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class HashGenerator {
-    private final HashRepository hashRepository;
+    private final HashDao hashDao;
     private final Base62Encoder base62Encoder;
 
     @Value("${hash.generator.batch-size}")
@@ -22,9 +22,9 @@ public class HashGenerator {
     public void generateBatch() {
         log.info("Generating batch of {} new hashes", batchSize);
 
-        List<Long> numbers = hashRepository.getUniqueNumbers(batchSize);
+        List<Long> numbers = hashDao.getUniqueNumbers(batchSize);
         List<String> hashes = base62Encoder.encode(numbers);
-        hashRepository.saveHashes(hashes);
+        hashDao.save(hashes);
 
         log.info("Successfully generated and saved {} hashes", hashes.size());
     }
