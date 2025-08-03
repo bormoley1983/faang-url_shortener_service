@@ -8,12 +8,31 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UrlService {
     private final UrlCacheRepository urlCacheRepository;
     private final UrlRepository urlRepository;
+    private final HashCacheService hashCacheService;
+
+    public String getShortUrl(String url, String baseUrl) {
+        Optional<Url> existing = urlRepository.findByUrl(url);
+        if (existing.isPresent()) {
+            return baseUrl + "/" + existing.get().getHash();
+        }
+
+        String hash = hashCacheService.getHash();
+        Url urlEntity = new Url(hash, url, LocalDateTime.now());
+        urlRepository.save(urlEntity);
+
+        urlCacheRepository.cacheLongUrl(hash, url);
+
+        return baseUrl + "/" + hash;
+    }
 
     public String getLongUrl(String hash) {
         String url = urlCacheRepository.getLongUrl(hash);
