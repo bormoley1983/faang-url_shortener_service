@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,6 +31,9 @@ public class HashCache {
 
     @Value("${url-shortener.hash.cache.refill-threshold-percent}")
     private int refillThresholdPercent;
+
+    @Value("${url-shortener.hash.batch-size}")
+    private int batchSize;
 
     private final ConcurrentLinkedQueue<String> hashQueue = new ConcurrentLinkedQueue<>();
     private final AtomicBoolean isRefilling = new AtomicBoolean(false);
@@ -65,19 +69,21 @@ public class HashCache {
         }
     }
 
-    private void refillCache() {
+    @Transactional
+    protected void refillCache() {
         try {
             log.info("Refilling hash cache");
 
             hashGenerator.generateBatch();
             log.debug("Generated new hash batch");
 
-            List<String> hashes = hashRepository.getHashBatch();
+            List<String> hashes = hashRepository.findRandomHashes(batchSize);
             log.debug("Retrieved {} hashes from repository", hashes.size());
 
             if (hashes.isEmpty()) {
                 log.warn("No hashes available in repository after generation");
             } else {
+                hashRepository.deleteAllByIdInBatch(hashes);
                 hashQueue.addAll(hashes);
                 log.info("Added {} hashes to cache, new size: {}", hashes.size(), hashQueue.size());
             }

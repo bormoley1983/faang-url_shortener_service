@@ -1,61 +1,23 @@
 package faang.school.urlshortenerservice.repository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
+import faang.school.urlshortenerservice.model.HashEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-@RequiredArgsConstructor
-@Slf4j
-public class HashRepository {
+public interface HashRepository extends JpaRepository<HashEntity, String> {
 
-    private final JdbcTemplate jdbcTemplate;
+    @Query(value = "SELECT nextval('unique_number_seq') FROM generate_series(1, :n)", nativeQuery = true)
+    List<Long> getUniqueNumbers(@Param("n") int n);
 
-    @Value("${url-shortener.hash.batch-size}")
-    private int batchSize;
+    @Query(value = "SELECT hash FROM hash ORDER BY random() LIMIT :n", nativeQuery = true)
+    List<String> findRandomHashes(@Param("n") int n);
 
-    public List<Long> getUniqueNumbers(int n) {
-        List<Long> result = new ArrayList<>(n);
-        String sql = "SELECT nextval('unique_number_seq') FROM generate_series(1, ?);";
-
-        jdbcTemplate.query(sql, ps -> ps.setInt(1, n), rs -> {
-            while (rs.next()) {
-                result.add(rs.getLong(1));
-            }
-        });
-
-        return result;
-    }
-
-    public void save(List<String> hashes) {
-        if (hashes == null || hashes.isEmpty()) {
-            return;
-        }
-
-        String sql = "INSERT INTO hash (hash) VALUES (?) ON CONFLICT (hash) DO NOTHING";
-
-        jdbcTemplate.batchUpdate(sql,
-                hashes,
-                hashes.size(),
-                (PreparedStatement ps, String hash) -> ps.setString(1, hash));
-    }
-
-    public List<String> getHashBatch() {
-        String sql = "DELETE FROM hash WHERE hash IN (SELECT hash FROM hash ORDER BY random() LIMIT ?) RETURNING hash";
-        List<String> result = new ArrayList<>();
-
-        jdbcTemplate.query(sql, ps -> ps.setInt(1, batchSize), rs -> {
-            while (rs.next()) {
-                result.add(rs.getString("hash"));
-            }
-        });
-
-        return result;
-    }
+    @Modifying
+    @Query(value = "DELETE FROM hash WHERE hash IN :ids", nativeQuery = true)
+    void deleteAllByIdInBatch(@Param("ids") List<String> ids);
 }

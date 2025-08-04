@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.generator;
 
 import faang.school.urlshortenerservice.encoder.Base62Encoder;
+import faang.school.urlshortenerservice.model.HashEntity;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +34,11 @@ public class HashGenerator {
             List<String> hashes = base62Encoder.encode(uniqueNumbers);
             log.debug("Encoded {} numbers into unique hashes", hashes.size());
 
-            hashRepository.save(hashes);
+            List<HashEntity> entities = hashes.stream()
+                .map(HashEntity::new)
+                .collect(Collectors.toList());
+            hashRepository.saveAll(entities);
+
             log.info("Successfully generated and saved {} hashes to DB", hashes.size());
         } catch (Exception e) {
             log.error("Error while generating hash batch", e);
