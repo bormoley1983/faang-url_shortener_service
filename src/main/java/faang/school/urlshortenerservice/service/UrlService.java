@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -26,7 +25,7 @@ public class UrlService {
         }
 
         String hash = hashCacheService.getHash();
-        Url urlEntity = new Url(hash, url, LocalDateTime.now());
+        Url urlEntity = new Url(hash, url);
         urlRepository.save(urlEntity);
 
         urlCacheRepository.cacheLongUrl(hash, url);

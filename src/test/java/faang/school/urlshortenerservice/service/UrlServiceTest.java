@@ -9,11 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 public class UrlServiceTest {
     private UrlCacheRepository urlCacheRepository;
@@ -32,7 +35,7 @@ public class UrlServiceTest {
     @Test
     void testShouldReturnExistingShortUrlIfExists() {
         String originalUrl = "https://example.com";
-        Url existing = new Url("abc123", originalUrl, LocalDateTime.now());
+        Url existing = new Url("abc123", originalUrl);
         when(urlRepository.findByUrl(originalUrl)).thenReturn(Optional.of(existing));
         String result = urlService.getShortUrl(originalUrl, "https://short.ly");
         assertThat(result).isEqualTo("https://short.ly/abc123");
@@ -67,7 +70,7 @@ public class UrlServiceTest {
         String hash = "abc123";
         String longUrl = "https://example.com";
         when(urlCacheRepository.getLongUrl(hash)).thenReturn(null);
-        when(urlRepository.findByHash(hash)).thenReturn(Optional.of(new Url(hash, longUrl, LocalDateTime.now())));
+        when(urlRepository.findByHash(hash)).thenReturn(Optional.of(new Url(hash, longUrl)));
         String result = urlService.getLongUrl(hash);
         assertThat(result).isEqualTo(longUrl);
         verify(urlCacheRepository).cacheLongUrl(hash, longUrl);
