@@ -21,7 +21,7 @@ public class UrlService {
     public String getShortUrl(String url, String baseUrl) {
         Optional<Url> existing = urlRepository.findByUrl(url);
         if (existing.isPresent()) {
-            return baseUrl + "/" + existing.get().getHash();
+            return String.format("%s/%s", baseUrl, existing.get().getHash());
         }
 
         String hash = hashCacheService.getHash();
@@ -30,7 +30,7 @@ public class UrlService {
 
         urlCacheRepository.cacheLongUrl(hash, url);
 
-        return baseUrl + "/" + hash;
+        return String.format("%s/%s", baseUrl, hash);
     }
 
     public String getLongUrl(String hash) {
