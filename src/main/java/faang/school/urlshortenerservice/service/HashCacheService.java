@@ -81,15 +81,6 @@ public class HashCacheService {
         }
     }
 
-    private int refillCacheSync() {
-        log.info("Refilling hash cache from DB");
-        int needed = Math.min(reloadBatchSize, maxCacheSize - hashQueue.size());
-        List<String> hashes = hashDao.getHashBatch(needed);
-        hashes.forEach(hashQueue::offer);
-        log.info("Hash cache refill complete. Added {} hashes. Total size: {}", hashes.size(), hashQueue.size());
-        return hashes.size();
-    }
-
     @EventListener(ApplicationReadyEvent.class)
     public void warmUpOnStartup() {
         log.info("Warming up hash cache on startup...");
@@ -101,5 +92,14 @@ public class HashCacheService {
         }
 
         log.info("Cache warm-up successful. Hashes ready: {}", hashQueue.size());
+    }
+
+    private int refillCacheSync() {
+        log.info("Refilling hash cache from DB");
+        int needed = Math.min(reloadBatchSize, maxCacheSize - hashQueue.size());
+        List<String> hashes = hashDao.getHashBatch(needed);
+        hashes.forEach(hashQueue::offer);
+        log.info("Hash cache refill complete. Added {} hashes. Total size: {}", hashes.size(), hashQueue.size());
+        return hashes.size();
     }
 }
