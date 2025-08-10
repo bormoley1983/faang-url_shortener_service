@@ -23,3 +23,17 @@ server:
 logging:
   level:
     root: info
+
+app:
+  hash:
+    batch-size: 100
+    generate-cron: "0 */5 * * * *"
+
+  thread-pool:
+    core-pool-size: 3
+    max-pool-size: 8
+    queue-capacity: 50
+    thread-name-prefix: hash-generator-
+
+base:
+  chars: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
