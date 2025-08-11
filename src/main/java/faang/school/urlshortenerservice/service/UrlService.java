@@ -19,7 +19,7 @@ public class UrlService {
     private final UrlCacheRepository urlCacheRepository;
     private final HashCache hashCache;
 
-    @Value("${url-shortener.base-url:http://localhost:8080}")
+    @Value("${url-shortener.base-url}")
     private String baseUrl;
 
     @Transactional
@@ -54,14 +54,6 @@ public class UrlService {
         return buildShortUrl(hash);
     }
 
-    /**
-     * Retrieves the original URL associated with the given hash.
-     * First tries to find it in Redis cache, then in the database.
-     * 
-     * @param hash the hash to look up
-     * @return the original URL
-     * @throws UrlNotFoundException if no URL is found for the hash
-     */
     public String getOriginalUrl(String hash) {
         log.debug("Looking up original URL for hash: {}", hash);
 
