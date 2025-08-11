@@ -45,3 +45,7 @@ url-shortener:
       core-size: 2
       max-size: 4
       queue-capacity: 50
+
+url:
+  cleaner:
+    cron: "0 0 0 * * *"
