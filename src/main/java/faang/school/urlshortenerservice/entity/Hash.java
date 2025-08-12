@@ -8,21 +8,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Table(name = "hash")
 @Data
-@NoArgsConstructor
-public class Map {
+@RequiredArgsConstructor
+public class Hash {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "hash", unique = true, nullable = false, length = 6)
-    private String hash;
+    private final String hash;
 
-    public Map(String hash) {
-        this.hash = hash;
-    }
 }
