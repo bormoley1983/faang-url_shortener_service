@@ -1,0 +1,15 @@
+CREATE SEQUENCE unique_number_seq
+
+    START WITH 1;
+    INCREMENT BY 1
+
+CREATE TABLE url (
+    hash VARCHAR(6) NOT NULL PRIMARY KEY,
+    url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    CONSTRAINT fk_url_hash FOREIGN KEY (hash) REFERENCES hash(hash) ON DELETE CASCADE
+    );
+
+CREATE TABLE hash (
+    hash VARCHAR(6) PRIMARY KEY
+    );
