@@ -23,3 +23,25 @@ server:
 logging:
   level:
     root: info
+
+  redis:
+    host: localhost
+    port: 6379
+
+    base:
+      chars: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    app:
+      hash:
+        cache:
+          size: 100
+          threshold-percent: 20
+
+    url-shortener:
+      base-url: http://localhost:8080
+
+    thread-pool:
+      core-pool-size: 2
+      max-pool-size: 5
+      queue-capacity: 20
+      thread-name-prefix: hash-async-
