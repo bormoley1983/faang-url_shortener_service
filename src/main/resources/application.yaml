@@ -4,10 +4,24 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-  data:
-    redis:
-      port: 6379
-      host: localhost
+
+  hash:
+    range: 1000
+    cache:
+      size: 10
+      fill: 20
+
+  redis-ttl:
+    expireTimeMinutes: 10
+
+  cleaner:
+    cron: "0 * * * * *"
+
+  thread-executor:
+    corePoolSize: 10
+    maxPoolSize: 20
+    waitForTasksToCompleteOnShutdown: true
+    threadNamePrefix: gen-hashes-async
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -17,34 +31,24 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        generate_statistics: false
+        jdbc.batch_size: 100
+        order_inserts: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 server:
-  port: 8080
+  port: 8089
 
 logging:
   level:
     root: info
-
-hash-generation:
-  hash-batch: 10000
-  get-numbers: 10000
-
-async:
-  core-pool-size: 5
-  max-pool-size: 10
-  queue-capacity: 50
-
-cache:
-  hash:
-    capacity: 15000
-    min: 3000
-  expiration-hours: 48
-
-scheduling:
-  cleaner: "0 0 0 * * *"
-
-url:
-  base-url: "http://127.0.0.1:8080/url/"

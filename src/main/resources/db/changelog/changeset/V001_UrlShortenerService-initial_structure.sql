@@ -1,11 +1,17 @@
-CREATE SEQUENCE unique_number_seq START 1;
+CREATE SEQUENCE unique_number_seq START WITH 1 INCREMENT BY 1;
 
-CREATE TABLE hash (
-    hash VARCHAR(8) PRIMARY KEY NOT NULL
+CREATE TABLE IF NOT EXISTS url
+(
+    id         bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY UNIQUE,
+    hash       varchar(7)  NOT NULL UNIQUE,
+    url        varchar(2000) NOT NULL UNIQUE,
+    created_at timestamptz DEFAULT current_timestamp
 );
 
-CREATE TABLE url (
-    hash VARCHAR(8) PRIMARY KEY,
-    url VARCHAR(1024) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE INDEX url_hash_idx ON url (hash);
+CREATE INDEX url_url_idx ON url (url);
+
+CREATE TABLE IF NOT EXISTS free_hash_pool
+(
+    hash varchar(7) PRIMARY KEY
 );
