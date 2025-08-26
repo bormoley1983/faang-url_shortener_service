@@ -13,5 +13,5 @@ CREATE INDEX url_url_idx ON url (url);
 
 CREATE TABLE IF NOT EXISTS free_hash_pool
 (
-    hash varchar(7) PRIMARY KEY
+    hash varchar(6) PRIMARY KEY
 );

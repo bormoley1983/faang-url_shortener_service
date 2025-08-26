@@ -15,9 +15,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Service
 @RequiredArgsConstructor
 public class HashCache {
-    @Value(value = "${spring.hash.cache.size}")
+
+    @Value("${spring.hash.cache.size}")
     private int cacheSize;
-    @Value(value = "${spring.hash.cache.fill}")
+
+    @Value("${spring.hash.cache.fill}")
     private int cacheFill;
 
     private final AtomicBoolean isFilling = new AtomicBoolean(false);
@@ -28,21 +30,35 @@ public class HashCache {
     public void init() {
         log.info("Initializing hash cache...");
         hashPool = new ArrayBlockingQueue<>(cacheSize);
-        hashPool.addAll(hashGenerator.getHashes(cacheSize));
-        log.info("Hash cache initialized.");
+        try {
+            hashPool.addAll(hashGenerator.getHashes(cacheSize));
+            log.info("Hash cache initialized with {} hashes", hashPool.size());
+        } catch (Exception e) {
+            log.error("Failed to initialize hash cache", e);
+        }
     }
 
     public String getHash() {
         log.info("Getting hash from cache...");
         if (hashPool.size() * 100 / cacheSize < cacheFill
                 && isFilling.compareAndSet(false, true)) {
-            log.info("Cache is not full. Filling it...");
+
+            log.info("Cache below fill threshold ({}%). Starting async refill...", cacheFill);
+
             hashGenerator.getHashesAsync(cacheSize)
-                    .thenAccept(hashPool::addAll)
-                    .thenRun(() -> isFilling.set(false));
-            log.info("Cache filled.");
+                    .thenAccept(hashes -> {
+                        hashPool.addAll(hashes);
+                        log.info("Added {} hashes to cache. Current size: {}", hashes.size(), hashPool.size());
+                    })
+                    .whenComplete((res, ex) -> {
+                        if (ex != null) {
+                            log.error("Error while filling hash cache", ex);
+                        } else {
+                            log.info("Cache filled successfully");
+                        }
+                        isFilling.set(false);
+                    });
         }
-        log.info("Got hash from cache.");
         return hashPool.poll();
     }
 }

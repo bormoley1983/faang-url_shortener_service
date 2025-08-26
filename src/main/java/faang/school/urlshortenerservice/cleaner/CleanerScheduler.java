@@ -8,12 +8,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CleanerScheduler {
+
     private final UrlRepository urlRepository;
     private final UrlCacheRepository urlCacheRepository;
 
@@ -22,11 +24,16 @@ public class CleanerScheduler {
     public void cleanAndStoreHashes() {
         try {
             List<String> hashes = urlRepository.removeOldUrlsToHash();
-            log.info("Removed old urls from hashes: {}", hashes);
+            if (hashes == null || hashes.isEmpty()) {
+                log.warn("No expired URLs found for removal.");
+                return;
+            }
+
             urlCacheRepository.deleteUrl(hashes);
-            log.info("Old urls removed");
+            log.info("Successfully removed {} expired URLs. Hashes: {}", hashes.size(), hashes);
+
         } catch (Exception e) {
-            log.error("Error when cleaning:", e);
+            log.error("Error during scheduled cleaning", e);
         }
     }
 }
