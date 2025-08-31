@@ -9,9 +9,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 @Slf4j
 @Service
@@ -35,27 +39,51 @@ public class HashService {
 
     @Value(value = "${app.hash.table-size}")
     private long tableSize;
-    @Value(value = "${app.hash.memory-cache-min-percentage}")
-    private int minimumFillPercentage;
+
+    @Value(value = "${app.hash.table-min-percentage}")
+    private double minimumFillPercentage;
+
     @Value(value = "${app.hash.batch-size}")
     private int batchSize;
+
     @Value(value = "${app.hash.lock-id}")
     private int lockId;
 
-    @Transactional
-    public void getHashes() {
-        ();
+    public CompletableFuture<List<String>> getHashesAsync(long count) {
+        return CompletableFuture.supplyAsync(() -> getHashes(count), hashCacheExecutor);
     }
 
-    private List<String> generateHashes() {
-        return null;
+    @Transactional
+    public List<String> getHashes(long count) {
+        List<String> hashes = getHashList(count);
+
+        if (hashes.size() < count) {
+            List<String> newHashes = getAndShuffleHashes(count)
+                    .stream()
+                    .map(Hash::getHash)
+                    .toList();
+
+            hashes.addAll(newHashes);
+        }
+        return hashes;
+    }
+
+    private List<String> getHashList(long count) {
+        List<String> hashList = hashRepository.findAndDeleteLimit(count)
+                .stream()
+                .map(Hash::getHash)
+                .collect(Collectors.toList());
+
+        generateHashBatches();
+
+        return hashList;
     }
 
     private void generateHashBatches() {
         if (hashRepository.tryLock(lockId)) {
             long currentHashCount = hashRepository.count();
             if (checkCurrentFillPercentage(currentHashCount)) {
-                generateHashBatchAsync(tableSize - currentHashCount)
+                getAndShuffleHashesAsync(tableSize - currentHashCount)
                         .thenAccept(hashes -> {
                             List<Hash> savedHashes = hashRepository.saveAll(hashes);
                         })
@@ -69,6 +97,33 @@ public class HashService {
         }
     }
 
+    private CompletableFuture<List<Hash>> getAndShuffleHashesAsync(long count) {
+        return CompletableFuture.supplyAsync(() -> getAndShuffleHashes(count), hashCacheExecutor);
+    }
+
+    private List<Hash> getAndShuffleHashes(long count) {
+        List<Integer> batches = splitIntoBatches(count);
+
+        List<Hash> hashes = batches.stream()
+                .map(this::generateHashBatchAsync)
+                .map(CompletableFuture::join)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        Collections.shuffle(hashes);
+
+        return hashes;
+    }
+
+    private List<Integer> splitIntoBatches(long count) {
+        return LongStream.range(0, count)
+                .boxed()
+                .collect(Collectors.groupingBy(i -> i / batchSize))
+                .values()
+                .stream()
+                .map(List::size)
+                .toList();
+    }
 
     private List<Hash> encodeBatch(List<Long> batchList) {
         return batchList
@@ -86,6 +141,6 @@ public class HashService {
     }
 
     private boolean checkCurrentFillPercentage(long currentHashCount) {
-        return (currentHashCount * 100 / tableSize) <= minimumFillPercentage;
+        return (currentHashCount * 100.0 / tableSize) <= minimumFillPercentage;
     }
 }

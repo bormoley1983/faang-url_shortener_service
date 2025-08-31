@@ -37,7 +37,7 @@ app:
     memory-cache-min-percentage: 20.0
     memory-cache-size: 2000
     table-size: 10000
-    min-fill-percentage: 20.0
+    table-min-percentage: 20.0
     batch-size: 500
     lock-id: 21
   url:
@@ -58,4 +58,4 @@ app:
   cache:
     hash:
       prefix: hash
-      ttl: 30 # 30 sec
+      ttl: 60 # 60 sec
