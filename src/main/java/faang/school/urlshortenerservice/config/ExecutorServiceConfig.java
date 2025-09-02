@@ -21,7 +21,7 @@ public class ExecutorServiceConfig {
     @Value("${shortener.hash.cache.executor.max-pool-size}")
     private int cacheMaxPoolSize;
     @Value("${shortener.hash.cache.executor.queue-capacity}")
-    private int CacheQueueCapacity;
+    private int cacheQueueCapacity;
 
 
     @Bean("hashGeneratorExecutorService")
@@ -39,7 +39,7 @@ public class ExecutorServiceConfig {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(cacheCorePoolSize);
         executor.setMaxPoolSize(cacheMaxPoolSize);
-        executor.setQueueCapacity(CacheQueueCapacity);
+        executor.setQueueCapacity(cacheQueueCapacity);
         executor.initialize();
         return executor;
     }
