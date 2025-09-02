@@ -1,10 +1,17 @@
 hash:
-  executor:
-    core-pool-size: 2
-    max-pool-size: 5
-    queue-capacity: 50
+  cache:
+    capacity: 10000
+    min-limit-percent: 20
+    executor:
+      core-pool-size: 2
+      max-pool-size: 5
+      queue-capacity: 50
   generator:
-    quantity: 10
+    quantity: 10000
+    executor:
+      core-pool-size: 2
+      max-pool-size: 5
+      queue-capacity: 50
   cleaner:
     cron: "0 0 0 * * *"
     after-days: 1
@@ -20,7 +27,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
