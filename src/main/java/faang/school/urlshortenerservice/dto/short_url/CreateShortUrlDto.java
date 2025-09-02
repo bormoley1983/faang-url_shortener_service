@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
 public record CreateShortUrlDto(
-        @NotBlank(message = "Url is required")
-        @URL(message = "Must be url")
-        @Schema(description = "Target URL to generate a short link for")
+        @NotBlank(message = "URL is required")
+        @URL(message = "Must be a valid URL")
+        @Schema(description = "Target URL to generate a short link for (must start with http/https)")
         String originalUrl
 ) {
 }
