@@ -1,20 +1,25 @@
-hash:
-  cache:
-    capacity: 10000
-    min-limit-percent: 20
-    executor:
-      core-pool-size: 2
-      max-pool-size: 5
-      queue-capacity: 50
-  generator:
-    quantity: 10000
-    executor:
-      core-pool-size: 2
-      max-pool-size: 5
-      queue-capacity: 50
-  cleaner:
-    cron: "0 0 0 * * *"
-    after-days: 1
+shortener:
+  url:
+    domain: http://localhost:8080
+    cache:
+      ttl: 86400
+  hash:
+    cache:
+      capacity: 10000
+      min-limit-percent: 20
+      executor:
+        core-pool-size: 2
+        max-pool-size: 5
+        queue-capacity: 50
+    generator:
+      quantity: 10000
+      executor:
+        core-pool-size: 2
+        max-pool-size: 5
+        queue-capacity: 50
+    cleaner:
+      cron: "0 0 0 * * *"
+      after-days: 1
 
 spring:
   datasource:

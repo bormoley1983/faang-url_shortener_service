@@ -19,10 +19,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 @Component
 public class HashCacheImpl implements HashCache {
-    @Value("${hash.cache.capacity}")
+    @Value("${shortener.hash.cache.capacity}")
     private int cacheCapacity;
 
-    @Value("${hash.cache.min-limit-percent}")
+    @Value("${shortener.hash.cache.min-limit-percent}")
     private int minLimitPercent;
 
     @Qualifier("hashCacheExecutor")

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -14,13 +15,14 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Service
 public class HashGeneratorImpl implements HashGenerator {
-    @Value("${hash.generator.quantity}")
+    @Value("${shortener.hash.generator.quantity}")
     private int quantity;
 
     private final HashRepository repository;
     private final Encoder encoder;
 
     @Override
+    @Transactional
     public List<String> generateBatch() {
         List<Long> uniqueNumbers = repository.getUniqueNumbers(quantity);
         List<String> hashes = encoder
@@ -32,6 +34,7 @@ public class HashGeneratorImpl implements HashGenerator {
     }
 
     @Override
+    @Transactional
     @Async("hashGeneratorExecutorService")
     public CompletableFuture<List<String>> generateBatchAsync() {
         List<String> hashes = generateBatch();

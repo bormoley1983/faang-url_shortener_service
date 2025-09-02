@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.scheduler;
 
+import faang.school.urlshortenerservice.cache.UrlCache;
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
@@ -15,20 +16,25 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class CleanerScheduler {
-    @Value("${hash.cleaner.after-days}")
+    @Value("${shortener.hash.cleaner.after-days}")
     private int afterDays;
 
     private final UrlRepository urlRepository;
     private final HashRepository hashRepository;
+    private final UrlCache urlCache;
 
     @Transactional
-    @Scheduled(cron = "${hash.cleaner.cron}")
+    @Scheduled(cron = "${shortener.hash.cleaner.cron}")
     void cleanUpExpiredUrls() {
-        List<Hash> hashes = urlRepository.deleteUrlBeforeCreatedAt(
-                        LocalDateTime.now().minusDays(afterDays)
-                ).stream()
-                .map(Hash::new)
-                .toList();
-        hashRepository.saveAll(hashes);
+        List<String> strings = urlRepository.deleteUrlBeforeCreatedAt(
+                LocalDateTime.now().minusDays(afterDays)
+        );
+        if (!strings.isEmpty()) {
+            List<Hash> hashes = strings.stream()
+                    .map(Hash::new)
+                    .toList();
+            hashRepository.saveAll(hashes);
+            urlCache.deleteAll(strings);
+        }
     }
 }
