@@ -1,3 +1,11 @@
+hash:
+  executor:
+    core-pool-size: 2
+    max-pool-size: 5
+    queue-capacity: 50
+  generator:
+    quantity: 10
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
