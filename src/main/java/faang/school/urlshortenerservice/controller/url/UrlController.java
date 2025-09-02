@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,5 +34,23 @@ public class UrlController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new UrlDto(URI.create(urlService.createShortUrl(dto))));
+    }
+
+    @Operation(
+            description = "Redirect to original url",
+            responses = {
+                    @ApiResponse(responseCode = "301"),
+                    @ApiResponse(responseCode = "404"),
+                    @ApiResponse(responseCode = "422")
+            }
+    )
+    @GetMapping("/{hash}")
+    public ResponseEntity<Void> get(@PathVariable("hash") String hash) {
+        String url = urlService.getOriginalUrl(hash);
+
+        return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .location(URI.create(url))
+                .build();
     }
 }

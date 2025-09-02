@@ -33,6 +33,11 @@ public class UrlServiceImpl implements UrlService {
         return buildShortUrl(hash);
     }
 
+    @Override
+    public String getOriginalUrl(String hash) {
+        return urlCache.get(hash);
+    }
+
     private String buildShortUrl(String hash) {
         return String.format("%s/%s", domain, hash);
     }

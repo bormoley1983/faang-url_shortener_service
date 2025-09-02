@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.cache;
 
+import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,6 +16,7 @@ public class UrlCacheImpl implements UrlCache {
     @Value("${shortener.url.cache.ttl}")
     private int ttl;
     private final StringRedisTemplate cache;
+    private final UrlRepository urlRepository;
 
     String getKey(String hash) {
         return prefix + hash;
@@ -22,7 +24,12 @@ public class UrlCacheImpl implements UrlCache {
 
     @Override
     public String get(String hash) {
-        return cache.opsForValue().get(getKey(hash));
+        String url = cache.opsForValue().get(getKey(hash));
+        if (url == null || url.isBlank()) {
+            url = urlRepository.findByIdOrThrow(hash).getUrl();
+            set(hash, url);
+        }
+        return url;
     }
 
     @Override
