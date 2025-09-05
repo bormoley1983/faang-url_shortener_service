@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.storage;
 
 import faang.school.urlshortenerservice.service.HashService;
+import faang.school.urlshortenerservice.service.HashServiceAsync;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 public class HashMemoryCache {
     private final HashService hashService;
-    private final AtomicBoolean isFull = new AtomicBoolean(false);
+    private final HashServiceAsync hashServiceAsync;
+    private final AtomicBoolean isCacheRefilling = new AtomicBoolean(false);
     private Queue<String> hashCacheQueue;
 
     @Value("${app.hash.memory-cache-size}")
@@ -32,14 +34,14 @@ public class HashMemoryCache {
     }
 
     public String getHash() {
-        if (checkCacheFillRate() && isFull.compareAndExchange(false, true)) {
-            hashService.getHashesAsync(defaultCacheSize - hashCacheQueue.size())
+        if (checkCacheFillRate() && isCacheRefilling.compareAndExchange(false, true)) {
+            hashServiceAsync.getHashesAsync(defaultCacheSize - hashCacheQueue.size())
                     .thenAccept(hashCacheQueue::addAll)
                     .whenComplete((result, exception) -> {
                         if (exception != null) {
                             log.error("Error occurred during hash fetching", exception);
                         }
-                        isFull.set(false);
+                        isCacheRefilling.set(false);
                     });
         }
         return hashCacheQueue.poll();
@@ -48,5 +50,4 @@ public class HashMemoryCache {
     private boolean checkCacheFillRate() {
         return (hashCacheQueue.size() * 100.0 / defaultCacheSize) <= hashMinimumPercentage;
     }
-
 }

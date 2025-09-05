@@ -4,6 +4,7 @@ import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.util.encoder.Base62Encoder;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,24 +19,18 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class HashService {
 
     private final Base62Encoder base62Encoder;
     private final HashRepository hashRepository;
-    private final Executor hashCacheExecutor;
-    private final Executor hashGeneratorExecutor;
 
-    public HashService(
-            Base62Encoder base62Encoder,
-            HashRepository hashRepository,
-            @Qualifier("hashCacheExecutor") Executor hashCacheExecutor,
-            @Qualifier("hashGeneratorExecutor") Executor hashGeneratorExecutor) {
-        this.base62Encoder = base62Encoder;
-        this.hashRepository = hashRepository;
-        this.hashCacheExecutor = hashCacheExecutor;
-        this.hashGeneratorExecutor = hashGeneratorExecutor;
-    }
+    @Qualifier("hashCacheExecutor")
+    private final Executor hashCacheExecutor;
+
+    @Qualifier("hashGeneratorExecutor")
+    private final Executor hashGeneratorExecutor;
 
     @Value(value = "${app.hash.table-size}")
     private long tableSize;
@@ -49,9 +44,6 @@ public class HashService {
     @Value(value = "${app.hash.lock-id}")
     private int lockId;
 
-    public CompletableFuture<List<String>> getHashesAsync(long count) {
-        return CompletableFuture.supplyAsync(() -> getHashes(count), hashCacheExecutor);
-    }
 
     @Transactional
     public List<String> getHashes(long count) {
