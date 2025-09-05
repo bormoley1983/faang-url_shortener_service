@@ -1,3 +1,27 @@
+shortener:
+  url:
+    domain: http://localhost:8080
+    cache:
+      ttl: 86400
+  hash:
+    cache:
+      capacity: 10000
+      min-limit-percent: 20
+      executor:
+        core-pool-size: 2
+        max-pool-size: 5
+        queue-capacity: 50
+    generator:
+      quantity: 10000
+      executor:
+        core-pool-size: 2
+        max-pool-size: 5
+        queue-capacity: 50
+    cleaner:
+      cron: "0 0 0 * * *"
+      after-days: 365
+      limit: 1000
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -9,10 +33,13 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+        order_inserts: true
+        jdbc:
+          batch_size: 100
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
