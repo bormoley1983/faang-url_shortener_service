@@ -38,3 +38,10 @@ hash:
     queue-capacity: 50
   generator:
     range: 10000
+  cache:
+    capacity: 10000
+    min-limit-percent: 20
+    executor:
+      core-pool-size: 2
+      max-pool-size: 5
+      queue-capacity: 50

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @Service
@@ -19,18 +20,20 @@ public class HashGeneratorImpl implements HashGenerator {
     private int maxRange;
 
     @Override
-    public void generateBatch() {
-        List<Long> hashNumbers = hashRepository.getHashNumbers(maxRange);
-        List<Hash> hashes = base62Encoder
-                .encode(hashNumbers).stream()
-                .map(Hash::new)
-                .toList();
-        hashRepository.saveAll(hashes);
+    public List<String> generateBatch() {
+        List<Long> uniqueNumbers = hashRepository.getHashNumbers(maxRange);
+        List<String> hashes = base62Encoder
+                .encode(uniqueNumbers);
+        hashRepository.saveAll(
+                hashes.stream().map(Hash::new).toList()
+        );
+        return hashes;
     }
 
     @Override
     @Async("hashGeneratorExecutorService")
-    public void generateBatchAsync() {
-        generateBatch();
+    public CompletableFuture<List<String>> generateBatchAsync() {
+        List<String> hashes = generateBatch();
+        return CompletableFuture.completedFuture(hashes);
     }
 }

@@ -1,7 +1,10 @@
 package faang.school.urlshortenerservice.service.generator;
 
-public interface HashGenerator {
-    void generateBatch();
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-    void generateBatchAsync();
+public interface HashGenerator {
+    List<String> generateBatch();
+
+    CompletableFuture<List<String>> generateBatchAsync();
 }
