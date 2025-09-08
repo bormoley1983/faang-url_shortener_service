@@ -1,6 +1,5 @@
 package faang.school.urlshortenerservice.controller;
 
-
 import faang.school.urlshortenerservice.entity.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
