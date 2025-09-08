@@ -45,3 +45,6 @@ hash:
       core-pool-size: 2
       max-pool-size: 5
       queue-capacity: 50
+  cleaner:
+    cron: "0 0 0 * * *"
+    after-days: 1
