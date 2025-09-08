@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.repository;
 
 import faang.school.urlshortenerservice.entity.Url;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,8 @@ public interface UrlRepository extends JpaRepository<Url, String> {
     )
     @Modifying
     List<String> deleteUrlBeforeCreatedAt(LocalDateTime dateTime);
+
+    default Url findByIdOrThrow(String id) {
+        return findById(id).orElseThrow(() -> new EntityNotFoundException("Url not found"));
+    }
 }

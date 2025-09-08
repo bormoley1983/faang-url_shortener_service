@@ -48,3 +48,8 @@ hash:
   cleaner:
     cron: "0 0 0 * * *"
     after-days: 1
+
+  url:
+    domain: http://localhost:8080
+    cache:
+      ttl: 86400
