@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Класс-сущность представляющая хэш
+ * Класс-сущность представляющий хэш
  *
  * @author Linempy
  * @since 10.09.2025
