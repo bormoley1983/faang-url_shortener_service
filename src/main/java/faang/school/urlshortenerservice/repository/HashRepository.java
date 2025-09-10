@@ -1,10 +1,8 @@
 package faang.school.urlshortenerservice.repository;
 
-import faang.school.urlshortenerservice.entity.Hash;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -14,23 +12,33 @@ import java.util.List;
  * @author Linempy
  * @since 10.09.2025
  */
-public interface HashRepository extends JpaRepository<Hash, String> {
+@Repository
+@RequiredArgsConstructor
+public class HashRepository {
 
-    @Query(nativeQuery = true, value = """
-            SELECT nextval('unique_number_seq') FROM generate_series(1, :range)
-            """)
-    List<Long> getUniqueNumbers(@Param("range") int range);
+    private final JdbcTemplate jdbcTemplate;
 
-    @Modifying
-    @Query(nativeQuery = true, value = """
+    public List<Long> getUniqueNumbers(int range) {
+        String query =
+            """
+            SELECT nextval('unique_number_seq') FROM generate_series(1, ?)
+            """;
+
+        return jdbcTemplate.queryForList(query, Long.class, range);
+    }
+
+    public List<String> getHashBatch(int count) {
+        String query = """
             DELETE FROM hash
             WHERE hash IN (
                 SELECT hash FROM hash
-                LIMIT :count
+                LIMIT ?
                 FOR UPDATE SKIP LOCKED
             )
             RETURNING hash
-            """)
-    List<String> getHashBatch(@Param("count") int count);
+            """;
+
+        return jdbcTemplate.queryForList(query, String.class, count);
+    }
 
 }
