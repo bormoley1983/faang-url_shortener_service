@@ -41,4 +41,17 @@ public class HashRepository {
         return jdbcTemplate.queryForList(query, String.class, count);
     }
 
+    public void saveAll(List<String> hashes) {
+        String query = """
+                INSERT INTO hash (hash)
+                VALUES (?)
+                """;
+
+        jdbcTemplate.batchUpdate(query,
+                hashes,
+                hashes.size(),
+                (ps, hash) -> ps.setString(1, hash)
+        );
+    }
+
 }
