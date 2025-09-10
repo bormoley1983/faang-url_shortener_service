@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Интерфейс для сохранения, получения хэшей и получения уникальных чисел для хэширования
@@ -20,7 +19,7 @@ public interface HashRepository extends JpaRepository<Hash, String> {
     @Query(nativeQuery = true, value = """
             SELECT nextval('unique_number_seq') FROM generate_series(1, :range)
             """)
-    Set<Long> getUniqueNumbers(@Param("range") int range);
+    List<Long> getUniqueNumbers(@Param("range") int range);
 
     @Modifying
     @Query(nativeQuery = true, value = """
