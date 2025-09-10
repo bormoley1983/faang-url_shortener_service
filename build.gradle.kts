@@ -25,6 +25,11 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
+     * Url validator
+     */
+    implementation("commons-validator:commons-validator:1.8.0")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")

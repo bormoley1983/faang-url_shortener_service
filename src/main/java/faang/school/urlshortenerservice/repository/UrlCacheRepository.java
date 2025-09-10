@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Репозиторий для кэширования ассоциаций url - cache в redis
+ */
 @Repository
 @RequiredArgsConstructor
 public class UrlCacheRepository {

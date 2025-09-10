@@ -28,9 +28,13 @@ spring:
 server:
   port: 8080
 
+hashes:
+  delete-scheduled:
+    cron: "0 0 0 * * *"
+
 logging:
   level:
     root: info
 
 shortener:
-  host:  "https://sh.c/"
+  host:  "http://localhost:8080/sh.c/"

@@ -10,6 +10,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+
+/**
+ * Класс для получения батча уникальных sequence, передачи их в класс для кодирования и сохранения
+ * полученных значений уникальных хэшей в таблицу hash батчем
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -30,5 +35,6 @@ public class HashGenerator {
                 .map(Hash::new)
                 .toList();
         repository.saveAll(hashes);
+        log.info("Успешное сохранение хэшей в БД");
     }
 }

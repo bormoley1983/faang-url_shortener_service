@@ -1,10 +1,15 @@
 package faang.school.urlshortenerservice.cache;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Класс для кодирования списка уникальных возрастающих чисел по алгоритму base62
+ */
+@Slf4j
 @Component
 public class Base62Encoder {
 
@@ -15,6 +20,7 @@ public class Base62Encoder {
         for (Long number : numbers) {
             hashes.add(applyBase62Encoding(number));
         }
+
         return hashes;
     }
 
