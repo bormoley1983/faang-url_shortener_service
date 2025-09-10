@@ -6,8 +6,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication
 @EnableScheduling
+@SpringBootApplication
 @EnableFeignClients("faang.school.urlshortenerservice.client")
 public class ServiceTemplateApplication {
     public static void main(String[] args) {
