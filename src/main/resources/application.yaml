@@ -23,3 +23,14 @@ server:
 logging:
   level:
     root: info
+
+app:
+  thread-pool:
+    async:
+      generated-hash:
+        core-pool-size: 5
+        max-pool-size: 10
+        queue-capacity: 10_000
+  batch:
+    generated-hash: 10_000
+    getting-hash: 5_000
