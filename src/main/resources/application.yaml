@@ -25,7 +25,10 @@ logging:
     root: info
 
 hash:
-  batch-size: 10000
+  batch-size: 100000
+  cache:
+    capacity: 10000
+    threshold: 0.2
 
 threadpool:
   core-size: 5
