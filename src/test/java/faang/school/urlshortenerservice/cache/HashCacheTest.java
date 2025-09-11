@@ -9,9 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -21,10 +18,6 @@ public class HashCacheTest {
     private HashRepository repository;
     @Mock
     private HashGenerator hashGenerator;
-    @Mock
-    private AtomicBoolean isRefilling = new AtomicBoolean(false);
-    @Mock
-    private ConcurrentLinkedQueue<String> hashes = new ConcurrentLinkedQueue<>();
     @InjectMocks
     private HashCache hashCache;
     @Value("${spring.jpa.hibernate.batch_size}")

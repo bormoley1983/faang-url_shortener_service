@@ -15,15 +15,24 @@ public class Base62Encoder {
 
     private final String BASE_62_CHARACTERS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    /**
+     * Применяет кодировку к каждому числу в списке
+     * @param numbers список уникальных чисел
+     * @return список уникальных строк - хэшей
+     */
     public List<String> encodeNumbers(List<Long> numbers) {
         List<String> hashes = new ArrayList<>();
         for (Long number : numbers) {
             hashes.add(applyBase62Encoding(number));
         }
-
         return hashes;
     }
 
+    /**
+     * Делает из числа уникальный хэш по алгоритму base62
+     * @param number входное число
+     * @return строка - уникальный хэш
+     */
     public String applyBase62Encoding(Long number) {
         StringBuilder builder = new StringBuilder();
         while (number > 0) {
