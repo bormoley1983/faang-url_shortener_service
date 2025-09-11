@@ -2,7 +2,6 @@ package faang.school.urlshortenerservice.util;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,16 +16,6 @@ public class Base62Encoder {
     private static final String BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final char[] BASE62_CHARS = BASE62_ALPHABET.toCharArray();
     private static final int POWER_ALPHABET = BASE62_ALPHABET.length();
-
-    public List<String> encode(List<Long> numbers) {
-        List<String> result = new ArrayList<>();
-
-        for (Long num : numbers) {
-            result.add(encode(num));
-        }
-
-        return result;
-    }
 
     public String encode(Long number) {
         if (isInvalidNumber(number)) {
@@ -45,6 +34,12 @@ public class Base62Encoder {
         }
 
         return result.reverse().toString();
+    }
+
+    public List<String> encode(List<Long> numbers) {
+        return numbers.stream()
+                .map(this::encode)
+                .toList();
     }
 
     private boolean isInvalidNumber(Long number) {

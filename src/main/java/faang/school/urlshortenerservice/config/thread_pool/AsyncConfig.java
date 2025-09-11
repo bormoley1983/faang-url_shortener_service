@@ -16,9 +16,9 @@ public class AsyncConfig {
 
     @Bean
     public ThreadPoolTaskExecutor generateHash(
-            @Value("${app.async.postgres.core-pool-size}") int corePoolSize,
-            @Value("${app.async.postgres.max-pool-size}") int maxPoolSize,
-            @Value("${app.async.postgres.queue-capacity}") int queueCapacity) {
+            @Value("${app.thread-pool.async.generated-hash.core-pool-size}") int corePoolSize,
+            @Value("${app.thread-pool.async.generated-hash.max-pool-size}") int maxPoolSize,
+            @Value("${app.thread-pool.async.generated-hash.queue-capacity}") int queueCapacity) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setQueueCapacity(queueCapacity);
         executor.setMaxPoolSize(maxPoolSize);
