@@ -32,7 +32,7 @@ public class HashCache {
 
     private final Queue<Hash> hashesQueue = new ArrayBlockingQueue<>(capacity);
 
-    private AtomicBoolean filling = new AtomicBoolean(false);
+    private final AtomicBoolean filling = new AtomicBoolean(false);
 
     @PostConstruct
     void init() {
@@ -44,7 +44,8 @@ public class HashCache {
     @Transactional
     @Async("myThreadPool")
     public CompletableFuture<String> getHash() {
-        if (hashesQueue.size() < (capacity * threshold) && filling.compareAndSet(false, true)) {
+        if (hashesQueue.size() < (capacity * threshold)
+                && filling.compareAndSet(false, true)) {
             hashesQueue.addAll(hashRepository.getHashBatch(capacity - hashesQueue.size()));
             filling.set(false);
         }
