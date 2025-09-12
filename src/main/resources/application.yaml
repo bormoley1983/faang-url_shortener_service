@@ -23,3 +23,23 @@ server:
 logging:
   level:
     root: info
+
+url-shortener:
+  domain: ${URL_SHORTENER_DOMAIN:https://short.ly}
+  cleaner:
+    cron: "0 0 0 * * *"
+  hash-cache:
+    max-size: 1000
+    refill-threshold-percent: 0.20
+    executor:
+      core-pool-size: 2
+      max-pool-size: 4
+      queue-capacity: 100
+  hash-generator:
+    batch-size: 1000
+    executor:
+      core-pool-size: 1
+      max-pool-size: 2
+      queue-capacity: 50
+  cache:
+    ttl-hours: 24
