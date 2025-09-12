@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.urlshortenerservice.BaseContext;
 import faang.school.urlshortenerservice.dto.UrlRequest;
 import faang.school.urlshortenerservice.repository.UrlRepository;
-import faang.school.urlshortenerservice.service.URLService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -49,6 +46,7 @@ public class URLControllerTest extends BaseContext {
     }
 
     @Test
+    @DisplayName("Интеграционный тест на получение оригинальной ссылки")
     void getHashTest() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/short-url/1")
                         .header("x-user-id", 5))
