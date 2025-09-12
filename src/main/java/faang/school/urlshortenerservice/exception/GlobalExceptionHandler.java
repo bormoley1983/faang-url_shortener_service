@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import static io.lettuce.core.pubsub.PubSubOutput.Type.message;
+
 /**
  * GlobalExceptionHandler — класс обрабатывающий исключения возникающие в rest controller
  *
@@ -28,13 +30,10 @@ public class GlobalExceptionHandler {
         return buildResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, "Внутренняя ошибка");
     }
 
-    private ResponseEntity<ErrorResponse> buildResponse(Exception ex, HttpStatus status,
-                                                        String message) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                !message.isBlank() ? message : ex.getMessage(),
-                status
-        );
+    private ResponseEntity<ErrorResponse> buildResponse(Exception ex, HttpStatus status, String message) {
+        String finalMessage = !message.isBlank() ? message : ex.getMessage();
 
+        ErrorResponse errorResponse = new ErrorResponse(finalMessage);
         return new ResponseEntity<>(errorResponse, status);
     }
 }
