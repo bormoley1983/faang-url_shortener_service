@@ -4,16 +4,22 @@ package faang.school.urlshortenerservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.urlshortenerservice.BaseContext;
 import faang.school.urlshortenerservice.dto.UrlRequest;
+import faang.school.urlshortenerservice.repository.UrlRepository;
+import faang.school.urlshortenerservice.service.URLService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -22,10 +28,14 @@ public class URLControllerTest extends BaseContext {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean
+    private UrlRepository urlRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
+    @DisplayName("Интеграционный тест на создание сокращенной ссылки")
     void createHashTest() throws Exception {
         UrlRequest request = new UrlRequest();
         request.setUrl("https://test-tracker.com/");
@@ -36,5 +46,13 @@ public class URLControllerTest extends BaseContext {
                 .andExpect(status().isOk())
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains("http://localhost:8080/sh.c/1"));
+    }
+
+    @Test
+    void getHashTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/short-url/1")
+                        .header("x-user-id", 5))
+                .andExpect(status().isFound())
+                .andReturn();
     }
 }
