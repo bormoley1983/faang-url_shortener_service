@@ -26,7 +26,7 @@ public class HashCacheTest {
     @Test
     @DisplayName("Тестирование получения хэша")
     void getHash() {
-        hashCache.getHash();
+        hashCache.generateAndGetHashesBatch();
         verify(repository).getHashesBatch(batchSize);
         verify(repository).deleteAllByIdInBatch(any());
         verify(hashGenerator).generateHashes();

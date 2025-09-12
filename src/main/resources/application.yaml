@@ -37,4 +37,4 @@ logging:
     root: info
 
 shortener:
-  host:  "http://localhost:8080/sh.c/"
+  host:  "http://localhost:8080/short-url/"
