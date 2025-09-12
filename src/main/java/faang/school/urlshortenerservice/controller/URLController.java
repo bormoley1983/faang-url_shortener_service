@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/sh.c")
+@RequestMapping("/short-url")
 public class URLController {
 
     private final URLService service;
@@ -32,8 +32,8 @@ public class URLController {
 
     @PostMapping
     public ResponseEntity<String> createHash(@Valid @RequestBody UrlRequest request) {
-        log.info("Переданный url: {}", request.getUrl());
-        return ResponseEntity.ok(host + service.createHash(request.getUrl()));
+        var hash = service.createHash(request.getUrl());
+        return ResponseEntity.ok(host + hash);
     }
 
     @GetMapping("/{hash}")

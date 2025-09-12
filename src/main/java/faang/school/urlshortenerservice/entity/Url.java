@@ -20,6 +20,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Url implements Serializable {
+
+    public Url(String hash, String url) {
+        this.hash = hash;
+        this.url = url;
+    }
+
     @Id
     @Column(name = "hash", length = 6, nullable = false)
     private String hash;
@@ -30,9 +36,4 @@ public class Url implements Serializable {
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-    public Url(String hash, String url) {
-        this.hash = hash;
-        this.url = url;
-    }
 }

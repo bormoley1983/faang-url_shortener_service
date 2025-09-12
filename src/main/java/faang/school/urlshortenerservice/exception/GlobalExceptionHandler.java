@@ -7,10 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-
 /**
  * GlobalExceptionHandler — централизованный обработчик исключений для REST-контроллеров.
  *
@@ -26,8 +22,7 @@ import java.time.temporal.ChronoUnit;
  * </ul>
  * </p>
  *
- * <p>Каждый обработчик возвращает объект ErrorResponse с HTTP-статусом, сообщением,
- * названием ошибки и датой</p>
+ * <p>Каждый обработчик возвращает строку с сообщением ошибки</p>
  *
  * @author mrnght
  * @since 10.09.2025
@@ -38,34 +33,22 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleEntityNotFoundException(EntityNotFoundException e) {
+    public String handleEntityNotFoundException(EntityNotFoundException e) {
         log.error("EntityNotFoundException", e);
-        return new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                e.getMessage(),
-                LocalDateTime.now()
-        );
+        return e.getMessage();
     }
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBadRequestException(BadRequestException e) {
+    public String handleBadRequestException(BadRequestException e) {
         log.error("BadRequestException", e);
-        return new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                e.getMessage(),
-                LocalDateTime.now()
-        );
+        return e.getMessage();
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleException(Exception e) {
+    public String handleException(Exception e) {
         log.error("Exception", e);
-        return new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                e.getMessage(),
-                LocalDateTime.now()
-        );
+        return e.getMessage();
     }
 }

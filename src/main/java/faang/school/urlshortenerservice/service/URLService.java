@@ -32,8 +32,8 @@ public class URLService {
     public String createHash(String url) {
         validateUrl(url);
         String hash = hashCache.getHash();
-        saveCacheForDB(hash, url);
-        saveCacheForRedis(hash, url);
+        urlRepository.save(new Url(hash, url));
+        urlCacheRepository.save(hash, url);
         log.info("hash {} закэширован в Redis и сохранен в БД", hash);
         return hash;
     }
@@ -52,24 +52,6 @@ public class URLService {
             return url;
         }
         return urlRepository.findUrlByHashOrElseThrow(hash);
-    }
-
-    /**
-     * Сохраняет ассоциацию hash - url в БД
-     * @param hash уникально сгенерированный hash
-     * @param url оригинальный url
-     */
-    private void saveCacheForDB(String hash, String url) {
-        urlRepository.save(new Url(hash, url));
-    }
-
-    /**
-     * Кэширует ассоциацию hash - url в Redis
-     * @param hash уникально сгенерированный hash
-     * @param url оригинальный url
-     */
-    private void saveCacheForRedis(String hash, String url) {
-        urlCacheRepository.save(hash, url);
     }
 
     /**

@@ -28,9 +28,7 @@ public class HashGenerator {
     @Transactional
     public void generateHashes() {
         List<Long> uniqueNumbers = repository.getUniqueNumbers(batchSize);
-        log.info("Получен массив уникальных sequence");
         List<String> stringHashes = encoder.encodeNumbers(uniqueNumbers);
-        log.info("Получен массив уникальных хэшей");
         List<Hash> hashes = stringHashes.stream()
                 .map(Hash::new)
                 .toList();

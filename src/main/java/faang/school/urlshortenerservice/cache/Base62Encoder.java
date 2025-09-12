@@ -3,7 +3,6 @@ package faang.school.urlshortenerservice.cache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,11 +20,9 @@ public class Base62Encoder {
      * @return список уникальных строк - хэшей
      */
     public List<String> encodeNumbers(List<Long> numbers) {
-        List<String> hashes = new ArrayList<>();
-        for (Long number : numbers) {
-            hashes.add(applyBase62Encoding(number));
-        }
-        return hashes;
+        return numbers.stream()
+                .map(this::applyBase62Encoding)
+                .toList();
     }
 
     /**

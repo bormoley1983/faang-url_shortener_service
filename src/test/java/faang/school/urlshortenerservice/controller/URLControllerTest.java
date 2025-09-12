@@ -2,29 +2,25 @@ package faang.school.urlshortenerservice.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.urlshortenerservice.config.context.UserHeaderFilter;
+import faang.school.urlshortenerservice.BaseContext;
 import faang.school.urlshortenerservice.dto.UrlRequest;
-import faang.school.urlshortenerservice.service.URLService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(URLController.class)
-public class URLControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+public class URLControllerTest extends BaseContext {
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private UserHeaderFilter userHeaderFilter;
-
-    @MockBean
-    private URLService service;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -33,9 +29,12 @@ public class URLControllerTest {
     void createHashTest() throws Exception {
         UrlRequest request = new UrlRequest();
         request.setUrl("https://test-tracker.com/");
-        mockMvc.perform(MockMvcRequestBuilders.post("/sh.c")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/short-url")
+                        .header("x-user-id", 5)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn();
+        assertTrue(result.getResponse().getContentAsString().contains("http://localhost:8080/sh.c/1"));
     }
 }
