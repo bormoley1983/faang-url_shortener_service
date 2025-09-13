@@ -1,7 +1,6 @@
 package faang.school.urlshortenerservice.controller;
 
 import faang.school.urlshortenerservice.dto.CreateUrlDto;
-import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.exception.DataValidationException;
 import faang.school.urlshortenerservice.exception.InternalServerError;
 import faang.school.urlshortenerservice.service.UrlService;
@@ -39,7 +38,7 @@ public class UrlController {
 
             log.info("Валидация URL {} прошла успешно!", originalUrl);
 
-            String hash = urlService.createShortUrl(originalUrl);
+            String hash = urlService.createShortUrl(createUrlDto);
             log.info("URL {} успешно сохранен в базу данных с хешем {}",
                     originalUrl, hash);
 
@@ -51,8 +50,8 @@ public class UrlController {
     }
 
     @GetMapping("/{hash}")
-    public ResponseEntity<Void> redirect(@PathVariable @Valid Hash hash) {
-        log.info("Получен запрос на редирект для хеша: {}", hash.getHashValue());
+    public ResponseEntity<Void> redirect(@PathVariable @Valid String hash) {
+        log.info("Получен запрос на редирект для хеша: {}", hash);
         String originalUrl = urlService.getUrl(hash);
 
         return ResponseEntity

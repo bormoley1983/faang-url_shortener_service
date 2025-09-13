@@ -1,10 +1,8 @@
 package faang.school.urlshortenerservice.repository;
 
-import faang.school.urlshortenerservice.entity.Hash;
-
 public interface UrlCacheRepository {
 
-    String findUrlByHash(Hash hash);
+    String findUrlByHash(String hash);
 
     void saveUrl(String hash, String originalUrl);
 }

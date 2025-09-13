@@ -4,10 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -21,7 +20,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
 public class Url {
 
     @Id
@@ -29,7 +27,7 @@ public class Url {
     private String hash;
 
     @NotBlank(message = "Url must not be blank")
-    @Max(value = 2048, message = "Url must be less than 2048 characters")
+    @Size(max = 2048, message = "Url must be less than 2048 characters")
     @URL(message = "Invalid url")
     @Column(name = "url", length = 2048, nullable = false)
     private String originalUrl;

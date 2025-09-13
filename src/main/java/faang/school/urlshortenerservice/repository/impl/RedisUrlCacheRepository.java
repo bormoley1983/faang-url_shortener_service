@@ -1,6 +1,5 @@
 package faang.school.urlshortenerservice.repository.impl;
 
-import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,8 +17,8 @@ public class RedisUrlCacheRepository implements UrlCacheRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public String findUrlByHash(Hash hash) {
-        return redisTemplate.opsForValue().get(KEY_PREFIX + hash.getHashValue());
+    public String findUrlByHash(String hash) {
+        return redisTemplate.opsForValue().get(KEY_PREFIX + hash);
     }
 
     @Override

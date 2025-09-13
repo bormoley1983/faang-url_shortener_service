@@ -22,5 +22,5 @@ public interface UrlRepository extends JpaRepository<Url, String> {
             """)
     List<Hash> deleteByCreatedAtBefore(LocalDateTime createdAtBefore);
 
-    Optional<Url> findByHash(Hash hash);
+    Optional<Url> findByHash(String hash);
 }

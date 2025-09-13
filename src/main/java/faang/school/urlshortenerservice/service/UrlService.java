@@ -1,9 +1,11 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.cache.HashCache;
+import faang.school.urlshortenerservice.dto.CreateUrlDto;
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
+import faang.school.urlshortenerservice.mapper.UrlMapper;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,22 +24,29 @@ public class UrlService {
     private final HashCache hashCache;
     private final UrlRepository urlRepository;
     private final UrlCacheRepository urlCacheRepository;
+    private final UrlMapper urlMapper;
 
-    public String createShortUrl(String originalUrl) {
+    public String createShortUrl(CreateUrlDto createUrlDto) {
         CompletableFuture<String> hashFuture = hashCache.getHash()
                 .thenApply(h -> {
-                    log.info("Получен хеш {} для URL {}", h, originalUrl);
-                    Url url = Url.builder()
-                            .hash(h)
-                            .originalUrl(originalUrl)
-                            .build();
-                    log.info("Сохранение URL {} в БД", url);
+                    String originalUrl = createUrlDto.url();
+                    log.info("Получен хеш {} для URL {}", h,
+                            originalUrl);
+
+                    Url url = urlMapper.toUrl(createUrlDto);
+                    url.setHash(h);
+
                     urlRepository.save(url);
-                    log.info("Ассоциация хеша {} с URL {} сохранена в БД", h, originalUrl);
+                    log.info("Ассоциация хеша {} с URL {} сохранена в БД", h,
+                            originalUrl);
+
                     urlCacheRepository.saveUrl(h, originalUrl);
-                    log.info("Ассоциация хеша {} с URL {} сохранена в кэше", h, originalUrl);
+                    log.info("Ассоциация хеша {} с URL {} сохранена в кэше",
+                            h, originalUrl);
+
                     return h;
                 });
+
         log.info("Подготовка ответа для контроллера");
         return Hash.builder()
                 .hashValue(hashFuture.join())
@@ -47,7 +56,7 @@ public class UrlService {
 
     @Transactional(readOnly = true)
     @Cacheable(value = "urls", key = "#hash")
-    public String getUrl(Hash hash) {
+    public String getUrl(String hash) {
         String url = urlCacheRepository.findUrlByHash(hash);
 
         if (url != null) {
@@ -59,7 +68,7 @@ public class UrlService {
         Url urlEntity = urlRepository.findByHash(hash)
                 .orElseThrow(() -> new UrlNotFoundException(hash));
 
-        urlCacheRepository.saveUrl(hash.getHashValue(), urlEntity.getOriginalUrl());
+        urlCacheRepository.saveUrl(hash, urlEntity.getOriginalUrl());
 
         return urlEntity.getOriginalUrl();
     }
