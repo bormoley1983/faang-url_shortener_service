@@ -28,7 +28,8 @@ public class UrlController {
     @PostMapping("/url")
     public ResponseEntity<String> createShortUrl(@RequestBody @Valid CreateUrlDto createUrlDto) {
         try {
-            String originalUrl = createUrlDto.originalUrl();
+            String originalUrl = createUrlDto.url();
+            log.info("Получен запрос на создание короткой ссылки для URL: {}", originalUrl);
 
             if (originalUrl == null
                     || originalUrl.isEmpty()
@@ -36,7 +37,12 @@ public class UrlController {
                 throw new DataValidationException("Invalid URL");
             }
 
+            log.info("Валидация URL {} прошла успешно!", originalUrl);
+
             String hash = urlService.createShortUrl(originalUrl);
+            log.info("URL {} успешно сохранен в базу данных с хешем {}",
+                    originalUrl, hash);
+
             return ResponseEntity.ok(hash);
         } catch (InternalServerError e) {
             return ResponseEntity.internalServerError()

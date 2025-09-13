@@ -26,14 +26,19 @@ public class UrlService {
     public String createShortUrl(String originalUrl) {
         CompletableFuture<String> hashFuture = hashCache.getHash()
                 .thenApply(h -> {
+                    log.info("Получен хеш {} для URL {}", h, originalUrl);
                     Url url = Url.builder()
                             .hash(h)
                             .originalUrl(originalUrl)
                             .build();
-                    url = urlRepository.save(url);
-                    urlCacheRepository.saveUrl(url.getHash(), url.getOriginalUrl());
+                    log.info("Сохранение URL {} в БД", url);
+                    urlRepository.save(url);
+                    log.info("Ассоциация хеша {} с URL {} сохранена в БД", h, originalUrl);
+                    urlCacheRepository.saveUrl(h, originalUrl);
+                    log.info("Ассоциация хеша {} с URL {} сохранена в кэше", h, originalUrl);
                     return h;
                 });
+        log.info("Подготовка ответа для контроллера");
         return Hash.builder()
                 .hashValue(hashFuture.join())
                 .build()

@@ -47,9 +47,11 @@ public class HashCache {
     public CompletableFuture<String> getHash() {
         if (hashesQueue.size() < (capacity * threshold)
                 && filling.compareAndSet(false, true)) {
-            hashesQueue.addAll(hashRepository.getHashBatch(capacity - hashesQueue.size()));
+            hashesQueue.addAll(hashRepository
+                    .getHashBatch(capacity - hashesQueue.size()));
             filling.set(false);
         }
-        return CompletableFuture.completedFuture(Objects.requireNonNull(hashesQueue.poll()).getHashValue());
+        return CompletableFuture.completedFuture(Objects
+                .requireNonNull(hashesQueue.poll()).getHashValue());
     }
 }
