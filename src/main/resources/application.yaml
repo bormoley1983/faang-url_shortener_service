@@ -5,10 +5,18 @@ spring:
     username: user
     password: password
 
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+      batch_size: 5000  # Группирует до 5000 операций в батч
+      order_inserts: true
+
     show-sql: true
     properties:
       hibernate:
@@ -20,6 +28,13 @@ spring:
 server:
   port: 8080
 
+hashes:
+  delete-scheduled:
+    cron: "0 0 0 * * *"
+
 logging:
   level:
     root: info
+
+shortener:
+  host:  "http://localhost:8080/short-url/"
