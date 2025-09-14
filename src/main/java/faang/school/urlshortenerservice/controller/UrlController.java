@@ -42,7 +42,8 @@ public class UrlController {
             log.info("URL {} успешно сохранен в базу данных с хешем {}",
                     originalUrl, hash);
 
-            return ResponseEntity.ok(hash);
+            URI location = URI.create("/shc.com/" + hash);
+            return ResponseEntity.created(location).body(hash);
         } catch (InternalServerError e) {
             return ResponseEntity.internalServerError()
                     .body("Ошибка при создании короткой ссылки: " + e.getMessage());

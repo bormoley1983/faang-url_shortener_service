@@ -21,6 +21,9 @@ spring:
     servlet:
       path: /sh.com
 
+  profiles:
+    active: test
+
 server:
   port: 8080
 

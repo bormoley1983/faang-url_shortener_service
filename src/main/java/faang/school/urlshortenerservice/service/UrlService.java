@@ -73,4 +73,3 @@ public class UrlService {
         return urlEntity.getOriginalUrl();
     }
 }
-
