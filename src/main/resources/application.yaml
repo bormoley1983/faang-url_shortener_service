@@ -38,6 +38,8 @@ hash:
     queue-capacity: 50
   generator:
     range: 10000
+    max-retries: 3
+    batch-size: 200
   cache:
     capacity: 10000
     min-limit-percent: 20

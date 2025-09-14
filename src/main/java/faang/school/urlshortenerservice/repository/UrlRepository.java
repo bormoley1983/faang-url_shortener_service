@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Repository
@@ -20,7 +20,7 @@ public interface UrlRepository extends JpaRepository<Url, String> {
                     """
     )
     @Modifying
-    List<String> deleteUrlBeforeCreatedAt(LocalDateTime dateTime);
+    List<String> deleteUrlBeforeCreatedAt(Instant dateTime);
 
     default Url findByIdOrThrow(String id) {
         return findById(id).orElseThrow(() -> new EntityNotFoundException("Url not found"));
