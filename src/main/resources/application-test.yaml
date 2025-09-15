@@ -1,0 +1,13 @@
+url:
+  baseShortUrl: https://test.org/
+  expiration:
+    time: 1
+    unit: YEARS
+    minRequestCount: 12
+
+hash:
+  batchSize: 15
+  minStored: 10
+  local:
+    capacity: 70
+    minFillPercent: 20
