@@ -45,6 +45,3 @@ hash:
 
 app:
   base-url: http://localhost:8080
-
-shortener:
-  path: /sh.c

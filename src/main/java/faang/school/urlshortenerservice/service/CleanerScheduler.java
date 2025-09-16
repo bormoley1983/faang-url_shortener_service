@@ -49,7 +49,6 @@ public class CleanerScheduler {
     @Scheduled(cron = "${cleaner.cron.daily}")
     @Transactional
     public void cleanOldUrls() {
-
         LocalDateTime cutoff = LocalDateTime.now().minusYears(1);
         List<String> oldHashes = urlRepository.findAll().stream()
                 .filter(u -> u.getCreatedAt().isBefore(cutoff))
@@ -57,10 +56,7 @@ public class CleanerScheduler {
                 .toList();
 
         if (!oldHashes.isEmpty()) {
-
             urlRepository.deleteAllById(oldHashes);
-
-
             hashRepository.saveBatch(oldHashes);
         }
     }

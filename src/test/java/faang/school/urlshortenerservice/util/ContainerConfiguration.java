@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName;
 public class ContainerConfiguration {
     @Container
     private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
-            new PostgreSQLContainer<>("postgres:13.6");
+            new PostgreSQLContainer<>("postgres:17.6");
 
     @Container
     private static final RedisContainer REDIS_CONTAINER =

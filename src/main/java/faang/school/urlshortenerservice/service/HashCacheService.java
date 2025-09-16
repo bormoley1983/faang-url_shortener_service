@@ -54,6 +54,12 @@ public class HashCacheService {
     @Value("${hash.generator.batch-size:100}")
     private int batchSize;
 
+    @PostConstruct
+    public void init() {
+        log.info("Инициализация HashCacheService, запуск первичного refill");
+        triggerRefill();
+    }
+
     /**
      * Получает один хэш из кэша.
      * Если кэш ниже порога — асинхронно пополняет.
@@ -61,36 +67,40 @@ public class HashCacheService {
     public String getHash() {
         String hash = cache.poll();
         log.info("getHash() вызван, текущий размер кэша: {}", cache.size());
+
         if (hash == null || cache.size() * 100 / maxCacheSize < refillThresholdPercent) {
             log.info("Размер кэша ниже порога ({}%), запускаем refill", refillThresholdPercent);
             triggerRefill();
         }
+
         return hash;
     }
 
+    /**
+     * Запускает асинхронное пополнение кэша.
+     */
     public void triggerRefill() {
         if (isRefilling.compareAndSet(false, true)) {
-            hashCacheExecutor.submit(() -> {
-                try {
-                    log.info("Пополнение кэша хэшей...");
-                    List<String> hashes = hashRepository.getHashBatch(batchSize);
-                    cache.addAll(hashes);
-                    log.info("Добавлено {} хэшей в кэш, текущий размер: {}", hashes.size(), cache.size());
-
-                    hashGeneratorService.generateBatch(batchSize);
-                } finally {
-                    isRefilling.set(false);
-                    log.info("Refill завершён, isRefilling сброшен");
-                }
-            });
+            hashCacheExecutor.submit(this::refillCache);
         } else {
             log.info("Refill уже выполняется другим потоком");
         }
     }
 
-    @PostConstruct
-    public void init() {
-        log.info("Инициализация HashCacheService, запуск первичного refill");
-        triggerRefill();
+    /**
+     * Реальная логика пополнения кэша.
+     */
+    private void refillCache() {
+        try {
+            log.info("Пополнение кэша хэшей...");
+            List<String> hashes = hashRepository.getHashBatch(batchSize);
+            cache.addAll(hashes);
+            log.info("Добавлено {} хэшей в кэш, текущий размер: {}", hashes.size(), cache.size());
+
+            hashGeneratorService.generateBatch(batchSize);
+        } finally {
+            isRefilling.set(false);
+            log.info("Refill завершён, isRefilling сброшен");
+        }
     }
 }

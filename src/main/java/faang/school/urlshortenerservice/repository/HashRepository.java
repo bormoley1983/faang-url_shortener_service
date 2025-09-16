@@ -14,6 +14,5 @@ import org.springframework.stereotype.Repository;
  * @author agent
  * @since 12.09.2025
  */
-@Repository
 public interface HashRepository extends JpaRepository<HashEntity, String>, HashRepositoryCustom {
 }

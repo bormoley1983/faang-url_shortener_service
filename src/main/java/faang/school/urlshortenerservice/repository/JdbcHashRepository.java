@@ -2,7 +2,6 @@ package faang.school.urlshortenerservice.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -16,9 +15,8 @@ import java.util.List;
  * @author agent
  * @since 12.09.2025
  */
-@Repository
 @RequiredArgsConstructor
-public class HashRepositoryImpl implements HashRepositoryCustom {
+public class JdbcHashRepository implements HashRepositoryCustom {
 
     private final JdbcTemplate jdbcTemplate;
 

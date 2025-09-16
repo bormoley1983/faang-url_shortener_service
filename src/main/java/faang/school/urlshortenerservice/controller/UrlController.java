@@ -17,7 +17,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("${shortener.path:/sh.c}")
+@RequestMapping("/short")
 public class UrlController {
 
     private final UrlService urlService;
@@ -25,21 +25,20 @@ public class UrlController {
     @Value("${app.base-url}")
     private String baseUrl;
 
-    @Value("${shortener.path:/sh.c}")
-    private String shortenerPath;
-
     /**
      * POST /url — создание короткой ссылки
      */
     @PostMapping
     public ResponseEntity<UrlResponseDto> createShortUrl(@RequestBody @Valid UrlRequestDto requestDto) {
         String hash = urlService.createShortUrl(requestDto.url());
-        String shortUrl = baseUrl + shortenerPath + "/" + hash;
+        String shortUrl = baseUrl.endsWith("/")
+                ? baseUrl + "short/" + hash
+                : baseUrl + "/short/" + hash;
         return ResponseEntity.ok(new UrlResponseDto(shortUrl));
     }
 
     /**
-     * GET /sh.c/{hash} — редирект на длинную ссылку
+     * GET /short/{hash} — редирект на длинную ссылку
      */
     @GetMapping("/{hash}")
     public RedirectView redirectToLongUrl(@PathVariable String hash) {

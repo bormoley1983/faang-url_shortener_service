@@ -15,7 +15,6 @@ import org.springframework.stereotype.Repository;
  * @author agent
  * @since 10.09.2025
  */
-@Repository
 public interface UrlRepository extends JpaRepository<UrlEntity, String> {
     UrlEntity findByHash(String hash);
 
