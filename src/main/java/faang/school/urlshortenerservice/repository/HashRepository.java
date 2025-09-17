@@ -54,4 +54,15 @@ public class HashRepository {
         );
     }
 
+    public List<String> findAndDelete(long amount) {
+        String query = """
+            DELETE FROM hash
+            WHERE hash IN (
+                SELECT hash FROM hash
+                LIMIT ?
+            )
+            RETURNING *
+            """;
+       return jdbcTemplate.queryForList(query, String.class,amount);
+    }
 }

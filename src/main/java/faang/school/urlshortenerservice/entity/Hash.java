@@ -15,9 +15,9 @@ import lombok.Setter;
  * @since 10.09.2025
  */
 @Entity
-@Table(name = "hash")
 @Getter
 @Setter
+@Table(name = "hash")
 @AllArgsConstructor
 public class Hash {
 
