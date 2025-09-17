@@ -2,46 +2,38 @@ package faang.school.urlshortenerservice.exception.handler;
 
 import faang.school.urlshortenerservice.exception.DataValidationException;
 import faang.school.urlshortenerservice.exception.InternalServerError;
+import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.ErrorResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
 public class UrlExceptionHandler {
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+
     @ExceptionHandler(InternalServerError.class)
-    public ErrorResponse handleInternalServerError(InternalServerError e) {
+    public ResponseEntity<String> handleInternalServerError(InternalServerError e) {
         log.error("Internal server error: {}", e.getMessage());
-        return ErrorResponse.builder(
-                e,
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                e.getMessage())
-                .build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DataValidationException.class)
-    public ErrorResponse handleDataValidationException(DataValidationException e) {
-        log.error("Data validation error: {}", e.getMessage());
-        return ErrorResponse.builder(
-                e,
-                HttpStatus.BAD_REQUEST,
-                e.getMessage())
-                .build();
+    public ResponseEntity<String> handleDataValidationException(DataValidationException e) {
+        log.error("Data validation exception: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(UrlNotFoundException.class)
+    public ResponseEntity<String> handleUrlNotFoundException(UrlNotFoundException e) {
+        log.error("Url not found: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
-    public ErrorResponse handleException(Exception e) {
-        log.error("Unexpected error: {}", e.getMessage());
-        return ErrorResponse.builder(
-                e,
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                e.getMessage())
-                .build();
+    public ResponseEntity<String> handleException(Exception e) {
+        log.error("Exception: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 }
