@@ -29,6 +29,7 @@ import static faang.school.urlshortenerservice.data.UrlControllerTestData.ORIGIN
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@DisplayName("Тестирование UrlController")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UrlControllerTestIT extends BaseIntegrationTest {
 
@@ -57,7 +58,7 @@ public class UrlControllerTestIT extends BaseIntegrationTest {
     }
 
     @Test
-    @DisplayName("POST")
+    @DisplayName("POST - должен создать и вернуть короткий URL")
     void shouldCreateShortUrl() {
         UrlCreateDto createDto = new UrlCreateDto(ORIGIN_URL);
 

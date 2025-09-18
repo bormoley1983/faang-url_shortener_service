@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+
 @DisplayName("Тестирование CleanerScheduler")
 @ExtendWith(MockitoExtension.class)
 class CleanerSchedulerTest {
@@ -56,7 +57,7 @@ class CleanerSchedulerTest {
     }
 
     @Test
-    @DisplayName("Should not call saveAll when list is empty")
+    @DisplayName("Не должен вызываться saveAll, когда нет свободных хэшей")
     void shouldHandleEmptyList() {
         List<String> emptyList = List.of();
         when(urlRepository.deleteOldHashesAndReturn(testPeriod)).thenReturn(emptyList);
