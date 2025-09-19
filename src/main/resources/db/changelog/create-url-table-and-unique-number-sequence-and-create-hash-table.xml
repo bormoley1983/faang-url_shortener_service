@@ -27,4 +27,17 @@
                 startValue="1"
                 incrementBy="1"/>
     </changeSet>
+
+    <changeSet id="create-hash-table" author="avzag1">
+        <preConditions>
+            <not>
+                <tableExists tableName="hash"/>
+            </not>
+        </preConditions>
+        <createTable tableName="hash">
+            <column name="hash">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
