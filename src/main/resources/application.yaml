@@ -17,6 +17,50 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  cache:
+    type: redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      ttl: 7
+      ttlUnit: DAYS
+      defaultTtl: 60
+      defaultTtlUnit: MINUTES
+      cache:
+        url: url
+
+schedule:
+  cron:
+    url:
+      clean: 0 0 6 * * ?
+    hash:
+      generate: 0 0 4 * * ?
+
+hash:
+  batchSize: 200
+  minStored: 5000
+  local:
+    capacity: 1000
+    minFillPercent: 20
+
+url:
+  baseShortUrl: https://corpx.org/
+  expiration:
+    time: 1
+    unit: YEARS
+    minRequestCount: 12
+
+thread-pool:
+  scheduler:
+    poolSize: 2
+    threadNamePrefix: scheduler-thread-
+  hash:
+    corePoolSize: 2
+    maxPoolSize: 7
+    queueCapacity: 20
+    threadNamePrefix: hash-thread-
+
 server:
   port: 8080
 
