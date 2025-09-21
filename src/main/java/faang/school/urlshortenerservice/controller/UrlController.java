@@ -25,29 +25,25 @@ public class UrlController {
     private final UrlService urlService;
 
     @PostMapping("/url")
-    public ResponseEntity<String> createShortUrl(@RequestBody @Valid CreateUrlDto createUrlDto) {
-        try {
-            String originalUrl = createUrlDto.url();
-            log.info("Получен запрос на создание короткой ссылки для URL: {}", originalUrl);
+    public ResponseEntity<String> createShortUrl(@RequestBody @Valid CreateUrlDto createUrlDto)
+            throws InternalServerError {
+        String originalUrl = createUrlDto.url();
+        log.info("Получен запрос на создание короткой ссылки для URL: {}", originalUrl);
 
-            if (originalUrl == null
-                    || originalUrl.isEmpty()
-                    || originalUrl.length() > 2048) {
-                throw new DataValidationException("Invalid URL");
-            }
-
-            log.info("Валидация URL {} прошла успешно!", originalUrl);
-
-            String hash = urlService.createShortUrl(createUrlDto);
-            log.info("URL {} успешно сохранен в базу данных с хешем {}",
-                    originalUrl, hash);
-
-            URI location = URI.create("/shc.com/" + hash);
-            return ResponseEntity.created(location).body(hash);
-        } catch (InternalServerError e) {
-            return ResponseEntity.internalServerError()
-                    .body("Ошибка при создании короткой ссылки: " + e.getMessage());
+        if (originalUrl == null
+                || originalUrl.isEmpty()
+                || originalUrl.length() > 2048) {
+            throw new DataValidationException("Invalid URL");
         }
+
+        log.info("Валидация URL {} прошла успешно!", originalUrl);
+
+        String hash = urlService.createShortUrl(createUrlDto);
+        log.info("URL {} успешно сохранен в базу данных с хешем {}",
+                originalUrl, hash);
+
+        URI location = URI.create("/shc.com/" + hash);
+        return ResponseEntity.created(location).body(hash);
     }
 
     @GetMapping("/{hash}")
