@@ -22,7 +22,7 @@ public class HashGenerator {
     private long batchSize;
 
     @Transactional
-    @Async("myThreadPool")
+    @Async("taskExecutor")
     public void generateBatch() {
         List<Long> uniqueNumbers = hashRepository.getUniqueNumbers(batchSize);
         List<Hash> hashes = base62Encoder.encode(uniqueNumbers);
