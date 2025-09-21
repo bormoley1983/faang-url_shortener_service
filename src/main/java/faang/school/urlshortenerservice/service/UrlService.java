@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +38,7 @@ public class UrlService {
 
     public String getOriginalUrl(String hash) {
         String originalUrl = urlCacheRepository.getOriginalUrl(hash);
-        CompletableFuture.runAsync(() -> refreshUrlActivity(hash), hashTaskExecutor);
+        refreshUrlActivityAsync(hash);
         return originalUrl;
     }
 
@@ -56,9 +57,14 @@ public class UrlService {
         }
     }
 
-    private void refreshUrlActivity(String hash) {
-        log.debug("Updating last request date url by hash = {}", hash);
-        urlRepository.refreshActivity(hash);
+    private void refreshUrlActivityAsync(String hash) {
+        CompletableFuture.runAsync(() -> {
+            log.debug("Updating last request date url by hash = {}", hash);
+            urlRepository.refreshActivity(hash);
+        }, hashTaskExecutor).exceptionally(ex -> {
+            log.error("Failed to refresh url by hash {}. Cause: {}", hash, ex.getMessage(), ex);
+            return null;
+        });
     }
 
     private Url createUrl(String hash, String url) {

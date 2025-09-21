@@ -41,8 +41,8 @@ public class HashGenerator {
     public List<String> getHashes(int batchSize) {
         List<String> hashes = hashRepository.getHashBatch(batchSize);
 
-        while (hashes.size() < batchSize) {
-            log.info("Current hash amount in DB = {}, needed = {}", hashes.size(), batchSize);
+        if (hashes.size() < batchSize) {
+            log.warn("Current hash amount in DB = {}, needed = {}", hashes.size(), batchSize);
             generateBatch();
             hashes.addAll(hashRepository.getHashBatch(batchSize - hashes.size()));
         }
