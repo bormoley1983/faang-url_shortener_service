@@ -4,11 +4,13 @@ import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,11 +18,15 @@ import java.util.List;
 public class HashGenerator {
 
     private final HashService hashService;
-    private final HashRepository hashRepository;
 
-    public void generateBatch() {
-        List<Long> uniqueNumbers = hashService.getUniqueNumbers(20);
+    @Async("taskExecutor")
+    public List<String> generateBatch() {
+       List<Long> uniqueNumbers = new ArrayList<>();
         Base64.Encoder encoder = Base64.getEncoder();
+
+        for (int i = 0; i < 20; i++) {
+            uniqueNumbers.add(hashService.getUniqueNumber(1));
+        }
 
         List<Hash> hashes = uniqueNumbers.stream()
                 .map(uniqueNumber -> {
@@ -32,5 +38,6 @@ public class HashGenerator {
                 }).toList();
 
         hashService.save(hashes);
+        return hashes.stream().map(Hash::getHash).collect(Collectors.toList());
     }
 }

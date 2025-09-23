@@ -19,8 +19,8 @@ public class HashService {
     private Integer numberOfHashes = 10;
     private final HashRepository hashRepository;
 
-    public List<Long> getUniqueNumbers(long n) {
-        return hashRepository.getUniqueNumbers(n);
+    public Long getUniqueNumber(long n) {
+        return hashRepository.getUniqueNumber(n);
     }
 
     public void save(List<Hash> hashes) {

@@ -35,7 +35,7 @@
             </not>
         </preConditions>
         <createTable tableName="hash">
-            <column name="hash">
+            <column name="hash" type="java.lang.string">
                 <constraints primaryKey="true"/>
             </column>
         </createTable>

@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface HashRepository extends JpaRepository<Hash, String> {
 
-    @Query(value = "select nextVal('unique_number_seq') from generated_series(1, :size)", nativeQuery = true)
-    List<Long> getUniqueNumbers(@Param("size") Long size);
-
+    @Query(value = "select nextVal('unique_number_seq')", nativeQuery = true)
+    Long getUniqueNumber(@Param("size") Long size);
 }
