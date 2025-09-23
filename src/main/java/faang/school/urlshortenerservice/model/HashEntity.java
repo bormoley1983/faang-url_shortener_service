@@ -20,15 +20,12 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "hash")
+@Table(name = "hashes")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Hash {
+public class HashEntity {
 
     @Id
-    @Column(name = "hash", length = 6)
+    @Column(name = "hash", length = 7)
     private String hash;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 }
