@@ -4,20 +4,20 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
-      jdbc:
-        batch_size: 100
-        unique_number_count: 100
-      order_inserts: true
-      order_updates: true
-    show-sql: true
-    properties:
+    
+    jpa:
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
       hibernate:
-        format_sql: true
+        ddl-auto: none
+        jdbc:
+          batch_size: 100
+          unique_number_count: 100
+        order_inserts: true
+        order_updates: true
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
 
   data:
     redis:

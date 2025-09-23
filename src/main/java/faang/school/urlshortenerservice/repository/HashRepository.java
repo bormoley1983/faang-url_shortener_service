@@ -49,6 +49,26 @@ public class HashRepository{
             WHERE hash IN (
                 SELECT hash FROM hash
                 ORDER BY RANDOM()
+=======
+public class HashRepository {
+
+    private final JdbcTemplate jdbcTemplate;
+
+    @Value("${hash.batch-size:1000}")
+    private int batchSize;
+
+    @Transactional
+    public List<Long> getUniqueNumber(int count) {
+        String sql = "SELECT nextval('unique_number_seq') FROM generate_series(1, ?)";
+        return jdbcTemplate.queryForList(sql, Long.class, count);
+    }
+
+    public List<String> getHashBatch() {
+        String sql = """
+            DELETE FROM hash 
+            WHERE hash IN (
+                SELECT hash FROM hash 
+                ORDER BY RANDOM() 
                 LIMIT ?
             )
             RETURNING hash
@@ -73,7 +93,7 @@ public class HashRepository{
         jdbcTemplate.batchUpdate(sql, hashes, hashes.size(),
                 (ps, hash) -> ps.setString(1, hash));
     }
-
+  
     @Transactional
     public void cleanOldHashes() {
 
