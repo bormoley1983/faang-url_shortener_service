@@ -23,3 +23,9 @@ server:
 logging:
   level:
     root: info
+
+service:
+  number-of-hashes: 10
+  unique-numbers-count: 20
+  max-hash-length: 5
+  min-hash-percent: 0.2

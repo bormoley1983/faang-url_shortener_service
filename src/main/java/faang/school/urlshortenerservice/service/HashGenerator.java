@@ -1,7 +1,7 @@
 package faang.school.urlshortenerservice.service;
 
+import faang.school.urlshortenerservice.config.context.HashProperty;
 import faang.school.urlshortenerservice.entity.Hash;
-import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,13 +19,14 @@ import java.util.stream.Collectors;
 public class HashGenerator {
 
     private final HashService hashService;
+    private final HashProperty hashProperty;
 
     @Async("taskExecutor")
-    public List<String> generateBatch() {
+    public CompletableFuture<List<String>> generateBatch() {
        List<Long> uniqueNumbers = new ArrayList<>();
         Base64.Encoder encoder = Base64.getEncoder();
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < hashProperty.uniqueNumbersCount(); i++) {
             uniqueNumbers.add(hashService.getUniqueNumber(1));
         }
 
@@ -38,6 +40,6 @@ public class HashGenerator {
                 }).toList();
 
         hashService.save(hashes);
-        return hashes.stream().map(Hash::getHash).collect(Collectors.toList());
+        return CompletableFuture.completedFuture(hashes.stream().map(Hash::getHash).collect(Collectors.toList()));
     }
 }
