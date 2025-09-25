@@ -39,9 +39,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UrlNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String urlNotFoundException(UrlNotFoundException ex) {
+    public ResponseEntity<String> urlNotFoundException(UrlNotFoundException ex) {
         log.error("UrlNotFoundException", ex);
-        return ex.getMessage();
+        return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

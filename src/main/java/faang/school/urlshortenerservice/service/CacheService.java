@@ -79,30 +79,30 @@ public class CacheService {
         }
     }
 
-        public void completionCache () {
-            try {
-                log.info("Начинаем заполнение хешей, сейчас в кэше {} ", queue.size());
-                List<String> hashes = hashRepository.getHashBatch(batchSize);
-                if (hashes.isEmpty()) {
-                    log.warn("Не удалось получить хэши из базы! Генерируем новые...");
-                    service.generateHashes(batchSize);
-                    hashes = hashRepository.getHashBatch(batchSize);
-                    if (hashes.isEmpty()) {
-                        log.error("Не удалось получить хэши даже после генерации!");
-                        return;
-                    }
-                }
-                queue.addAll(hashes);
-                log.info("После пополнение кеша: Добвлено {} хешей, текущий размер кеша {} ", hashes.size()
-                                                                                            , queue.size());
+    public void completionCache() {
+        try {
+            log.info("Начинаем заполнение хешей, сейчас в кэше {} ", queue.size());
+            List<String> hashes = hashRepository.getHashBatch(batchSize);
+            if (hashes.isEmpty()) {
+                log.warn("Не удалось получить хэши из базы! Генерируем новые...");
                 service.generateHashes(batchSize);
-            } catch (Exception e) {
-                log.error("Ошибка при заполнении кэша: {}", e.getMessage(), e);
-                throw new RuntimeException("Ошибка заполнения кэша хэшей", e);
-            } finally {
-                isRefilling.set(false);
+                hashes = hashRepository.getHashBatch(batchSize);
+                if (hashes.isEmpty()) {
+                    log.error("Не удалось получить хэши даже после генерации!");
+                    return;
+                }
             }
+            queue.addAll(hashes);
+            log.info("После пополнение кеша: Добвлено {} хешей, текущий размер кеша {} ", hashes.size()
+                    , queue.size());
+            service.generateHashes(batchSize);
+        } catch (Exception e) {
+            log.error("Ошибка при заполнении кэша: {}", e.getMessage(), e);
+            throw new RuntimeException("Ошибка заполнения кэша хэшей", e);
+        } finally {
+            isRefilling.set(false);
         }
     }
+}
 
 

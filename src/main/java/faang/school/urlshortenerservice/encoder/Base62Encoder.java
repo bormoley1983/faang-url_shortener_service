@@ -3,7 +3,6 @@ package faang.school.urlshortenerservice.encoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,11 +22,9 @@ public class Base62Encoder {
     private static final int BASE = 62;
 
     public List<String> encode(List<Long> numbers) {
-        List<String> hashes = new ArrayList<>(numbers.size());
-        for (Long number : numbers) {
-            hashes.add(toBase62(number));
-        }
-        return hashes;
+        return numbers.stream()
+                .map(this::toBase62)
+                .toList();
     }
 
     private String toBase62(long number) {
