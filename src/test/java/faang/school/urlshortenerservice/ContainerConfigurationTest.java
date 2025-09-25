@@ -2,7 +2,6 @@ package faang.school.urlshortenerservice;
 
 import com.redis.testcontainers.RedisContainer;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -11,7 +10,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-@ActiveProfiles("test")
 public class ContainerConfigurationTest {
     @Container
     private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =

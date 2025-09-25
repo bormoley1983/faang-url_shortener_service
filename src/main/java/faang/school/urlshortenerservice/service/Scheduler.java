@@ -1,7 +1,7 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.entity.UrlEntity;
-import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.HashRepositoryUtil;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -32,7 +32,7 @@ import java.util.List;
 public class Scheduler {
 
     private final UrlRepository urlRepository;
-    private final HashRepository hashRepository;
+    private final HashRepositoryUtil hashRepository;
 
     @Scheduled(cron = "${scheduler.cron.midnight-everyday}")
     @Transactional
@@ -46,6 +46,5 @@ public class Scheduler {
             urlRepository.deleteAllById(oldHash);
             hashRepository.save(oldHash);
         }
-
     }
 }
