@@ -35,11 +35,13 @@ url-shortener:
       core-pool-size: 2
       max-pool-size: 4
       queue-capacity: 100
+      keep-alive-time-seconds: 60
   hash-generator:
     batch-size: 1000
     executor:
       core-pool-size: 1
       max-pool-size: 2
       queue-capacity: 50
+      keep-alive-time-seconds: 60
   cache:
     ttl-hours: 24

@@ -27,7 +27,7 @@ public class ExecutorConfig {
         return new ThreadPoolExecutor(
                 cfg.getCorePoolSize(),
                 cfg.getMaxPoolSize(),
-                60L,
+                cfg.getKeepAliveTimeSeconds(),
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(cfg.getQueueCapacity())
         );
@@ -43,7 +43,7 @@ public class ExecutorConfig {
         return new ThreadPoolExecutor(
                 cfg.getCorePoolSize(),
                 cfg.getMaxPoolSize(),
-                60L,
+                cfg.getKeepAliveTimeSeconds(),
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(cfg.getQueueCapacity())
         );

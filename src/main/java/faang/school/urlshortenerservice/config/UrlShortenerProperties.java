@@ -30,6 +30,7 @@ public class UrlShortenerProperties {
             private int corePoolSize;
             private int maxPoolSize;
             private int queueCapacity;
+            private long keepAliveTimeSeconds = 60L;
         }
     }
 
@@ -43,6 +44,7 @@ public class UrlShortenerProperties {
             private int corePoolSize;
             private int maxPoolSize;
             private int queueCapacity;
+            private long keepAliveTimeSeconds = 60L;
         }
     }
 

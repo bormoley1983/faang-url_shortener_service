@@ -17,33 +17,6 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    private ErrorResponse buildErrorResponse(
-            HttpStatus status,
-            String error,
-            String message,
-            String path,
-            Map<String, String> validationErrors
-    ) {
-        return ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(status.value())
-                .error(error)
-                .message(message)
-                .path(path)
-                .validationErrors(validationErrors)
-                .build();
-    }
-
-    private ErrorResponse buildErrorResponse(
-            HttpStatus status,
-            String error,
-            String message,
-            String path
-    ) {
-        return buildErrorResponse(status, error, message, path, null);
-    }
-
     /**
      * Обрабатывает ситуацию, когда короткий URL не найден в системе.
      *
@@ -179,5 +152,31 @@ public class GlobalExceptionHandler {
                         "Internal Server Error",
                         "An unexpected error occurred. Please try again later.",
                         request.getRequestURI()));
+    }
+
+    private ErrorResponse buildErrorResponse(
+            HttpStatus status,
+            String error,
+            String message,
+            String path,
+            Map<String, String> validationErrors
+    ) {
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(status.value())
+                .error(error)
+                .message(message)
+                .path(path)
+                .validationErrors(validationErrors)
+                .build();
+    }
+
+    private ErrorResponse buildErrorResponse(
+            HttpStatus status,
+            String error,
+            String message,
+            String path
+    ) {
+        return buildErrorResponse(status, error, message, path, null);
     }
 }
