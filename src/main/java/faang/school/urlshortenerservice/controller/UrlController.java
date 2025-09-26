@@ -5,28 +5,37 @@ import faang.school.urlshortenerservice.service.HashCache;
 import faang.school.urlshortenerservice.service.UrlService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/url")
+@RequestMapping
 public class UrlController {
 
     private final HashCache hashCache;
     private final UrlService urlService;
     private static final UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"}, UrlValidator.ALLOW_LOCAL_URLS);
 
-    @PostMapping
+    @PostMapping("/url")
     public ResponseEntity<String> createLink(@RequestBody String url) {
         if(!urlValidator.isValid(url)) {
             return ResponseEntity.badRequest().body("Invalid URL");
         }
-        urlService.addLink(url);
-        return ResponseEntity.ok(url);
+        return ResponseEntity.ok(urlService.addLink(url));
+    }
+
+    @GetMapping("/{hash}")
+    public ResponseEntity<String> redirect(@PathVariable String hash) {
+        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).location(URI.create(urlService.findUrl(hash))).build();
     }
 
 }

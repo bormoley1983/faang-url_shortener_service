@@ -16,8 +16,18 @@ public class UrlService {
     private final HashCache hashCache;
     private final UrlRepository urlRepository;
 
-    public void addLink(String url) {
-        Url newUrl = new Url(hashCache.get(), url, LocalDateTime.now());
-        urlRepository.save(newUrl);
+    public String addLink(String url) {
+        Url findUrl = urlRepository.findByUrl(url);
+        if (findUrl == null) {
+            Url newUrl = new Url(hashCache.get(), url, LocalDateTime.now());
+            urlRepository.save(newUrl);
+            return newUrl.getHash();
+        }
+        return findUrl.getHash();
+    }
+
+    public String findUrl(String hash) {
+        Url findUrl = urlRepository.findByHash(hash);
+        return findUrl.getUrl();
     }
 }
