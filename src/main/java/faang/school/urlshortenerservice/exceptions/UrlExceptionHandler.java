@@ -64,5 +64,14 @@ public class UrlExceptionHandler {
                 .badRequest()
                 .body(e.getMessage());
     }
+
+    @ExceptionHandler(UrlNotFoundException.class)
+    public ResponseEntity<Object> handleUrlNotFoundException(
+            UrlNotFoundException e) {
+        log.error(Arrays.toString(e.getStackTrace()));
+        return ResponseEntity
+                .badRequest()
+                .body(e.getMessage());
+    }
 }
 

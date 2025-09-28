@@ -19,7 +19,7 @@ public class UrlCacheRepository {
             String url = redisTemplate.opsForValue().get(hash);
             return Optional.ofNullable(url);
         } catch (Exception e) {
-            log.error("Error in retrieving URL from Redis for hash: {}", hash, e);
+            log.error("An error in URL from Redis for hash: {}", hash, e);
             return Optional.empty();
         }
     }
@@ -29,7 +29,7 @@ public class UrlCacheRepository {
             redisTemplate.opsForValue().set(hash, url);
             log.info("URL has been saved in Redis using hash: {}", hash);
         } catch (Exception e) {
-            log.error("Warining: erorr in saving URL to Redis with hash: {}", hash, e);
+            log.error("Warining: an error in saving URL to Redis with hash: {}", hash, e);
         }
     }
 }

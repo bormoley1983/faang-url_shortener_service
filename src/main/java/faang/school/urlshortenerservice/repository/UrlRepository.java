@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+
 public interface UrlRepository extends JpaRepository<Url, String> {
     Optional<Url> findByHash(String hash);
 
