@@ -19,7 +19,11 @@ spring:
 
 server:
   port: 8080
-  
+
+logging:
+  level:
+    root: info
+
 scheduler:
   clean-unused:
      cron: "0 0 0 * * ?"
@@ -36,7 +40,3 @@ shedlock:
     jdbc:
     table-name: "shedlock"
     use-db-time: true
-
-logging:
-  level:
-    root: info
