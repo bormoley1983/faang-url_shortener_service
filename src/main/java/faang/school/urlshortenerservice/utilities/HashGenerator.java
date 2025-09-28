@@ -17,19 +17,19 @@ public class HashGenerator {
     @Value("${hash-generation.get-numbers}")
     private int amountOfNumbers;
 
-    private final HashRepository repository;
-    private final Base62Encoder encoder;
+    private final HashRepository hashRepository;
+    private final Base62Encoder base62Encoder;
 
     @Async("Executor")
     public void generateBatch() {
-        List<Long> processedNumbers = repository.getUniqueNumbers(amountOfNumbers);
-        List<Hash> generatedHashes = encoder.encode(processedNumbers).stream().map(hash -> new Hash()).toList();
-        repository.saveAll(generatedHashes);
+        List<Long> processedNumbers = hashRepository.getUniqueNumbers(amountOfNumbers);
+        List<Hash> generatedHashes = base62Encoder.encode(processedNumbers).stream().map(hash -> new Hash()).toList();
+        hashRepository.saveAll(generatedHashes);
     }
 
     @Transactional
-    public Collection<? extends String> getHashes(int n) {
-        List<String> processedHashes = repository.getHashBatch(n);
+    public Collection<? extends Hash> getHashes(int n) {
+        List<Hash> processedHashes = hashRepository.getHashBatch(n);
         if (processedHashes.size() != n) {
             generateBatch();
             processedHashes.addAll(getHashes(n - processedHashes.size()));

@@ -23,7 +23,7 @@ public interface HashRepository extends JpaRepository<Hash, String> {
                                 )
                                 RETURNING *
                     """)
-    List<String> getHashBatch(@Param("limit") int limit);
+    List<Hash> getHashBatch(@Param("limit") int limit);
 
 
     @Query(nativeQuery = true,
