@@ -19,7 +19,7 @@ public class HashGenerator {
     private final Base62Encoder base62Encoder;
 
     @Value("${hash.batch-size:100000}")
-    private long batchSize;
+    private int batchSize;
 
     @Transactional
     @Async("myThreadPool")

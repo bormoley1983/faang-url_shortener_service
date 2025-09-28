@@ -24,20 +24,21 @@ public class HashCache {
     private final HashRepository hashRepository;
     private final HashGenerator hashGenerator;
 
+    private final AtomicBoolean filling = new AtomicBoolean(false);
+
     @Value("${hash.cache.capacity:10000}")
-    private final int capacity;
+    private int capacity;
 
     @Value("${hash.cache.threshold:0.2}")
-    private final double threshold;
+    private double threshold;
 
-    private final Queue<Hash> hashesQueue = new ArrayBlockingQueue<>(capacity);
-
-    private final AtomicBoolean filling = new AtomicBoolean(false);
+    private Queue<Hash> hashesQueue;
 
     @PostConstruct
     void init() {
         hashGenerator.generateBatch();
         List<Hash> hashes = hashRepository.getHashBatch(capacity);
+        this.hashesQueue = new ArrayBlockingQueue<>(capacity);
         hashesQueue.addAll(hashes);
     }
 
@@ -46,9 +47,11 @@ public class HashCache {
     public CompletableFuture<String> getHash() {
         if (hashesQueue.size() < (capacity * threshold)
                 && filling.compareAndSet(false, true)) {
-            hashesQueue.addAll(hashRepository.getHashBatch(capacity - hashesQueue.size()));
+            hashesQueue.addAll(hashRepository
+                    .getHashBatch(capacity - hashesQueue.size()));
             filling.set(false);
         }
-        return CompletableFuture.completedFuture(Objects.requireNonNull(hashesQueue.poll()).getHashValue());
+        return CompletableFuture.completedFuture(Objects
+                .requireNonNull(hashesQueue.poll()).getHashValue());
     }
 }

@@ -17,6 +17,13 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  mvc:
+    servlet:
+      path: /sh.com
+
+  profiles:
+    active: test
+
 server:
   port: 8080
 
@@ -25,9 +32,9 @@ logging:
     root: info
 
 hash:
-  batch-size: 100000
+  batch-size: 20
   cache:
-    capacity: 10000
+    capacity: 5
     threshold: 0.2
 
 threadpool:
@@ -36,4 +43,4 @@ threadpool:
   queue-capacity: 100
 
 execution:
-  frequency: @daily
+  frequency: '@daily'
