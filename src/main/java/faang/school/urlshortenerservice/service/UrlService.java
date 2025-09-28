@@ -3,18 +3,22 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.dto.UrlHashDto;
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.entity.Url;
+import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import faang.school.urlshortenerservice.utilities.HashCache;
 import faang.school.urlshortenerservice.utilities.UrlRedisCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import faang.school.urlshortenerservice.dto.UrlResponseDto;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +32,9 @@ public class UrlService {
     private final UrlRedisCache redisCache;
     private final UrlRepository urlRepository;
     private final UrlCacheRepository urlCacheRepository;
+    @Value("1y")
+    private Period removeUnusedPeriod;
+    private final HashRepository hashRepository;
 
     @Transactional
     public String create(UrlHashDto urlDto) {
@@ -43,25 +50,25 @@ public class UrlService {
         return Optional.ofNullable(redisCache.get(hash))
                 .orElseGet(() ->
                         urlRepository.findByHash(hash)
-                                .orElseThrow(() -> new IllegalArgumentException("Hash is not exisits"))
+                                .orElseThrow(() -> new IllegalArgumentException("Hash is not exists"))
                                 .getUrl()
                 );
     }
 
     public UrlResponseDto createShortUrl(String basiclUrl) {
-        log.debug("Short URL was created for: {}", basiclUrl);
+        log.info("Short URL was created for: {}", basiclUrl);
 
         Hash hash = hashCache.getHash();
         String stringFromHash = String.valueOf(hash);
-        log.debug("Hash has been generated: {}", hash);
+        log.info("Hash has been generated: {}", hash);
 
         Url urlEntity = new Url(stringFromHash, basiclUrl, LocalDateTime.now());
 
         urlRepository.save(urlEntity);
-        log.debug("URL has been saved to database for hash: {}", hash);
+        log.info("URL has been saved to database for hash: {}", hash);
 
         urlCacheRepository.saveUrl(stringFromHash, basiclUrl);
-        log.debug("URL has been saved to Redis cache for hash: {}", hash);
+        log.info("URL has been saved to Redis cache for hash: {}", hash);
 
         String shortUrl = baseUrl + hash;
 
@@ -73,8 +80,8 @@ public class UrlService {
         return urlCacheRepository.findUrlByHash(hash)
                 .orElseGet(() -> {
                     String url = urlCacheRepository.findUrlByHash(hash).orElseThrow(() -> {
-                        String message = "URL not found for hash: %s".formatted(hash);
-                        return new IllegalArgumentException(message);
+                        log.info("URL not found{} for hash:" , hash);
+                        return new IllegalArgumentException("URL not found for hash: %s".formatted(hash));
                     });
                     urlCacheRepository.saveUrl(hash, url);
                     log.info("URL {} for hash {} was cached in Redis.", url, hash);
@@ -82,4 +89,19 @@ public class UrlService {
                 });
     }
 
+    @Transactional
+    public void removeOldUrls() {
+        List<Url> removedUrls = urlRepository.deleteOldUrls(LocalDateTime.now().minus(removeUnusedPeriod));
+        urlRepository.deleteAll(removedUrls);
+        List<Hash> hashes = removedUrls.stream()
+                .map(oldUrl -> new Hash(oldUrl.getHash()))
+                .toList();
+        deleteUrlsFromCache(hashes);
+        hashRepository.saveAll(hashes);
+    }
+
+
+    @CacheEvict(key = "#hashes.![hash]")
+    public void deleteUrlsFromCache(List<Hash> hashes) {
+    }
 }

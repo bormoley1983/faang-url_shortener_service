@@ -18,5 +18,6 @@ public interface UrlRepository extends JpaRepository<Url, String> {
 
     @Modifying
     @Query(value = "DELETE FROM url WHERE created_at < :cutoffDate RETURNING hash", nativeQuery = true)
-    List<String> deleteOldUrlsAndReturnHashes(@Param("cutoffDate") LocalDateTime cutoffDate);
+    List<Url> deleteOldUrls(@Param("cutoffDate") LocalDateTime cutoffDate);
+
 }
