@@ -11,8 +11,8 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "async.hash-generator")
 public class AsyncProperties {
-    @Min(1)
+    @Min(2000)
     private int threadPoolSize;
-    @Min(1)
+    @Min(10000)
     private int threadPoolQueueCapacity;
 }

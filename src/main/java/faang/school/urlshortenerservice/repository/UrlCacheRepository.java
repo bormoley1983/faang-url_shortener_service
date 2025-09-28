@@ -29,7 +29,7 @@ public class UrlCacheRepository {
             redisTemplate.opsForValue().set(hash, url);
             log.info("URL has been saved in Redis using hash: {}", hash);
         } catch (Exception e) {
-            log.error("Warining: an error in saving URL to Redis with hash: {}", hash, e);
+            log.error("Warning: an error in saving URL to Redis with hash: {}", hash, e);
         }
     }
 }
