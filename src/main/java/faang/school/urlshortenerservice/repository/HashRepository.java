@@ -18,8 +18,6 @@ public interface HashRepository extends JpaRepository<Hash, String> {
                     """)
     List<Long> getUniqueNumbers(long n);
 
-    void saveAll(List<Hash> hashes);
-
     @Modifying
     @Query(nativeQuery = true,
             value = """

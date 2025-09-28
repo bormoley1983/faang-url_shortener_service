@@ -20,6 +20,6 @@ public class Hash {
 
     @Id
     @Column(name = "hash", length = 6)
-    @NotBlank
+    @NotBlank(message = "Hash must not be blank")
     private String hashValue;
 }
