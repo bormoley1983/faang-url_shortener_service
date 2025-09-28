@@ -15,25 +15,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HashGenerator {
     @Value("${hash-generation.get-numbers}")
-    private int numbersAmount;
+    private int amountOfNumbers;
 
     private final HashRepository repository;
     private final Base62Encoder encoder;
 
     @Async("Executor")
     public void generateBatch() {
-        List<Long> numbers = repository.getUniqueNumbers(numbersAmount);
-        List<Hash> hashList = encoder.encode(numbers).stream().map(hash -> new Hash()).toList();
-        repository.saveAll(hashList);
+        List<Long> processedNumbers = repository.getUniqueNumbers(amountOfNumbers);
+        List<Hash> generatedHashes = encoder.encode(processedNumbers).stream().map(hash -> new Hash()).toList();
+        repository.saveAll(generatedHashes);
     }
 
     @Transactional
     public Collection<? extends String> getHashes(int n) {
-        List<String> hashList = repository.getHashBatch(n);
-        if (hashList.size() != n) {
+        List<String> processedHashes = repository.getHashBatch(n);
+        if (processedHashes.size() != n) {
             generateBatch();
-            hashList.addAll(getHashes(n - hashList.size()));
+            processedHashes.addAll(getHashes(n - processedHashes.size()));
         }
-        return hashList;
+        return processedHashes;
     }
 }
