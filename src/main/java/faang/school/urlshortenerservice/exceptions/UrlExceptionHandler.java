@@ -19,14 +19,14 @@ public class UrlExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> ValidationExceptions(MethodArgumentNotValidException e) {
-        Map<String, String> errorsMap = new HashMap<>();
+        Map<String, String> mapOfErrors = new HashMap<>();
         e.getBindingResult().getAllErrors().forEach((error) -> {
             String nameOfField = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
-            errorsMap.put(nameOfField, errorMessage);
+            mapOfErrors.put(nameOfField, errorMessage);
         });
         log.error(e.getMessage());
-        return ResponseEntity.badRequest().body(errorsMap);
+        return ResponseEntity.badRequest().body(mapOfErrors);
     }
 
 
