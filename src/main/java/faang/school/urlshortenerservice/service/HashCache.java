@@ -39,7 +39,6 @@ public class HashCache {
         } else {
             content.forEach(hash -> hashSet.add(hash.getHash()));
         }
-        System.out.println("hashSet = " + hashSet);
     }
 
     public void add(String value) {

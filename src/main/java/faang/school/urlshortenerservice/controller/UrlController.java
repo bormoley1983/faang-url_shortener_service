@@ -21,7 +21,6 @@ import java.net.URI;
 @RequestMapping
 public class UrlController {
 
-    private final HashCache hashCache;
     private final UrlService urlService;
     private static final UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"}, UrlValidator.ALLOW_LOCAL_URLS);
 
