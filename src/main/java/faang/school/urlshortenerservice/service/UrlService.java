@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.service;
 
-import faang.school.urlshortenerservice.common.HashCreatedException;
+import faang.school.urlshortenerservice.exception.HashCreatedException;
 import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;

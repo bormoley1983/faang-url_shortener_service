@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.common;
+package faang.school.urlshortenerservice.exception;
 
 public class HashCreatedException extends RuntimeException {
     public HashCreatedException(String message) {

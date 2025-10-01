@@ -32,3 +32,5 @@ service:
   unique-numbers-count: 20
   max-hash-length: 5
   min-hash-percent: 0.2
+
+remove-old-hashes-crone: 0 0 0 * * *
