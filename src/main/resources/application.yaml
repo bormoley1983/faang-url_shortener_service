@@ -23,3 +23,8 @@ server:
 logging:
   level:
     root: info
+
+hash:
+  cache:
+    capacity: 10000
+    min_percent_filling: 20
