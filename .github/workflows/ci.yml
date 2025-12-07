@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   pull_request:
-    branches: [ chimera-master-stream12-Elya]
+    branches: [ chimera-stream12-elya]
     types: [opened, reopened, synchronize, edited]
 
 jobs:
