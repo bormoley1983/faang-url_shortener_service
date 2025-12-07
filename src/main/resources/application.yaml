@@ -19,7 +19,29 @@ spring:
 
 server:
   port: 8080
+  servlet:
+    context-path: /api/v1
 
 logging:
   level:
     root: info
+
+url-shortener:
+  batch-size: 100
+
+hash:
+  executor:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
+  generator:
+    batch-size: 1000
+  cache:
+    capacity: 5000
+    fill-percent: 20
+    executor:
+      core-pool-size: 3
+
+cleaner:
+  scheduler:
+    cron: 0 0 3 * * * # every day at 3
