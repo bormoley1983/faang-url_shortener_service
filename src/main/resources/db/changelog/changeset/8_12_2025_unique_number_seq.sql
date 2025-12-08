@@ -11,7 +11,7 @@ CREATE TABLE hash (
 
 CREATE TABLE url (
                      hash VARCHAR(5) PRIMARY KEY,
-                     url TEXT NOT NULL,
+                     url VARCHAR(256) NOT NULL,
                      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                      CONSTRAINT fk_url_hash FOREIGN KEY (hash)

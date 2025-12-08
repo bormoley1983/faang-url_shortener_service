@@ -26,7 +26,7 @@ public class Url {
     @Column(name = "hash", length = 5, nullable = false)
     private String hash;
 
-    @Column(name = "url", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "url", nullable = false)
     private String url;
 
     @Temporal(TemporalType.TIMESTAMP)
