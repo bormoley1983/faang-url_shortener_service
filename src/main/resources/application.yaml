@@ -23,3 +23,9 @@ server:
 logging:
   level:
     root: info
+
+url-shortener:
+  hash-generator:
+    batch-size: 500
+    pool-size: 5
+    queue-capacity: 50
