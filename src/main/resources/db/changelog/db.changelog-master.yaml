@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/08_12_2025_create_table_url.sql
+  - include:
+      file: db/changelog/changeset/08_12_2025_create_unique_number_seq_and_hash_table.sql

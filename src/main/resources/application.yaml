@@ -18,8 +18,13 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
 server:
-  port: 8080
+  port: 8079
 
 logging:
   level:
     root: info
+
+hash:
+  generator:
+    max-range: 10000000
+  local-hash: 1000
