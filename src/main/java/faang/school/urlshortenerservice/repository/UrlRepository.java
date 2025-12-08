@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +19,7 @@ public class UrlRepository {
         try {
             String url = jdbcTemplate.queryForObject(sql, String.class, hash);
             return Optional.ofNullable(url);
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }

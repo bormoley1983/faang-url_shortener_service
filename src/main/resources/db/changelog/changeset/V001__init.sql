@@ -10,6 +10,8 @@ CREATE TABLE hash
 CREATE TABLE url
 (
     hash VARCHAR(6) PRIMARY KEY,
-    url VARCHAR(255) NOT NULL,
+    url VARCHAR(2048) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_url_created_at ON url(created_at);
