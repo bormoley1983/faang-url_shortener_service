@@ -2,11 +2,16 @@ package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.entity.Url;
+import faang.school.urlshortenerservice.entity.UrlRedis;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.hash.LocalHash;
+import faang.school.urlshortenerservice.job.JobCleanerUrlDb;
+import faang.school.urlshortenerservice.repository.UrlRedisRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +22,8 @@ public class ShortenerService {
 
     private final UrlRepository urlRepository;
     private final LocalHash localHash;
+    private final JobCleanerUrlDb jobCleanerUrlDb;
+    private final UrlRedisRepository urlRedisRepository;
 
     // todo добавить сохранение в редис
     @Transactional
@@ -27,6 +34,10 @@ public class ShortenerService {
                 .longLing(urlString)
                 .build();
 
+        UrlRedis urlRedis = UrlRedis.builder().hash(hash.getHash())
+                .longLing(urlString)
+                .build();
+        urlRedisRepository.save(urlRedis);
         Url result = urlRepository.save(url);
         log.info("get hash {} by url {}", url.getHash(), url.getLongLing());
         return result.getHash();
@@ -41,5 +52,9 @@ public class ShortenerService {
         return url.getLongLing();
     }
 
-    //todo добавить метод, который бы очищал таблицу с не используемыми хешами
+    @Scheduled(cron = "${app.sheduled.time.cleaner}")
+    public void cleanerUrlBd() {
+        jobCleanerUrlDb.cleanerUrlDb();
+    }
+
 }

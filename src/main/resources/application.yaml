@@ -13,17 +13,30 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
 server:
-  port: 8079
+  port: 8080
 
 logging:
   level:
     root: info
 
+app:
+  sheduled:
+    time:
+      cleaner: "0 0 3 * * ?"
+
+number:
+  days:
+    hash:
+      storage: 5 # cколько дней храниться хеш в бд
 
 hash:
   generator:
