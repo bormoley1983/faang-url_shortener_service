@@ -13,16 +13,20 @@ import java.util.List;
 
 public interface HashRepository extends JpaRepository<Hash, String> {
 
-    @Query(value = "SELECT nextval('unique_number_seq') FROM generate_series(1, :n)", nativeQuery = true)
+    @Query(
+            value = "SELECT nextval('unique_number_seq') FROM generate_series(1, :n)",
+            nativeQuery = true
+    )
     List<Long> getUniqueNumbers(@Param("n") int n);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query(value = """
             DELETE FROM hash
             WHERE hash IN (
                 SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n
             )
             RETURNING hash
-            """, nativeQuery = true)
+            """,
+            nativeQuery = true)
     List<String> getHashBatch(@Param("n") int n);
 }
