@@ -1,0 +1,3 @@
+CREATE SEQUENCE unique_hash_number_seq
+    START 916132832
+    INCREMENT BY 1;

@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/url_V001_sequence_initial.sql
+  - include:
+      file: db/changelog/changeset/url_V002_url_hash_initial.sql
