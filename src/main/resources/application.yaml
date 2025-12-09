@@ -29,3 +29,6 @@ url-shortener:
     batch-size: 500
     pool-size: 5
     queue-capacity: 50
+  hash-cache:
+    refill-threshold-percent: 20
+    size: 1000
