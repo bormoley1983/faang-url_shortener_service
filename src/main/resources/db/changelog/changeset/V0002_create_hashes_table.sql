@@ -1,0 +1,3 @@
+CREATE TABLE hashes (
+    hash VARCHAR(7) PRIMARY KEY
+);
