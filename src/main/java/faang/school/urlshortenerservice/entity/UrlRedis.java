@@ -22,6 +22,5 @@ public class UrlRedis {
     private String hash;
 
     private String longLing;
-    private LocalDateTime createdAt;
 
 }

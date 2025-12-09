@@ -17,12 +17,14 @@ spring:
     redis:
       host: localhost
       port: 6379
+      repositories:
+        enabled: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
 server:
-  port: 8080
+  port: 8079
 
 logging:
   level:
@@ -40,5 +42,5 @@ number:
 
 hash:
   generator:
-    max-range: 10000000
+    max-range: 10000
   local-hash: 1000
