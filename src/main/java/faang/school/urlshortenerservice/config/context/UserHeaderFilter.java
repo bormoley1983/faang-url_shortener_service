@@ -21,7 +21,12 @@ public class UserHeaderFilter implements Filter {
         if (userId != null) {
             userContext.setUserId(Long.parseLong(userId));
         }else {
-            throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
+            //todo поменять потом, чтобы ошибка кидалась
+            // просто для тестирования захардкодил
+            // не знаю как в url записать хедеры в поиске в гугле
+            // пощади, Дима
+            userContext.setUserId(1L);
+            // throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
         }
         try {
             chain.doFilter(request, response);

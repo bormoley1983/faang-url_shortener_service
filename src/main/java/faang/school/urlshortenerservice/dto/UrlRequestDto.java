@@ -7,8 +7,10 @@ import org.hibernate.validator.constraints.URL;
 public record UrlRequestDto(
         @NotBlank(message = "Url сannot be empty")
         @URL(message = "Invalid URL format")
-        @Pattern(regexp = "^(http|https)://", message = "Only HTTP/HTTPS protocols allowed")
-        @Pattern(regexp = "\\.(com|org|net|ru)(/|:|$)", message = "Only .com, .org, .net domains allowed")
+        @Pattern(
+                regexp = "^(https?://)[\\w.-]+\\.(com|org|net|ru)(:[0-9]+)?(/.*)?$",
+                message = "Only HTTP/HTTPS protocols and .com, .org, .net, .ru domains allowed"
+        )
         String url
 ) {
 }
