@@ -28,4 +28,23 @@ public interface HashRepository extends JpaRepository<Hash, String> {
         RETURNING *
         """, nativeQuery = true)
     List<Hash> deleteAndReturnFirstN(@Param("limit") int limit);
+
+    @Modifying
+    @Query(value = """
+        WITH deleted AS (
+            DELETE FROM hash 
+            WHERE ctid IN (
+                SELECT ctid 
+                FROM hash 
+                ORDER BY hash 
+                LIMIT :limit
+            )
+            RETURNING hash
+        )
+        SELECT * FROM deleted
+        """, nativeQuery = true)
+    List<Hash> deleteAndReturnFirstNUpdate(@Param("limit") int limit);
+
+    @Query(value = "SELECT COUNT(*) FROM hash", nativeQuery = true)
+    Long countTotal();
 }

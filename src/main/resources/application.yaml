@@ -18,7 +18,35 @@ spring:
       host: localhost
       port: 6379
       repositories:
-        enabled: true
+        enabled: false
+      password:
+      database: 0
+      timeout: 100 #ms
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 30
+          min-idle: 10
+          max-wait: 50 #ms
+          time-between-eviction-runs: 10s
+        shutdown-timeout: 10 #ms
+      connect-timeout: 50 #ms
+      ssl: false
+
+redis:
+  pipeline:
+    enabled: true
+    batch-size: 100
+  lua:
+    enabled: true
+  serialize:
+    use-string-only: true
+  local-buffer:
+    enabled: true
+    size: 500
+    refill-threshold: 100
+  hash:
+    ttl: 4 # cколько дней храниться хеш в редис
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -30,10 +58,13 @@ logging:
   level:
     root: info
 
+
 app:
   sheduled:
     time:
-      cleaner: "0 0 3 * * ?"
+      cleaner: "0 0 3 * * ?" # в 3 ночи
+    check:
+      hash:  "*/20 * * * * ?" # каждые 20 секунд
 
 number:
   days:
@@ -42,5 +73,7 @@ number:
 
 hash:
   generator:
-    max-range: 10000
+    max-range: 100000
+    hashes-in-bd:
+      minimum: 15000
   local-hash: 1000
