@@ -38,7 +38,7 @@ public class LocalCache {
             if (!filling.compareAndSet(false, true)) {
                 hashGenerator.getHashesAsync(capacity)
                         .thenAccept(hashLocal::addAll)
-                        .thenRun(()-> filling.set(false));
+                        .thenRun(() -> filling.set(false));
             }
         }
         return hashLocal.poll();
