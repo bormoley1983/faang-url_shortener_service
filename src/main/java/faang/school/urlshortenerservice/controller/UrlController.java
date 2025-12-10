@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RequiredArgsConstructor
-@RequestMapping("api/v1/url")
+@RequestMapping("/url")
 @RestController
 public class UrlController {
     private final UrlService urlService;
