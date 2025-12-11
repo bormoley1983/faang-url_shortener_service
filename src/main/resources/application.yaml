@@ -1,4 +1,18 @@
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: password
+      timeout: 1000ms
+      client-type: lettuce
+      default-ttl-seconds: 3600
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 2
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -23,3 +37,34 @@ server:
 logging:
   level:
     root: info
+
+shortener:
+  address: https://short.u/
+
+expire:
+  time: 1
+
+hash:
+  storage:
+    size: 100000
+    update_percentage: 10
+  cache:
+    size: 100000
+    update_percentage: 10
+
+executor:
+  hash:
+    core-pool-size: 5
+    max-pool-size: 15
+    thread-name-prefix: 'HashExecutor-'
+
+scheduler:
+  expired-urls-clean:
+    cron: "0 0 4 * * *"
+    zone: "Europe/Moscow"
+    batch-size: 1000
+    fetch-limit: 10000
+    executor-config:
+      core-pool-size: 5
+      max-pool-size: 15
+      thread-name-prefix: 'ExpiredCleaner-'
