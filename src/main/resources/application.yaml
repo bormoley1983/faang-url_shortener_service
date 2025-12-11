@@ -45,3 +45,21 @@ hash:
 cleaner:
   scheduler:
     cron: 0 0 3 * * * # every day at 3
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /manage
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: url-shortener
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
