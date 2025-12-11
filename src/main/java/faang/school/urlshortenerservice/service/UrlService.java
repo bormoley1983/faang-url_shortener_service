@@ -40,6 +40,7 @@ public class UrlService {
         return hash;
     }
 
+    @Transactional(readOnly = true)
     public String getShortUrl(String hash) {
 
         String cached = urlCacheRepository.get(hash);
@@ -55,6 +56,7 @@ public class UrlService {
         return url.getUrl();
     }
 
+    // todo  убрать хардкод
     @Transactional
     public void cleanOldUrls() {
 

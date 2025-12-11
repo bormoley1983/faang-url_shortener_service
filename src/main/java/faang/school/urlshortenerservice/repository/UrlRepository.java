@@ -11,12 +11,12 @@ import java.util.List;
 
 @Repository
 public interface UrlRepository extends JpaRepository<Url, String> {
-
+    // todo локи проставить (исправить проблему 3 бекендов)
     @Modifying
     @Query(value = """
             DELETE FROM url
             WHERE created_at < :expired
             RETURNING hash
-            """, nativeQuery = true)//
+            """, nativeQuery = true)
     List<String> deleteOldUrlsAndReturnHashes(LocalDateTime expired);
 }

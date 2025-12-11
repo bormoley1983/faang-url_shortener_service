@@ -28,6 +28,7 @@ public class HashCache {
     private final BlockingDeque<String> cache = new LinkedBlockingDeque<>();
 
     private final AtomicBoolean isRefilling = new AtomicBoolean(false);
+    // todo в ямл
     private final ExecutorService executor = Executors.newFixedThreadPool(50);
 
     @Value("${url-shortener.hash-cache.size:1000}")
@@ -53,6 +54,7 @@ public class HashCache {
         return cache.pollFirst();
     }
 
+    // todo нейминг
     public void asyncRefill() {
         if (!isRefilling.compareAndSet(false, true)) {
             return;

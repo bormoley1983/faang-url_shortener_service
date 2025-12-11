@@ -18,7 +18,7 @@ public interface HashRepository extends JpaRepository<Hash, String> {
             nativeQuery = true
     )
     List<Long> getUniqueNumbers(@Param("n") int n);
-
+// todo разобраться с локами на вставку
     @Modifying
     @Query(value = """
             WITH deleted AS (

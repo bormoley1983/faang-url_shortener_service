@@ -4,6 +4,7 @@ import faang.school.urlshortenerservice.dto.UrlRequestDto;
 import faang.school.urlshortenerservice.service.UrlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/url")
@@ -27,11 +29,15 @@ public class UrlController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public String createShortUrl(@Valid @RequestBody UrlRequestDto request) {
+    public URI createShortUrl(@Valid @RequestBody UrlRequestDto request) {
         String hash = urlService.createShortUrl(request.url());
-        String url = "http://localhost:8079/v1/url";
-
-        return UriComponentsBuilder.fromHttpUrl(url).path(hash).build().toString();
+        // todo вынести в ямл
+        String url = "http://localhost:8079/v1/url/";
+        log.info("HashGenerator started batch generation {} {} ", hash, Thread.currentThread().getName());
+        return UriComponentsBuilder.fromHttpUrl(url)
+                .path(hash)
+                .build()
+                .toUri();
     }
 
     @GetMapping("/{hash}")
