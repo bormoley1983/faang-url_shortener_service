@@ -11,13 +11,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Component
 public class ExecutorsConfig {
     @Value("${thread.core-pool-size}")
-    private int corePoolSize;
+    int corePoolSize;
     @Value("${thread.max-pool-size}")
-    private int maxPoolSize;
+    int maxPoolSize;
     @Value("${thread.queue-capacity}")
-    private int queueCapacity;
+    int queueCapacity;
     @Value("${thread.await-termination-seconds}")
-    private int awaitTerminationSecond;
+    int awaitTerminationSecond;
 
 
     @Bean(name = "threadExecutor")
