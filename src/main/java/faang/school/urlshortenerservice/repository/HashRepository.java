@@ -21,12 +21,25 @@ public interface HashRepository extends JpaRepository<Hash, String> {
 
     @Modifying(clearAutomatically = true)
     @Query(value = """
-            DELETE FROM hash
-            WHERE hash IN (
-                SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n
-            )
-            RETURNING hash
+            SELECT * FROM (SELECT pg_advisory_lock(123456)
+            ) AS lock, 
+            (DELETE FROM hash WHERE hash IN 
+            (SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n)
+                RETURNING hash
+            ) AS deleted;
             """,
             nativeQuery = true)
     List<String> getHashBatch(@Param("n") int n);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = """
+            SELECT * FROM (SELECT pg_advisory_lock(123456)
+            ) AS lock,
+            (INSERT INTO hash (hash)
+            SELECT unnest(cast(:hashes as text[]))
+            ON CONFLICT (hash) DO NOTHING
+            ) AS inserted;
+            """,
+            nativeQuery = true)
+    void returnHashes(@Param("hashes") String[] hashes);
 }

@@ -2,6 +2,7 @@ package faang.school.urlshortenerservice.cache;
 
 import faang.school.urlshortenerservice.generator.HashGenerator;
 import faang.school.urlshortenerservice.repository.HashRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -22,6 +26,7 @@ public class HashCache {
     private final BlockingDeque<String> cache;
 
     private final AtomicBoolean isRefilling = new AtomicBoolean(false);
+    private final ExecutorService executor = Executors.newFixedThreadPool(50);
 
     @Value("${url-shortener.hash-cache.size:1000)")
     private int cacheMaxSize;
@@ -29,18 +34,18 @@ public class HashCache {
     @Value("${url-shortener.hash-cache.refill-threshold-percent:20)")
     private int refillThresholdPercent;
 
+    @Transactional
     public String getHash() {
 
-        int threshold = cacheMaxSize * refillThresholdPercent / 100;
+        int threshold = (cacheMaxSize * refillThresholdPercent) / 100;
 
         if (cache.size() < threshold) {
-            asyncRefill();
+            CompletableFuture.runAsync(this::asyncRefill, executor);
         }
 
         return cache.pollFirst();
     }
 
-    @Async("hashCacheExecutor")
     public void asyncRefill() {
         if (!isRefilling.compareAndSet(false, true)) {
             return;

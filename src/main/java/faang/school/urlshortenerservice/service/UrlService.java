@@ -1,10 +1,17 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.cache.HashCache;
+import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.UrlCacheRepository;
+import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -12,6 +19,43 @@ import org.springframework.stereotype.Service;
 public class UrlService {
 
     private final HashCache hashCache;
-    private final HashRepository HashRepository;
+    private final UrlRepository urlRepository;
+    private final UrlCacheRepository urlCacheRepository;
+    private final HashRepository hashRepository;
 
+    public String createShortUrl(String longUrl) {
+
+        String hash = hashCache.getHash();
+
+        Url url = Url.builder()
+                .hash(hash)
+                .url(longUrl)
+                .build();
+
+        urlRepository.save(url);
+        urlCacheRepository.save(hash, longUrl);
+
+        return hash;
+    }
+
+    public String getShortUrl(String hash) {
+        return hash;
+    }
+
+    @Transactional
+    public void cleanOldUrls() {
+
+        LocalDateTime expired = LocalDateTime.now().minusDays(1);
+
+        List<String> freedHashes = urlRepository.deleteOldUrlsAndReturnHashes(expired);
+
+        if (freedHashes.isEmpty()) {
+            log.info("CleanerScheduler: no old URLs found for cleanup");
+            return;
+        }
+
+        hashRepository.returnHashes(freedHashes.toArray(String[]::new));
+
+        log.info("CleanerScheduler: finished. Freed {} hashes", freedHashes.size());
+    }
 }
