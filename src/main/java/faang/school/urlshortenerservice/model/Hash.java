@@ -17,6 +17,5 @@ import lombok.Setter;
 public class Hash {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private String hash;
 }
