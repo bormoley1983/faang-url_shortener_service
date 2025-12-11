@@ -19,14 +19,16 @@ public interface HashRepository extends JpaRepository<Hash, String> {
     )
     List<Long> getUniqueNumbers(@Param("n") int n);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query(value = """
-            SELECT * FROM (SELECT pg_advisory_lock(123456)
-            ) AS lock, 
-            (DELETE FROM hash WHERE hash IN 
-            (SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n)
+            WITH deleted AS (
+                DELETE FROM hash 
+                WHERE hash IN (
+                    SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n
+                ) 
                 RETURNING hash
-            ) AS deleted;
+            )
+            SELECT * FROM deleted;
             """,
             nativeQuery = true)
     List<String> getHashBatch(@Param("n") int n);

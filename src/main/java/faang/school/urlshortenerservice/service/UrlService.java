@@ -2,6 +2,7 @@ package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.cache.HashCache;
 import faang.school.urlshortenerservice.entity.Url;
+import faang.school.urlshortenerservice.exception.NoFreeHashesException;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
@@ -23,6 +24,7 @@ public class UrlService {
     private final UrlCacheRepository urlCacheRepository;
     private final HashRepository hashRepository;
 
+    @Transactional
     public String createShortUrl(String longUrl) {
 
         String hash = hashCache.getHash();
@@ -39,7 +41,18 @@ public class UrlService {
     }
 
     public String getShortUrl(String hash) {
-        return hash;
+
+        String cached = urlCacheRepository.get(hash);
+        if (cached != null) {
+            return cached;
+        }
+
+        Url url = urlRepository.findById(hash)
+                .orElseThrow(() -> new NoFreeHashesException("URL not found for hash: " + hash));
+
+        urlCacheRepository.save(hash, url.getUrl());
+
+        return url.getUrl();
     }
 
     @Transactional

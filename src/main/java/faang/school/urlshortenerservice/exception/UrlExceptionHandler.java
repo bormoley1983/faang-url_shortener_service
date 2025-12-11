@@ -30,7 +30,7 @@ public class UrlExceptionHandler {
     @ExceptionHandler(UrlShortenerException.class)
     public ResponseEntity<ErrorResponse> handleUrlShortenerError(UrlShortenerException ex) {
         log.error("URL Shortener internal error: {}", ex.getMessage(), ex);
-
+        // todo  подумай, что возвращать?
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ex.getMessage()
@@ -44,6 +44,16 @@ public class UrlExceptionHandler {
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal server error occurred"
+        );
+    }
+
+    @ExceptionHandler(NoFreeHashesException.class)
+    public ResponseEntity<ErrorResponse> handleNoFreeHashes(NoFreeHashesException ex) {
+        log.error("No free hashes found: {}", ex.getMessage(), ex);
+
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
         );
     }
 
