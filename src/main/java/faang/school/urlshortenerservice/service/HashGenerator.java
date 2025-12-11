@@ -30,13 +30,19 @@ public class HashGenerator {
     }
 
     @Transactional
-    @Async("hashGeneratorExecutor")
-    public CompletableFuture<List<Hash>> getHashes(int amount) {
+    public List<String> getHashes(int amount) {
         List<Hash> hashes = hashRepository.getHashBatch(amount);
         if (hashes.size() < amount) {
             generateBatch();
-            hashes.addAll(getHashes(amount - hashes.size()).join());
+            hashes.addAll(hashRepository.getHashBatch(amount - hashes.size()));
         }
-        return CompletableFuture.completedFuture(hashes);
+        return hashes.stream().map(Hash::getHash).toList();
     }
+
+    @Async("hashGeneratorExecutor")
+    public CompletableFuture<List<String>> getHashesAsync(int amount) {
+        return CompletableFuture.completedFuture(getHashes(amount));
+    }
+
+
 }

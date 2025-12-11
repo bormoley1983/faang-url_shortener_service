@@ -39,6 +39,13 @@ public class UrlExceptionHandler {
         return ResponseEntity.status(status).body(errorResponse);
     }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex,
+                                                                       HttpServletRequest request) {
+        log.error("Entity not found", ex);
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), getFullPath(request));
+    }
+
     private String getFullPath(HttpServletRequest request) {
         StringBuffer requestUrl = request.getRequestURL();
         String queryString = request.getQueryString();
