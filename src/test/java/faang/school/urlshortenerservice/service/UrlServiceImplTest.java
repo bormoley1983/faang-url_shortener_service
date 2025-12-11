@@ -48,7 +48,6 @@ class UrlServiceImplTest {
     }
 
     @Test
-    @DisplayName("Получение оригинальной ссылки — из Redis кэша")
     void getUrl_fromCache() {
         when(urlCacheRepository.getCachedUrl("xyz789")).thenReturn(Optional.of("https://google.com"));
 
