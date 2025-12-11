@@ -18,8 +18,7 @@ public class JobService {
         shortenerService.cleanerUrlBd();
     }
 
-    @Scheduled(
-            cron = "${app.sheduled.check.hash}")
+    @Scheduled(cron = "${app.sheduled.check.hash}")
     private void jobCounterHashInHashBd() {
         hashGenerator.checkCountHashInBd();
     }

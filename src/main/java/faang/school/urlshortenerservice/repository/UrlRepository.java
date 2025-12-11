@@ -8,20 +8,22 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface UrlRepository extends JpaRepository<Url, String> {
 
 
-    @Modifying
+
     @Query(value = """
-            WITH locked_rows AS (
+        WITH locked_rows AS (
             SELECT hash FROM url 
             WHERE created_at < :cutoffDate 
             FOR UPDATE SKIP LOCKED
-            )
-            DELETE FROM url 
-            WHERE hash IN (SELECT hash FROM locked_rows)
-            """, nativeQuery = true)
-    void deleteOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
+        )
+        DELETE FROM url 
+        WHERE hash IN (SELECT hash FROM locked_rows)
+        RETURNING *
+        """, nativeQuery = true)
+    List<Url> deleteOlderThanAndReturn(@Param("cutoffDate") LocalDateTime cutoffDate);
 }

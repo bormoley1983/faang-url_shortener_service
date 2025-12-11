@@ -12,7 +12,7 @@ import java.io.IOException;
 public class UserHeaderFilter implements Filter {
 
     private final UserContext userContext;
-
+    // todo мб  стоит удалить
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws ServletException, IOException {

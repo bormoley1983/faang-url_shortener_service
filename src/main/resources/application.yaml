@@ -64,16 +64,76 @@ app:
     time:
       cleaner: "0 0 3 * * ?" # в 3 ночи
     check:
-      hash:  "*/20 * * * * ?" # каждые 20 секунд
+      hash:  "*/15 * * * * ?" # каждые 20 секунд
 
 number:
   days:
     hash:
       storage: 5 # cколько дней храниться хеш в бд
 
+base:
+  get:
+    request: http://localhost:8079/urt-shortener/
+
 hash:
+  local:
+    count:
+      hash: 10000
+    size:
+      minimum: 0.2 # проценты/100
   generator:
-    max-range: 100000
+    count:
+      pool-executor: 50
+    batch-size:
+      executor: 2100
+      save-bd: 1000
+    max-range: 400000
     hashes-in-bd:
-      minimum: 15000
-  local-hash: 1000
+      minimum: 150000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, metrics, info
+      base-path: /actuator
+
+    # Настройки конкретных эндпоинтов
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+  metrics:
+    # 1. ТЕГИ приложения (обязательно!)
+    tags:
+      application: ${spring.application.name}
+      environment: development
+      instance: ${spring.application.instance-id:${random.value}}
+
+    # 2. ВКЛЮЧЕНИЕ метрик
+    enable:
+      # Основные
+      jvm: true              # JVM метрики (память, GC, threads)
+      http: true             # HTTP метрики
+      process: true          # Процесс (uptime, CPU)
+      system: true           # Системные метрики
+
+      # Базы данных
+      hikaricp: true         # HikariCP connection pool
+      jdbc: true             # JDBC метрики
+      data.source: true      # DataSource метрики
+
+      # Кэш и очереди
+      cache: true            # Spring Cache
+      redis: true            # Redis (если есть spring-data-redis)
+      kafka: true            # Kafka (если есть)
+
+      # Логирование
+      logback: true          # Logback метрики
+
+      # Веб-сервер
+      tomcat: true           # Tomcat метрики
+      undertow: true         # Undertow метрики

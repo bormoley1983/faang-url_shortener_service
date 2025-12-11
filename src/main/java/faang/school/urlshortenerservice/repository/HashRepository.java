@@ -20,17 +20,6 @@ public interface HashRepository extends JpaRepository<Hash, String> {
 
     @Modifying
     @Query(value = """
-        DELETE FROM hash 
-        WHERE hash IN (
-            SELECT h.hash FROM hash h 
-            LIMIT :limit
-        )
-        RETURNING *
-        """, nativeQuery = true)
-    List<Hash> deleteAndReturnFirstN(@Param("limit") int limit);
-
-    @Modifying
-    @Query(value = """
         WITH deleted AS (
             DELETE FROM hash 
             WHERE ctid IN (
@@ -43,7 +32,7 @@ public interface HashRepository extends JpaRepository<Hash, String> {
         )
         SELECT * FROM deleted
         """, nativeQuery = true)
-    List<Hash> deleteAndReturnFirstNUpdate(@Param("limit") int limit);
+    List<Hash> deleteAndReturnFirstN(@Param("limit") int limit);
 
     @Query(value = "SELECT COUNT(*) FROM hash", nativeQuery = true)
     Long countTotal();
