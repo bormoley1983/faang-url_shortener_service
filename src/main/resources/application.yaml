@@ -17,9 +17,48 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 server:
   port: 8080
 
 logging:
   level:
     root: info
+
+# URL shortener configuration
+url:
+  shortener:
+    base-url: https://short.com/
+  cache:
+    ttl: 86400 # 24 hours in seconds
+
+# Hash configuration
+hash:
+  # Hash repository batch size (for fetching from DB)
+  batch:
+    size: 1000
+
+  # Hash generator configuration
+  generator:
+    batch-size: 100000
+    thread-pool:
+      core-size: 5
+      max-size: 10
+      queue-capacity: 100
+
+  # Hash cache configuration
+  cache:
+    size: 10000
+    refill-threshold-percent: 20
+    executor:
+      core-size: 3
+      max-size: 5
+      queue-capacity: 50
+
+# Cleaner scheduler configuration
+cleaner:
+  cron: 0 0 2 * * * # Every day at 2:00 AM
