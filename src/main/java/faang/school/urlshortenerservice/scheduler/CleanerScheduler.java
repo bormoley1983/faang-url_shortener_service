@@ -21,13 +21,15 @@ public class CleanerScheduler {
 	@Transactional
 	public void cleanOldUrls() {
 		List<String> freedHashes = urlRepository.deleteOldUrls();
-		List<Hash> hashEntities = freedHashes.stream()
-				.map(hash -> {
-					Hash hashEntity = new Hash();
-					hashEntity.setHash(hash);
-					return hashEntity;
-				})
-				.toList();
-		hashRepository.saveAll(hashEntities);
+		if (!freedHashes.isEmpty()) {
+			List<Hash> hashEntities = freedHashes.stream()
+					.map(hash -> {
+						Hash hashEntity = new Hash();
+						hashEntity.setHash(hash);
+						return hashEntity;
+					})
+					.toList();
+			hashRepository.saveAll(hashEntities);
+		}
 	}
 }

@@ -60,7 +60,7 @@ public class HashCache {
 	}
 
 	private void fillCacheWithHashes() {
-		List<String> hashBatch = hashRepository.getHashBatch(capacity);
+		List<String> hashBatch = hashRepository.getHashBatch(batchSize);
 		hashBatch.forEach(hash -> hashes.offer(hash));
 	}
 }
