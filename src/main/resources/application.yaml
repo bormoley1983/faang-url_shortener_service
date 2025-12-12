@@ -26,3 +26,10 @@ logging:
 
 hash:
   batch-size: 100
+  generator:
+    retry:
+      max-attempts: 3
+      delay-ms: 1000
+    thread-pool:
+      size: 5
+      queue-capacity: 100

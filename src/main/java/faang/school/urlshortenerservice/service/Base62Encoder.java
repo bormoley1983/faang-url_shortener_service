@@ -1,12 +1,12 @@
-package faang.school.urlshortenerservice.util;
+package faang.school.urlshortenerservice.service;
 
 import jakarta.validation.constraints.NotNull;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class Base62Encoder {
 
     private static final String BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
