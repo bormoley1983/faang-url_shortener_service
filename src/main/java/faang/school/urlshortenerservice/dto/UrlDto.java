@@ -7,12 +7,12 @@ import jakarta.validation.constraints.Size;
 
 public record UrlDto(
 
-        @NotNull(message = "URL не может быть пустым")
-        @NotBlank(message = "URL не может быть пустым")
-        @Size(max = 2048, message = "URL слишком длинный")
+        @NotNull(message = "URL cannot be null")
+        @NotBlank(message = "URL cannot be blank")
+        @Size(max = 2048, message = "URL so long")
         @Pattern(
                 regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",
-                message = "Некорректный URL"
+                message = "Unknown URL format"
         )
         String url
 ) {

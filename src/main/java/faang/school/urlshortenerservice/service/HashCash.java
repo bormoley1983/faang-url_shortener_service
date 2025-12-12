@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class HashCash {
 
-    @Value("${cash.capacity:5000}")
+    @Value("${hash.cash.capacity:5000}")
     private int capacity;
 
     @Value("${cash.percent:20}")
