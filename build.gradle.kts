@@ -41,6 +41,17 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    
+    /**
+     * Retry & Resilience
+     */
+    implementation("net.jodah:failsafe:2.4.4")
+    
+    /**
+     * Metrics
+     */
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-core")
 
     /**
      * Test containers
