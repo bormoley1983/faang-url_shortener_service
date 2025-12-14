@@ -3,6 +3,7 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.model.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class HashGenerator {
     @Value("${batch.size}")
     private int butchSize;
@@ -24,12 +26,13 @@ public class HashGenerator {
     @Transactional
     @Scheduled(cron = "${scheduler.tasks.generate-batch.cron:0 0 2 * * *}")
     public void generateBatch() {
+        log.info("Generating new batch of hashes");
         List<Long> uniqueNumbers = hashRepository.getUniqueNumbers(butchSize);
-        List<Hash> hashes = base62Encoder.encode(uniqueNumbers);
+        List<Hash> hashes = base62Encoder.encode(uniqueNumbers).stream().map(Hash::new).toList();
         hashRepository.saveAll(hashes);
+        log.info("Generated {} hashes", hashes.size());
     }
 
-    @Transactional
     public List<String> getHashes(int amount) {
         List<Hash> hashes = hashRepository.getHashBatch(amount);
         if (hashes.size() < amount) {
