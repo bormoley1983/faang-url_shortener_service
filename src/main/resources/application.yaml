@@ -24,9 +24,13 @@ logging:
   level:
     root: info
 
-repository:
-  hash:
-    batch: 50000
+hash:
+  hash-generator:
+    generate-batch: 100000
+  hash-cache:
+    get-batch: 50000
+    limit: 100000
+    bound: 20000
 
 thread-pool:
   amount:

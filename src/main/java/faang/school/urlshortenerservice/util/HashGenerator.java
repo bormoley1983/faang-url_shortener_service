@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HashGenerator {
 
-    @Value("${repository.hash.batch}")
+    @Value("${hash.hash-generator.generate-batch}")
     private int batch;
     private final HashRepository hashRepository;
     private final Base62Encoder base62Encoder;

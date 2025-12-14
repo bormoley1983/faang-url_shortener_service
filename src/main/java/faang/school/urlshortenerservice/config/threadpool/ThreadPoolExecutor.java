@@ -13,8 +13,13 @@ public class ThreadPoolExecutor {
     @Value("${thread-pool.amount.hash-generator}")
     private int threadPoolAmountHashGenerator;
 
-    @Bean
+    @Bean("hashGeneratorExecutor")
     public ExecutorService hashGeneratorExecutor() {
         return Executors.newFixedThreadPool(threadPoolAmountHashGenerator);
+    }
+
+    @Bean("hashCacheExecutor")
+    public ExecutorService hashCacheExecutor() {
+        return Executors.newSingleThreadExecutor();
     }
 }
