@@ -23,6 +23,9 @@ public class UrlService {
     @Value("${url.ttl-days:100}")
     private long ttlDays;
 
+    @Value("${url.prefix-url}")
+    private String prefixUrl;
+
     public String getUrl(String hash) {
         Url url = urlCacheRepository.get(hash);
         if (url == null) {
@@ -33,7 +36,6 @@ public class UrlService {
                     });
         }
         return url.getUrl();
-
     }
 
     @Transactional
@@ -44,6 +46,6 @@ public class UrlService {
         urlCacheRepository.save(shortUrl, url, ttlDays);
         log.info("Url shortened to {}", shortUrl);
 
-        return shortUrl;
+        return prefixUrl.concat(shortUrl);
     }
 }

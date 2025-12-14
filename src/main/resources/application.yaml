@@ -45,6 +45,7 @@ hash:
 
 url:
   ttl-days: 100
+  prefix-url: https://sh.c/
 
 hash-generator:
   batch:
