@@ -27,3 +27,7 @@ logging:
 repository:
   hash:
     batch: 50000
+
+thread-pool:
+  amount:
+    hash-generator: 2
