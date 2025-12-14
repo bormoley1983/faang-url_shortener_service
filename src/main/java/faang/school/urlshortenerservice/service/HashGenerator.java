@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class HashGenerator {
     @Value("${batch.size}")
-    private int butchSize;
+    private int batchSize;
 
     private final Base62Encoder base62Encoder;
     private final HashRepository hashRepository;
@@ -27,7 +27,7 @@ public class HashGenerator {
     @Scheduled(cron = "${scheduler.tasks.generate-batch.cron:0 0 2 * * *}")
     public void generateBatch() {
         log.info("Generating new batch of hashes");
-        List<Long> uniqueNumbers = hashRepository.getUniqueNumbers(butchSize);
+        List<Long> uniqueNumbers = hashRepository.getUniqueNumbers(batchSize);
         List<Hash> hashes = base62Encoder.encode(uniqueNumbers).stream().map(Hash::new).toList();
         hashRepository.saveAll(hashes);
         log.info("Generated {} hashes", hashes.size());
