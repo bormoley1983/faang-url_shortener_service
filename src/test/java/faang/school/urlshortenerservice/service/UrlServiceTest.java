@@ -3,6 +3,7 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.cache.HashCache;
 import faang.school.urlshortenerservice.dto.ShortUrlResponse;
 import faang.school.urlshortenerservice.entity.Url;
+import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -145,6 +146,21 @@ class UrlServiceTest {
     }
 
     @Test
+    void testGetOriginalUrlThrowsExceptionWhenNotFound() {
+        // Given
+        when(urlCacheRepository.get(TEST_HASH)).thenReturn(null);
+        when(urlRepository.findById(TEST_HASH)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> urlService.getOriginalUrl(TEST_HASH))
+                .isInstanceOf(UrlNotFoundException.class)
+                .hasMessageContaining("URL not found for hash");
+
+        verify(urlCacheRepository).get(TEST_HASH);
+        verify(urlRepository).findById(TEST_HASH);
+    }
+
+    @Test
     void testGetOriginalUrlCachesResultFromDatabase() {
         // Given
         Url url = Url.builder()
@@ -158,7 +174,7 @@ class UrlServiceTest {
         // When
         urlService.getOriginalUrl(TEST_HASH);
 
-        // Then
+        // Then - only called once when saving to cache after retrieving from DB
         verify(urlCacheRepository, times(1)).save(TEST_HASH, TEST_URL);
     }
 

@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -19,6 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class UrlCacheRepositoryTest {
 
     @Mock
@@ -104,6 +107,27 @@ class UrlCacheRepositoryTest {
         // Then
         assertThat(result).isNull();
         verify(valueOperations).get(TEST_HASH);
+    }
+
+    @Test
+    void testDeleteSuccess() {
+        // When
+        urlCacheRepository.delete(TEST_HASH);
+
+        // Then
+        verify(redisTemplate).delete(TEST_HASH);
+    }
+
+    @Test
+    void testDeleteDoesNotThrowException() {
+        // Given
+        doThrow(new RuntimeException("Redis error")).when(redisTemplate).delete(anyString());
+
+        // When - should not throw exception, just log
+        urlCacheRepository.delete(TEST_HASH);
+
+        // Then
+        verify(redisTemplate).delete(TEST_HASH);
     }
 
     @Test

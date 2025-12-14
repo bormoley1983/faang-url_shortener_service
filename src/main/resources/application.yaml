@@ -36,6 +36,12 @@ url:
   cache:
     ttl: 86400 # 24 hours in seconds
 
+# Base62 Encoder configuration
+encoder:
+  base62:
+    alphabet: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+    base: 62
+
 # Hash configuration
 hash:
   # Hash repository batch size (for fetching from DB)

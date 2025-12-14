@@ -23,7 +23,6 @@ public class CleanerScheduler {
      * Запускается раз в день по cron из конфигурации
      */
     @Scheduled(cron = "${cleaner.cron:0 0 2 * * *}")
-    @Transactional
     public void cleanOldUrls() {
         log.info("Starting cleanup of old URLs");
 

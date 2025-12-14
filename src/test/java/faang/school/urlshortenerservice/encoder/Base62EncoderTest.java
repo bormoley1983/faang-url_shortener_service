@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,9 @@ class Base62EncoderTest {
     @BeforeEach
     void setUp() {
         base62Encoder = new Base62Encoder();
+        // Устанавливаем значения через ReflectionTestUtils, так как @Value не работает в unit тестах
+        ReflectionTestUtils.setField(base62Encoder, "base62Alphabet", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+        ReflectionTestUtils.setField(base62Encoder, "base", 62);
     }
 
     @Test
@@ -40,17 +44,17 @@ class Base62EncoderTest {
         assertThat(result.get(2)).isEqualTo("z");
     }
 
-//    @Test
-//    void testEncodeMultipleNumbers() {
-//        List<Long> numbers = Arrays.asList(1L, 62L, 100L, 1000L);
-//        List<String> result = base62Encoder.encode(numbers);
-//
-//        assertThat(result).hasSize(4);
-//        assertThat(result.get(0)).isEqualTo("1");
-//        assertThat(result.get(1)).isEqualTo("10");
-//        assertThat(result.get(2)).isEqualTo("1C");
-//        assertThat(result.get(3)).isEqualTo("G8");
-//    }
+    @Test
+    void testEncodeMultipleNumbers() {
+        List<Long> numbers = Arrays.asList(1L, 62L, 100L, 1000L);
+        List<String> result = base62Encoder.encode(numbers);
+
+        assertThat(result).hasSize(4);
+        assertThat(result.get(0)).isEqualTo("1");
+        assertThat(result.get(1)).isEqualTo("10");
+        assertThat(result.get(2)).isEqualTo("1c");
+        assertThat(result.get(3)).isEqualTo("G8");
+    }
 
     @Test
     void testEncodeLargeNumber() {

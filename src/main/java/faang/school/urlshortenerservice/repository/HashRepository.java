@@ -59,7 +59,6 @@ public class HashRepository {
      *
      * @return список случайных хэшей
      */
-    @Transactional
     public List<String> getHashBatch() {
         log.debug("Getting batch of {} random hashes", batchSize);
 
