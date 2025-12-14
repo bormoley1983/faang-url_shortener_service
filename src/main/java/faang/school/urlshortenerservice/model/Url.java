@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
@@ -47,5 +48,6 @@ public class Url {
     private Instant createdAt;
 
     @OneToMany(mappedBy = "url", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JsonManagedReference
     private List<Analytic> analytics;
 }

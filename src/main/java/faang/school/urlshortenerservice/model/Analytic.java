@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -32,6 +33,7 @@ public class Analytic {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "url_id", nullable = false)
+    @JsonBackReference
     private Url url;
 
     @Column(name = "clicked_at", nullable = false, updatable = false)

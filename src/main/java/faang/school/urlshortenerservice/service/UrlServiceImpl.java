@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 @Service
 @RequiredArgsConstructor
 public class UrlServiceImpl implements UrlService {
@@ -34,7 +37,7 @@ public class UrlServiceImpl implements UrlService {
         String hash = localCache.getHash();
 
         url.setHash(hash);
-        url.setExpiresAt(java.time.Instant.now().plus(ttlDays, java.time.temporal.ChronoUnit.DAYS));
+        url.setExpiresAt(Instant.now().plus(ttlDays, ChronoUnit.DAYS));
         urlRepository.save(url);
         urlCacheRepository.save(hash, url, ttlDays);
 

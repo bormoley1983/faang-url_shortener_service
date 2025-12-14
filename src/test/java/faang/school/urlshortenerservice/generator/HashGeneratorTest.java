@@ -47,18 +47,6 @@ class HashGeneratorTest {
     }
 
     @Test
-    void testBase62Encoding() throws Exception {
-        var method = HashGenerator.class.getDeclaredMethod("base62Encoding", long.class);
-        method.setAccessible(true);
-
-        assertEquals("0", method.invoke(hashGenerator, 0L));
-        assertEquals("1", method.invoke(hashGenerator, 1L));
-        assertEquals("a", method.invoke(hashGenerator, 36L));
-        assertEquals("z", method.invoke(hashGenerator, 61L));
-        assertEquals("10", method.invoke(hashGenerator, 62L));
-    }
-
-    @Test
     void testGetShuffledBase62() throws Exception {
         var method = HashGenerator.class.getDeclaredMethod("getShuffledBase62", long.class);
         method.setAccessible(true);

@@ -11,21 +11,16 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.util.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
     @Valid
     private final RedisProperties redisProperties;
-    private final Map<ChannelTopic, MessageListenerAdapter> containersAdapter = new HashMap<>();
+    private final ObjectMapper objectMapper;
 
     @Bean
     public RedisConnectionFactory connectionFactory() {
@@ -42,9 +37,8 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        GenericJackson2JsonRedisSerializer jacksonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        GenericJackson2JsonRedisSerializer jacksonSerializer =
+                new GenericJackson2JsonRedisSerializer(objectMapper);
 
         redisTemplate.setConnectionFactory(connectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());

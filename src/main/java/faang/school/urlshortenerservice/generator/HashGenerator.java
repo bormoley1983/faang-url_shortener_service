@@ -2,6 +2,7 @@ package faang.school.urlshortenerservice.generator;
 
 import faang.school.urlshortenerservice.model.Hash;
 import faang.school.urlshortenerservice.repository.UrlHashJdbcRepository;
+import faang.school.urlshortenerservice.util.Base62Encoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -17,7 +18,6 @@ public class HashGenerator {
     private static final long A = 7_777_777_777L;
     private static final long B = 123_456_789L;
     private static final long M = 56_800_235_584L;
-    private static String BASE_62_CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private final UrlHashJdbcRepository urlHashJdbcRepository;
 
     @Value("${hash.rangeSequence:10000}")
@@ -52,21 +52,6 @@ public class HashGenerator {
 
     private String getShuffledBase62(long number) {
         long mixed = (number * A + B) % M;
-        String base62 = base62Encoding(mixed);
-        return String.format("%6s", base62).replace(' ', '0');
-    }
-
-    private String base62Encoding(long number) {
-        if (number == 0) {
-            return "0";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        while (number > 0) {
-            int remainder = (int) (number % 62);
-            sb.append(BASE_62_CHARACTERS.charAt(remainder));
-            number /= 62;
-        }
-        return sb.reverse().toString();
+        return Base62Encoder.encodePadded(mixed, 6);
     }
 }
