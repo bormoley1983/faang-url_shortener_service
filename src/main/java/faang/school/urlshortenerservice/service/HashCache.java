@@ -1,7 +1,5 @@
 package faang.school.urlshortenerservice.service;
 
-import faang.school.urlshortenerservice.executor.ExecutorConfig;
-import faang.school.urlshortenerservice.executor.HashGeneratorExecutorConfig;
 import faang.school.urlshortenerservice.service.config.HashConfig;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +29,7 @@ public class HashCache {
 
     public  String getHash() {
         try {
-            String hash hashQueue.poll(30, TimeUnit.SECONDS);
+            String hash = hashQueue.poll(30, TimeUnit.SECONDS);
             if (hash == null) {
                 log.error("Cache refilling stopped.");
                 throw new IllegalStateException("Failed to get hash from cache");
