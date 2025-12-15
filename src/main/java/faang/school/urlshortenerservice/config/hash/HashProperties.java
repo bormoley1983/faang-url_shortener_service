@@ -12,4 +12,11 @@ public class HashProperties {
 
     @Min(1)
     private int batchSize;
+    private ThreadPool threadPool;
+
+    @Data
+    static class ThreadPool {
+        int size;
+        int queueCapacity;
+    }
 }

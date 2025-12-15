@@ -1,26 +1,35 @@
 package faang.school.urlshortenerservice.repository;
 
 import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.service.HashGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-import java.util.*;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("HashRepository IT: sequence + batch insert + delete returning")
-class HashRepositoryIT extends AbstractIntegrationTest {
+@DisplayName("HashRepository Integration Test: sequence + batch insert + delete returning")
+class HashRepositoryIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     HashRepository hashRepository;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    HashGenerator hashGenerator;
 
     @BeforeEach
     void cleanDb() {
@@ -30,7 +39,7 @@ class HashRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("getUniqueNumbers(n): returns exactly n unique values from DB sequence")
-    void getUniqueNumbers_returnsNUniqueValues() {
+    void getUniqueNumbers_returnsUniqueValues() {
         List<Long> numbers = hashRepository.getUniqueNumbers(5);
 
         assertThat(numbers).hasSize(5);
@@ -81,5 +90,21 @@ class HashRepositoryIT extends AbstractIntegrationTest {
         Set<String> intersection = new HashSet<>(batch1);
         intersection.retainAll(batch2);
         assertThat(intersection).isEmpty();
+    }
+
+    @Test
+    @DisplayName("generateBatch(): returns number of generated hashes, same as in we save to DB")
+    void generateBatch_shouldInsertHashes() {
+        CompletableFuture<Integer> future = hashGenerator.generateBatch();
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .until(future::isDone);
+
+        Integer generated = future.join();
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM hash", Integer.class);
+
+        assertThat(count).isEqualTo(generated);
     }
 }
