@@ -13,7 +13,7 @@ CREATE TABLE free_hash_storage (
     CHECK (char_length(hash) = 6)
 );
 
---changeset kirill_mir:create_short_url_table_20251215
+--changeset kirill_mir:create_url_table_20251215
 CREATE TABLE url (
     hash VARCHAR(6) PRIMARY KEY,
     actual_url TEXT NOT NULL,

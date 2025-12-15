@@ -23,3 +23,9 @@ server:
 logging:
   level:
     root: info
+
+shortener:
+  address: https://short.u/
+
+expire:
+  time: 1
