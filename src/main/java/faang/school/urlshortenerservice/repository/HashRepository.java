@@ -58,7 +58,7 @@ public class HashRepository {
         });
     }
 
-    public List<String> getHashBatch() {
+    public List<String> getHashBatch(int limit) {
         String sql = """
                 DELETE FROM hash
                 WHERE hash IN (
@@ -68,6 +68,10 @@ public class HashRepository {
                 )
                 RETURNING hash
                 """;
-        return jdbcTemplate.queryForList(sql, String.class, batchSize);
+        return jdbcTemplate.queryForList(sql, String.class, limit);
+    }
+
+    public List<String> getHashBatch() {
+        return getHashBatch(batchSize);
     }
 }

@@ -48,6 +48,12 @@ dependencies {
     implementation("net.jodah:failsafe:2.4.4")
     
     /**
+     * Scheduler Lock (ShedLock)
+     */
+    implementation("net.javacrumbs.shedlock:shedlock-spring:5.9.1")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.9.1")
+    
+    /**
      * Metrics
      */
     implementation("org.springframework.boot:spring-boot-starter-actuator")
