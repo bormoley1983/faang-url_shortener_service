@@ -4,7 +4,6 @@ import faang.school.urlshortenerservice.dto.RedirectResponce;
 import faang.school.urlshortenerservice.dto.ShortUrlRequest;
 import faang.school.urlshortenerservice.dto.ShortUrlResponce;
 import faang.school.urlshortenerservice.entity.ShortUrl;
-import faang.school.urlshortenerservice.service.UrlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
