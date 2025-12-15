@@ -4,18 +4,18 @@ import faang.school.urlshortenerservice.dto.RedirectResponce;
 import faang.school.urlshortenerservice.dto.ShortUrlRequest;
 import faang.school.urlshortenerservice.dto.ShortUrlResponce;
 import faang.school.urlshortenerservice.entity.ShortUrl;
+import faang.school.urlshortenerservice.service.UrlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 @Component
 @RequiredArgsConstructor
 public class UrlFacade {
-    @Value("${shortener.address}") //todo is working?
-    private final String shortenerAddress;
+    @Value("${shortener.address}")
+    private String shortenerAddress;
     private final UrlService urlService;
 
     public RedirectResponce getActualUrl(String hash) {
@@ -33,6 +33,6 @@ public class UrlFacade {
 
         return new ShortUrlResponce(
                 shortUrlValue,
-                shortUrl.getExpire_time());
+                shortUrl.getExpireTime());
         }
     }

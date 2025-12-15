@@ -19,10 +19,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class UrlService {
-    @Value("${expire.time:1}") //todo is working?
-    private static final long DEFAULT_EXPIRATION_TIME_IN_YEAR;
+    private static final long DEFAULT_EXPIRATION_TIME_IN_YEAR = 1L;
     private final UrlRepository urlRepository;
     private final UrlValidator urlValidator;
+    private final HashCache hashCache;
     private final RedisUrlCacheService redisUrlCacheService;
 
 
@@ -31,7 +31,7 @@ public class UrlService {
                 .orElseThrow(() -> new RecordNotFoundException("Invalid short url, not found"));
     }
 
-    public ShortUrl getActualurl(String hash) {
+    public ShortUrl getActualUrl(String hash) {
         Optional<ShortUrl> redisShortUrl = redisUrlCacheService.getUrl(hash);
 
         if (redisShortUrl.isPresent()) {
@@ -48,11 +48,11 @@ public class UrlService {
         return shortUrl;
     }
 
-    public ShortUrl getShortUrl(ShortUrlRequest request) {
+    public ShortUrl createShortUrl(ShortUrlRequest request) {
         ShortUrl newShortUrl = ShortUrl.builder()
                 .hash(hashCache.getHash())
                 .actualUrl(request.url())
-                .expire_time(setExpireTimeOrDefault(request))
+                .expireTime(setExpireTimeOrDefault(request))
                 .build();
 
         newShortUrl = urlRepository.save(newShortUrl);

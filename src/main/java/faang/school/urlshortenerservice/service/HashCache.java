@@ -1,11 +1,10 @@
 package faang.school.urlshortenerservice.service;
 
-import faang.school.urlshortenerservice.executor.ExecutorConfig;
-import faang.school.urlshortenerservice.executor.HashGeneratorExecutorConfig;
 import faang.school.urlshortenerservice.service.config.HashConfig;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -25,13 +24,14 @@ public class HashCache {
     private final HashService hashService;
     private final AtomicInteger cacheCounter = new AtomicInteger();
     @Qualifier("hashGeneratorExecutor")
+    @Autowired
     private final ThreadPoolTaskExecutor executor;
     private final BlockingQueue<String> hashQueue = new LinkedBlockingQueue<>();
     private final AtomicBoolean refilling = new AtomicBoolean(false);
 
     public  String getHash() {
         try {
-            String hash hashQueue.poll(30, TimeUnit.SECONDS);
+            String hash = hashQueue.poll(30, TimeUnit.SECONDS);
             if (hash == null) {
                 log.error("Cache refilling stopped.");
                 throw new IllegalStateException("Failed to get hash from cache");
