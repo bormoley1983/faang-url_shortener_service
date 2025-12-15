@@ -23,11 +23,11 @@ public class Url {
 	private String url;
 
 	@Column(name = "created_at", nullable = false)
-	private LocalDateTime created_at;
+	private LocalDateTime createdAt;
 
 	public Url(String hash, String url) {
 		this.hash = hash;
 		this.url = url;
-		this.created_at = LocalDateTime.now();
+		this.createdAt = LocalDateTime.now();
 	}
 }

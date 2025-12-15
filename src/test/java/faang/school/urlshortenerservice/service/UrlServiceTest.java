@@ -87,6 +87,7 @@ public class UrlServiceTest {
 		String result = urlService.getOriginalUrl(hash);
 
 		assertEquals(url, result);
+		verify(urlCacheRepository).saveUrlToRedis(eq(hash), eq(url));
 	}
 
 	@Test

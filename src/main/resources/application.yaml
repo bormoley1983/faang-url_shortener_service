@@ -15,7 +15,7 @@ spring:
         format_sql: true
 
   liquibase:
-    clear-checksums: true
+    # clear-checksums: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
@@ -53,4 +53,4 @@ scheduler:
 app:
   redis:
     url-cache-ttl-hours: 24
-  base-url: "https://sh.com/"
+  base-url: "http://127.0.0.1/"

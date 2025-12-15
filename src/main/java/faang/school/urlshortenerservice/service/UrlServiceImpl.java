@@ -43,6 +43,10 @@ public class UrlServiceImpl implements UrlService {
 		}
 		return urlRepository.findById(hash)
 				.map(Url::getUrl)
+				.map(originalUrl -> {
+					urlCacheRepository.saveUrlToRedis(hash, originalUrl);
+					return originalUrl;
+				})
 				.orElseThrow(() -> new UrlNotFoundException(hash));
 	}
 }
