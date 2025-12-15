@@ -10,8 +10,9 @@ import java.util.Objects;
 @Component
 public class UrlValidator {
     public void validateUrlNotExpired(ShortUrl shortUrl) {
-        if(Objects.nonNull(shortUrl.getExpire_time()) && shortUrl.getExpire_time().isBefore(LocalDateTime.now())) {
-            throw new UrlExpiredException(shortUrl.getHash(), shortUrl.getExpire_time());
+        if(Objects.nonNull(shortUrl.getExpireTime()) &&
+                shortUrl.getExpireTime().isBefore(LocalDateTime.now())) {
+            throw new UrlExpiredException(shortUrl.getHash(), shortUrl.getExpireTime());
         }
 
     }

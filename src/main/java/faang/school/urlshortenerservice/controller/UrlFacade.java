@@ -14,8 +14,8 @@ import java.net.URI;
 @Component
 @RequiredArgsConstructor
 public class UrlFacade {
-    @Value("${shortener.address}") //todo is working?
-    private final String shortenerAddress;
+    @Value("${shortener.address}")
+    private String shortenerAddress;
     private final UrlService urlService;
 
     public RedirectResponce getActualUrl(String hash) {

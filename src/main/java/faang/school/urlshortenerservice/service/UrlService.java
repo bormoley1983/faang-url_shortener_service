@@ -19,8 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class UrlService {
-    @Value("${expire.time:1}") //todo is working?
-    private static final long DEFAULT_EXPIRATION_TIME_IN_YEAR;
+    private static final long DEFAULT_EXPIRATION_TIME_IN_YEAR = 1L;
     private final UrlRepository urlRepository;
     private final UrlValidator urlValidator;
     private final HashCache hashCache;

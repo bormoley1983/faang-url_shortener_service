@@ -51,7 +51,7 @@ public class HashGenerator {
     }
 
     private List<Long> getNextSequenceBatch(int count) {
-        List<Long> sequence = hashRepository.getNextSequenseBatch(count);
+        List<Long> sequence = hashRepository.getNextSequenceBatchValues(count);
         Collections.shuffle(sequence);
 
         return sequence;

@@ -41,9 +41,6 @@ logging:
 shortener:
   address: https://short.u/
 
-expire:
-  time: 1
-
 hash:
   storage:
     size: 100000
