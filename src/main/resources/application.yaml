@@ -33,6 +33,9 @@ hash:
   storage:
     max-size: 1000
     threshold: 20
+    range: 1000
+    batch_size: 100
+
 
 executor:
   pool-size: 10

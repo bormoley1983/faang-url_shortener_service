@@ -46,10 +46,6 @@ public class HashCache {
         if (size <= threshold * maxSize) {
             checkHashLoading();
         }
-        if (hash == null) {
-            Optional<Hash> oneHash = hashRepository.getAndDeleteOne();
-            hash = oneHash.map(Hash::getHash).orElseThrow(() -> new IllegalStateException("No hashes available in DB"));
-        }
         return hash;
     }
 
@@ -59,9 +55,9 @@ public class HashCache {
         }
         executorService.submit(() -> {
             try {
-                List<Hash> hashes = hashGenerator.getHashes();
+                List<Hash> hashes = hashGenerator.getHashes(hashRange);
                 for (Hash hash : hashes) {
-                    cachedHashesQueue.offer(hash.toString());
+                    cachedHashesQueue.offer(hash);
                 }
             } finally {
                 isLoadingHashCash.set(false);
