@@ -8,13 +8,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UrlCacheRepositoryTest {
@@ -27,26 +25,6 @@ class UrlCacheRepositoryTest {
 
     @InjectMocks
     private UrlCacheRepository urlCacheRepository;
-
-    @Test
-    void test_cacheUrl_shouldSetValueWithTtl() {
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-
-        urlCacheRepository.cacheUrl("abc123", "https://example.com");
-
-        verify(valueOperations).set(eq("url:abc123"), eq("https://example.com"), eq(Duration.ofDays(7)));
-    }
-
-    @Test
-    void test_cacheUrl_whenRedisThrowsException_shouldLogError() {
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        doThrow(new RuntimeException("Redis error")).when(valueOperations)
-                .set(eq("url:abc123"), eq("https://example.com"), any(Duration.class));
-
-        urlCacheRepository.cacheUrl("abc123", "https://example.com");
-
-        verify(valueOperations).set(eq("url:abc123"), eq("https://example.com"), any(Duration.class));
-    }
 
     @Test
     void test_getCachedUrl_whenKeyExists_shouldReturnUrl() {

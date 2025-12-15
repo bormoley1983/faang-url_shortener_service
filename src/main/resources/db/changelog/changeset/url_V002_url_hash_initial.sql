@@ -8,3 +8,5 @@ CREATE TABLE url_hash (
     create_at timestamptz DEFAULT current_timestamp
 );
 
+CREATE INDEX hash_idx ON url_hash(hash)
+

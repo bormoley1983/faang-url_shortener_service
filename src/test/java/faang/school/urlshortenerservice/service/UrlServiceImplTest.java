@@ -3,9 +3,11 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.generator.HashGenerator;
 import faang.school.urlshortenerservice.repository.HashRepository;
-import faang.school.urlshortenerservice.repository.LocalCache;
+import faang.school.urlshortenerservice.cache.LocalCache;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
+import faang.school.urlshortenerservice.service.hash.HashService;
+import faang.school.urlshortenerservice.service.url.UrlServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +33,7 @@ class UrlServiceImplTest {
     private UrlRepository urlRepository;
 
     @Mock
-    private HashGenerator hashGenerator;
+    private HashService hashService;
 
     @Mock
     private UrlCacheRepository urlCacheRepository;
@@ -88,7 +90,7 @@ class UrlServiceImplTest {
 
         urlService.cleanHash();
 
-        verify(hashGenerator).saveHashByBatch(List.of("old1", "old2", "old3"));
+        verify(hashService).saveHashByBatch(List.of("old1", "old2", "old3"));
     }
 
     @Test

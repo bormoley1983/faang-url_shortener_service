@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.scheduler;
 
-import faang.school.urlshortenerservice.service.UrlService;
+import faang.school.urlshortenerservice.service.url.UrlService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

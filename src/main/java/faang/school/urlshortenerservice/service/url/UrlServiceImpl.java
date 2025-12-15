@@ -1,12 +1,13 @@
-package faang.school.urlshortenerservice.service;
+package faang.school.urlshortenerservice.service.url;
 
+import faang.school.urlshortenerservice.cache.LocalCache;
+import faang.school.urlshortenerservice.dto.UrlDto;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
-import faang.school.urlshortenerservice.generator.HashGenerator;
 import faang.school.urlshortenerservice.model.Url;
 import faang.school.urlshortenerservice.repository.HashRepository;
-import faang.school.urlshortenerservice.repository.LocalCache;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
+import faang.school.urlshortenerservice.service.hash.HashService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +23,7 @@ import java.util.Optional;
 public class UrlServiceImpl implements UrlService {
     private final LocalCache localCache;
     private final UrlRepository urlRepository;
-    private final HashGenerator hashGenerator;
+    private final HashService hashService;
     private final UrlCacheRepository urlCacheRepository;
     private final HashRepository hashRepository;
     @Value("${domain.prefix}")
@@ -30,7 +31,7 @@ public class UrlServiceImpl implements UrlService {
 
     @Override
     @Transactional
-    public String createUrls(String userUrl) {
+    public UrlDto createUrl(String userUrl) {
         log.info("Request to create a short link");
         StringBuilder responseUrl = new StringBuilder();
         String hash = localCache.getHash();
@@ -43,7 +44,7 @@ public class UrlServiceImpl implements UrlService {
         responseUrl.append(domain);
         responseUrl.append(hash);
         log.info("Successful create short link. Origin link {}, short link {}", userUrl, responseUrl);
-        return responseUrl.toString();
+        return new UrlDto(responseUrl.toString());
     }
 
     @Override
@@ -65,7 +66,7 @@ public class UrlServiceImpl implements UrlService {
     public void cleanHash() {
         long startTime = System.currentTimeMillis();
         List<String> unusedHash = urlRepository.cleanUnusedHash();
-        hashGenerator.saveHashByBatch(unusedHash);
+        hashService.saveHashByBatch(unusedHash);
         long finishTime = System.currentTimeMillis() - startTime;
         log.info("Successful removal of unused {} hashes in {} ms", unusedHash.size(), finishTime);
     }

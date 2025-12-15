@@ -2,6 +2,9 @@ package faang.school.urlshortenerservice.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,14 +17,17 @@ import java.util.Optional;
 public class UrlCacheRepository {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String URL_KEY_PREFIX = "url:";
-    private static final Duration TTL = Duration.ofDays(7);
+    @Value("${spring.data.redis.TTL.url-repository}")
+    private Duration TTL;
 
     public void cacheUrl(String hash, String originalUrl) {
         String key = URL_KEY_PREFIX + hash;
         try {
             redisTemplate.opsForValue().set(key, originalUrl, TTL);
             log.debug("Cached URL: hash: {} original url: {}", hash, originalUrl);
-        } catch (Exception e) {
+        } catch (RedisConnectionFailureException e) {
+            log.error("Could not connect to Redis, check the connection");
+        } catch (DataAccessException e) {
             log.error("Failed to cache URL {}: {}", hash, e.getMessage());
         }
     }

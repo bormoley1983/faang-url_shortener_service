@@ -9,24 +9,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class HashGeneratorTest {
@@ -37,100 +28,107 @@ class HashGeneratorTest {
     @Mock
     private Base62Encoder base62Encoder;
 
-    @Mock
-    private JdbcTemplate jdbcTemplate;
-
     @InjectMocks
     private HashGenerator hashGenerator;
 
+    private static final int MAX_RANGE = 100;
+
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(hashGenerator, "batchSize", 1000);
-        ReflectionTestUtils.setField(hashGenerator, "maxRange", 100);
+        ReflectionTestUtils.setField(hashGenerator, "maxRange", MAX_RANGE);
     }
 
     @Test
-    void generateHash_success() {
-        when(hashRepository.getNextRange(100)).thenReturn(List.of(100L, 101L, 102L));
-        when(base62Encoder.encodeToBase62(100L)).thenReturn("bM");
-        when(base62Encoder.encodeToBase62(101L)).thenReturn("bN");
-        when(base62Encoder.encodeToBase62(102L)).thenReturn("bO");
+    void generateHash_successfullyGeneratesAndReturnsHashes() {
+        List<Long> numbers = List.of(1000L, 1001L, 1002L);
+        when(hashRepository.getNextRange(MAX_RANGE)).thenReturn(numbers);
+        when(base62Encoder.encodeToBase62(1000L)).thenReturn("q0");
+        when(base62Encoder.encodeToBase62(1001L)).thenReturn("q1");
+        when(base62Encoder.encodeToBase62(1002L)).thenReturn("q2");
 
-        hashGenerator.generateHash();
+        List<String> result = hashGenerator.generateHash();
 
-        verify(jdbcTemplate, times(1)).batchUpdate(anyString(), any(BatchPreparedStatementSetter.class));
+        assertThat(result)
+                .hasSize(3)
+                .containsExactly("q0", "q1", "q2");
+
+        verify(hashRepository).getNextRange(MAX_RANGE);
+        verify(base62Encoder).encodeToBase62(1000L);
+        verify(base62Encoder).encodeToBase62(1001L);
+        verify(base62Encoder).encodeToBase62(1002L);
+        verifyNoMoreInteractions(hashRepository, base62Encoder);
     }
 
     @Test
-    void generateHash_emptyRange_throwsException() {
-        when(hashRepository.getNextRange(100)).thenReturn(List.of());
+    void generateHash_emptyRange_throwsGenerateHashesException() {
+        when(hashRepository.getNextRange(MAX_RANGE)).thenReturn(List.of());
 
         assertThatThrownBy(() -> hashGenerator.generateHash())
                 .isInstanceOf(GenerateHashesException.class)
                 .hasMessage("Error with generate hash is empty");
+
+        verify(hashRepository).getNextRange(MAX_RANGE);
+        verifyNoInteractions(base62Encoder);
     }
 
     @Test
-    void getHashes_enoughInRepo_returnsFromRepo() {
-        List<Hash> hashes = List.of(
-                new Hash("a"), new Hash("b"), new Hash("c"), new Hash("d"), new Hash("e")
+    void getHashes_whenEnoughHashesInRepository_returnsThemWithoutGeneration() {
+        long requestedCount = 5;
+        List<Hash> availableHashes = List.of(
+                new Hash("hash1"), new Hash("hash2"), new Hash("hash3"),
+                new Hash("hash4"), new Hash("hash5")
         );
-        when(hashRepository.findAndDelete(5)).thenReturn(hashes);
+        when(hashRepository.findAndDelete(requestedCount)).thenReturn(availableHashes);
 
-        List<String> result = hashGenerator.getHashes(5);
+        List<String> result = hashGenerator.getHashes(requestedCount);
 
-        assertThat(result).containsExactly("a", "b", "c", "d", "e");
-        verifyNoInteractions(base62Encoder, jdbcTemplate);
+        assertThat(result)
+                .hasSize(5)
+                .containsExactly("hash1", "hash2", "hash3", "hash4", "hash5");
+
+        verify(hashRepository).findAndDelete(requestedCount);
+        verifyNoInteractions(base62Encoder);
         verify(hashRepository, never()).getNextRange(anyInt());
     }
 
     @Test
-    void getHashesAsync_returnsCompletedFuture() {
-        List<Hash> firstBatch = new ArrayList<>();
-        firstBatch.add(new Hash("a"));
-        firstBatch.add(new Hash("b"));
+    void getHashes_whenNotEnoughHashes_generatesMoreAndCompletesTheList() {
+        long requestedCount = 7;
 
-        List<Hash> secondBatch = new ArrayList<>();
-        secondBatch.add(new Hash("c"));
-        secondBatch.add(new Hash("d"));
-        secondBatch.add(new Hash("e"));
-        secondBatch.add(new Hash("f"));
-        secondBatch.add(new Hash("g"));
-        secondBatch.add(new Hash("h"));
-        secondBatch.add(new Hash("i"));
-        secondBatch.add(new Hash("j"));
+        List<Hash> initialHashes = List.of(new Hash("old1"), new Hash("old2"), new Hash("old3"));
+        when(hashRepository.findAndDelete(requestedCount)).thenReturn(initialHashes);
 
-        when(hashRepository.findAndDelete(10))
-                .thenReturn(firstBatch);
-        when(hashRepository.findAndDelete(8))
-                .thenReturn(secondBatch);
+        List<Long> newNumbers = List.of(2000L, 2001L, 2002L, 2003L);
+        when(hashRepository.getNextRange(MAX_RANGE)).thenReturn(newNumbers);
+        when(base62Encoder.encodeToBase62(2000L)).thenReturn("newA");
+        when(base62Encoder.encodeToBase62(2001L)).thenReturn("newB");
+        when(base62Encoder.encodeToBase62(2002L)).thenReturn("newC");
+        when(base62Encoder.encodeToBase62(2003L)).thenReturn("newD");
 
-        when(hashRepository.getNextRange(100))
-                .thenReturn(List.of(1001L, 1002L, 1003L, 1004L, 1005L, 1006L, 1007L, 1008L));
+        List<Hash> newHashes = List.of(
+                new Hash("newA"), new Hash("newB"), new Hash("newC"), new Hash("newD")
+        );
+        when(hashRepository.findAndDelete(4L)).thenReturn(newHashes);
 
-        when(base62Encoder.encodeToBase62(1001L)).thenReturn("c");
-        when(base62Encoder.encodeToBase62(1002L)).thenReturn("d");
-        when(base62Encoder.encodeToBase62(1003L)).thenReturn("e");
-        when(base62Encoder.encodeToBase62(1004L)).thenReturn("f");
-        when(base62Encoder.encodeToBase62(1005L)).thenReturn("g");
-        when(base62Encoder.encodeToBase62(1006L)).thenReturn("h");
-        when(base62Encoder.encodeToBase62(1007L)).thenReturn("i");
-        when(base62Encoder.encodeToBase62(1008L)).thenReturn("j");
+        List<String> result = hashGenerator.getHashes(requestedCount);
 
-        CompletableFuture<List<String>> future = hashGenerator.getHashesAsync(10);
+        assertThat(result)
+                .hasSize(7)
+                .containsExactly("old1", "old2", "old3", "newA", "newB", "newC", "newD");
 
-        List<String> expected = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j");
-        assertThat(future).isCompletedWithValue(expected);
+        verify(hashRepository).findAndDelete(requestedCount);
+        verify(hashRepository).getNextRange(MAX_RANGE);
+        verify(hashRepository).findAndDelete(4L);
+        verify(base62Encoder, times(4)).encodeToBase62(anyLong());
     }
 
     @Test
-    void saveHashByBatch_splitsIntoBatches() {
-        List<String> hashes = List.of("a1", "a2", "a3", "a4", "a5", "a6", "a7");
+    void getHashes_whenZeroHashesRequested_returnsEmptyList() {
+        List<String> result = hashGenerator.getHashes(0);
 
-        ReflectionTestUtils.setField(hashGenerator, "batchSize", 3);
-
-        hashGenerator.saveHashByBatch(hashes);
-
-        verify(jdbcTemplate, times(3)).batchUpdate(anyString(), any(BatchPreparedStatementSetter.class));
+        assertThat(result).isEmpty();
+        verify(hashRepository).findAndDelete(0L);
+        verifyNoMoreInteractions(hashRepository);
+        verifyNoInteractions(base62Encoder);
     }
 }
