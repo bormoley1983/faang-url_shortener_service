@@ -76,7 +76,7 @@ public class UrlShortenerControllerTest {
     @Test
     public void testSuccessfullyShortUrlGot() throws Exception {
         when(urlShortenerService.createShortUrl(createUrlRequestDto)).thenReturn(hash);
-        mockMvc.perform(post("/v1/url")
+        mockMvc.perform(post("/url")
                         .contentType("application/json")
                         .content(createShortUrlJson))
                 .andExpect(status().isCreated());
@@ -86,7 +86,7 @@ public class UrlShortenerControllerTest {
     @Test
     public void testSuccessfullyOriginalUrlGot() throws Exception {
         when(urlShortenerService.getOriginalUrl(hash)).thenReturn(originalUrl);
-        mockMvc.perform(get("/v1/url/{hash}", hash))
+        mockMvc.perform(get("/{hash}", hash))
                 .andExpect(status().is3xxRedirection());
         verify(urlShortenerService, times(1)).getOriginalUrl(hash);
     }
@@ -103,7 +103,7 @@ public class UrlShortenerControllerTest {
     public void testFailOriginalUrlGotWhenHashNotFound() throws Exception {
         when(urlShortenerService.getOriginalUrl(hash))
                 .thenThrow(new UrlNotFoundException("Hash not found"));
-        mockMvc.perform(get("/v1/url/{hash}", incorrectHash))
+        mockMvc.perform(get("/{hash}", incorrectHash))
                 .andExpect(status().isNotFound());
     }
 
@@ -113,13 +113,13 @@ public class UrlShortenerControllerTest {
         when(urlShortenerService.getOriginalUrl(incorrectHash))
                 .thenThrow(new RuntimeException("Internal Server Error"));
 
-        mockMvc.perform(get("/v1/url/{hash}", incorrectHash)
+        mockMvc.perform(get("/{hash}", incorrectHash)
                         .header("x-user-id", "1"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.error").value("Internal Server Error"))
                 .andExpect(jsonPath("$.message").value("Internal Server Error"))
-                .andExpect(jsonPath("$.path").value("/v1/url/"+incorrectHash));
+                .andExpect(jsonPath("$.path").value(String.format("/%s", incorrectHash)));
     }
 }
 

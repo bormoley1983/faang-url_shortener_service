@@ -50,4 +50,10 @@ public class UrlShortenerConfig {
 
     @Value("${url.cache.key}")
     private String urlCacheKey;
+
+    @Value("${hash.cache.ttl}")
+    private long cacheTtl;
+
+    @Value("${url.prefix}")
+    private String urlPrefix;
 }

@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.cache.HashCache;
+import faang.school.urlshortenerservice.config.hash.UrlShortenerConfig;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
@@ -22,6 +23,7 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
     private final HashRepository hashRepository;
     private final HashCache hashCache;
     private final UrlCacheRepository urlCacheRepository;
+    private final UrlShortenerConfig urlShortenerConfig;
 
     @Override
     @Transactional
@@ -47,7 +49,7 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
         urlRepository.save(url);
         urlCacheRepository.save(gotHash, createUrlRequestDto.url());
 
-        return gotHash;
+        return String.format("%s/%s", urlShortenerConfig.getUrlPrefix(), gotHash);
     }
 
     @Override

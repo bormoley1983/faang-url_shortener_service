@@ -20,11 +20,11 @@ import java.net.URI;
 @RestController
 @AllArgsConstructor
 @Slf4j
-@RequestMapping("/v1/url")
+@RequestMapping()
 public class UrlShortenerController {
     private final UrlShortenerService urlShortenerService;
 
-    @PostMapping
+    @PostMapping("/url")
     public ResponseEntity<CreateUrlResponseDto> createShortUrl(
             @Valid
             @RequestBody

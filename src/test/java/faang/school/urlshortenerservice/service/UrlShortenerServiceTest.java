@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.cache.HashCache;
+import faang.school.urlshortenerservice.config.hash.UrlShortenerConfig;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
@@ -30,11 +31,15 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class UrlShortenerServiceTest
 {
+    private final static String URL_PREFIX = "127.0.0.1:8080";
     private final static String URL = "https://google.com";
     private final static String HASH = "85nd";
 
     private final String hashValue = HASH;
     private final String urlValue = URL;
+    private final String urlPrefix = URL_PREFIX;
+    private final String shortUrl = String.format("%s/%s", URL_PREFIX, HASH);
+
     List<String> hashes = List.of("1fg", "0or");
     CreateUrlRequestDto createUrlRequestDto = CreateUrlRequestDto
             .builder()
@@ -60,6 +65,9 @@ public class UrlShortenerServiceTest
     @Mock
     private UrlCacheRepository urlCacheRepository;
 
+    @Mock
+    private UrlShortenerConfig urlShortenerConfig;
+
     @InjectMocks
     private UrlShortenerServiceImpl urlShortenerService;
 
@@ -83,8 +91,9 @@ public class UrlShortenerServiceTest
     @Test
     void testSuccessfullyShortUrlCreated() {
         when(hashCache.getHash()).thenReturn(Optional.of(hashValue));
+        when(urlShortenerConfig.getUrlPrefix()).thenReturn(urlPrefix);
         String result = urlShortenerService.createShortUrl(createUrlRequestDto);
-        assertEquals(hashValue, result);
+        assertEquals(shortUrl, result);
         verify(urlRepository, times(1)).save(urlCaptor.capture());
         Url saved = urlCaptor.getValue();
         assertEquals(hashValue, saved.getHash());

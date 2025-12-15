@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.util;
+package faang.school.urlshortenerservice.config.executor;
 
 import faang.school.urlshortenerservice.config.hash.UrlShortenerConfig;
 import lombok.RequiredArgsConstructor;

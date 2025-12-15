@@ -10,18 +10,20 @@ import java.util.concurrent.TimeUnit;
 public class UrlCacheRepository {
     private final String urlCache;
     private final StringRedisTemplate stringRedisTemplate;
+    private final long cacheTtl;
 
     public UrlCacheRepository(UrlShortenerConfig urlShortenerConfig,
                               StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.urlCache = urlShortenerConfig.getUrlCacheKey();
+        this.cacheTtl = urlShortenerConfig.getCacheTtl();
     }
 
     public void save(String hash, String url) {
         stringRedisTemplate.opsForValue().set(
                 urlCache + ":" + hash,
                 url,
-                7,
+                cacheTtl,
                 TimeUnit.DAYS);
     }
 

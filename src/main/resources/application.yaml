@@ -23,8 +23,6 @@ spring:
 
 server:
   port: 8080
-  servlet:
-    context-path: /api
 
 logging:
   level:
@@ -35,12 +33,14 @@ hash:
   delete-batch-size: 10
   cache:
     key: urlshortener:hash_cache
+    ttl: 7
 
 url:
   delete:
     cron: "30 39 21 * * ?"
   cache:
     key: url_cache
+  prefix: http://127.0.0.1:8080/url
 
 base62:
   chars: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
