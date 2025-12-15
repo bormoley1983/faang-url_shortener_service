@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -25,7 +26,7 @@ public class UrlService {
     private final UrlCacheRepository urlCacheRepository;
     private final HashRepository hashRepository;
 
-    @Value("${url.cleanup.expiration-days}")
+    @Value("${url.cleanup.expiration-days:1}")
     private long expirationDays;
 
     @Transactional
@@ -39,7 +40,8 @@ public class UrlService {
                 .build();
 
         urlRepository.save(url);
-        urlCacheRepository.save(hash, longUrl);
+        CompletableFuture.runAsync(() -> urlCacheRepository.save(hash, longUrl));
+        //urlCacheRepository.save(hash, longUrl);
 
         return hash;
     }

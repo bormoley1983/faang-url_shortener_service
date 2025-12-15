@@ -35,7 +35,7 @@ url-shortener:
     queue-size: 500
 
   hash-cache:
-    refill-threshold-percent: 20
+    refill-threshold-percent: 40
     size: 100000
 
   base-url: "http://localhost:8079/v1/url"

@@ -45,7 +45,7 @@ public class HashCache {
         int threshold = (cacheMaxSize * refillThresholdPercent) / 100;
 
         if (cache.size() < threshold) {
-            triggerRefill();
+           CompletableFuture.runAsync(this::triggerRefill);
         }
 
         String hash = cache.pollFirst();
