@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
@@ -43,6 +44,18 @@ public class HashRepository {
                     }
                 }
         );
+    }
+
+    public void delete(List<String> hashes) {
+        if(hashes == null || hashes.isEmpty()) {return;}
+        jdbcTemplate.execute((Connection connection) -> {
+            String sql = "DELETE FROM hash WHERE hash = ANY(?)";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                java.sql.Array array = connection.createArrayOf("VARCHAR", hashes.toArray());
+                ps.setArray(1, array);
+                return ps.executeUpdate();
+            }
+        });
     }
 
     public List<String> getHashBatch() {
