@@ -30,15 +30,23 @@ logging:
 
 url-shortener:
   hash-generator:
-    batch-size: 100000
-    pool-size: 5
-    queue-size: 500
+    batch-size: 1000000
+    pool-size: 10000
+    queue-size: 50000
+
+    pool-core-size: 50      # Core pool size для hashGeneratorExecutor
+    pool-max-size: 100      # Max pool size для hashGeneratorExecutor
+
 
   hash-cache:
-    refill-threshold-percent: 40
-    size: 100000
+    pool-core-size: 50     # Core pool size для hashCacheExecutor
+    pool-max-size: 100      # Max pool size для hashCacheExecutor
+    queue-size: 5000
 
   base-url: "http://localhost:8079/v1/url"
+
+  cleanup:
+    expiration-days: 1
 
 cleaner:
   cron: "0 0 3 * * *"

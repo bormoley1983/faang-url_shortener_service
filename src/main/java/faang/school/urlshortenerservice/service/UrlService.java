@@ -26,7 +26,7 @@ public class UrlService {
     private final UrlCacheRepository urlCacheRepository;
     private final HashRepository hashRepository;
 
-    @Value("${url.cleanup.expiration-days:1}")
+    @Value("${url-shortener.cleanup.expiration-days:1}")
     private long expirationDays;
 
     @Transactional

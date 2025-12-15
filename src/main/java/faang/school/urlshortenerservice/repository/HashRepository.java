@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-
 public interface HashRepository extends JpaRepository<Hash, String> {
 
     @Query(
@@ -23,14 +22,16 @@ public interface HashRepository extends JpaRepository<Hash, String> {
     @Query(value = """
             WITH deleted AS (
                 DELETE FROM hash
-                WHERE hash IN (
-                    SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n
+                WHERE ctid IN (
+                    SELECT ctid
+                    FROM hash
+                    LIMIT :n
+                    FOR UPDATE SKIP LOCKED
                 )
                 RETURNING hash
             )
             SELECT hash FROM deleted;
-            """,
-            nativeQuery = true)
+            """, nativeQuery = true)
     List<String> getHashBatch(@Param("n") int n);
 
     @Modifying(clearAutomatically = true)
@@ -38,7 +39,6 @@ public interface HashRepository extends JpaRepository<Hash, String> {
             INSERT INTO hash (hash)
             SELECT unnest(cast(:hashes AS text[]))
             ON CONFLICT (hash) DO NOTHING;
-            """,
-            nativeQuery = true)
+            """, nativeQuery = true)
     void returnHashes(@Param("hashes") String[] hashes);
 }
