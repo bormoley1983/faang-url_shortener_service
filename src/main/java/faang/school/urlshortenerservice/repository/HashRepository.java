@@ -18,29 +18,26 @@ public interface HashRepository extends JpaRepository<Hash, String> {
             nativeQuery = true
     )
     List<Long> getUniqueNumbers(@Param("n") int n);
-// todo разобраться с локами на вставку
+
     @Modifying
     @Query(value = """
             WITH deleted AS (
-                DELETE FROM hash 
+                DELETE FROM hash
                 WHERE hash IN (
                     SELECT hash FROM hash ORDER BY RANDOM() LIMIT :n
-                ) 
+                )
                 RETURNING hash
             )
-            SELECT * FROM deleted;
+            SELECT hash FROM deleted;
             """,
             nativeQuery = true)
     List<String> getHashBatch(@Param("n") int n);
 
     @Modifying(clearAutomatically = true)
     @Query(value = """
-            SELECT * FROM (SELECT pg_advisory_lock(123456)
-            ) AS lock,
-            (INSERT INTO hash (hash)
-            SELECT unnest(cast(:hashes as text[]))
-            ON CONFLICT (hash) DO NOTHING
-            ) AS inserted;
+            INSERT INTO hash (hash)
+            SELECT unnest(cast(:hashes AS text[]))
+            ON CONFLICT (hash) DO NOTHING;
             """,
             nativeQuery = true)
     void returnHashes(@Param("hashes") String[] hashes);

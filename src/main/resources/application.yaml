@@ -32,11 +32,13 @@ url-shortener:
   hash-generator:
     batch-size: 100000
     pool-size: 5
-    queue-capacity: 50
+    queue-size: 500
 
   hash-cache:
     refill-threshold-percent: 20
     size: 100000
+
+  base-url: "http://localhost:8079/v1/url"
 
 cleaner:
   cron: "0 0 3 * * *"

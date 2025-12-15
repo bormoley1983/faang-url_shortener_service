@@ -7,14 +7,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,11 +23,10 @@ public class HashCache {
 
     private final HashRepository hashRepository;
     private final HashGenerator hashGenerator;
-    private final BlockingDeque<String> cache = new LinkedBlockingDeque<>();
+    private final ExecutorService asyncConfig;
 
+    private final BlockingDeque<String> cache = new LinkedBlockingDeque<>();
     private final AtomicBoolean isRefilling = new AtomicBoolean(false);
-    // todo в ямл
-    private final ExecutorService executor = Executors.newFixedThreadPool(50);
 
     @Value("${url-shortener.hash-cache.size:1000}")
     private Integer cacheMaxSize;
@@ -39,7 +36,7 @@ public class HashCache {
 
     @PostConstruct
     public void init() {
-        asyncRefill();
+        refill();
     }
 
     @Transactional
@@ -48,28 +45,39 @@ public class HashCache {
         int threshold = (cacheMaxSize * refillThresholdPercent) / 100;
 
         if (cache.size() < threshold) {
-            CompletableFuture.runAsync(this::asyncRefill, executor);
+            triggerRefill();
         }
 
-        return cache.pollFirst();
+        String hash = cache.pollFirst();
+
+        if (hash == null) {
+            log.warn("HashCache empty — forcing refill");
+            triggerRefill();
+            throw new RuntimeException("No free hashes available");
+        }
+
+        return hash;
     }
 
-    // todo нейминг
-    public void asyncRefill() {
+    private void triggerRefill() {
         if (!isRefilling.compareAndSet(false, true)) {
             return;
         }
 
-        try {
-            hashGenerator.generateBatch();
+        CompletableFuture.runAsync(this::refill, asyncConfig);
+    }
 
+    public void refill() {
+        try {
             int needed = cacheMaxSize - cache.size();
             if (needed <= 0) return;
 
             List<String> hashes = hashRepository.getHashBatch(needed);
             cache.addAll(hashes);
 
-            log.info("Refilled {} hashes from DB", hashes.size());
+            log.info("HashCache refill: pulled {} hashes from DB", hashes.size());
+
+            hashGenerator.generateBatch();
 
         } catch (Exception e) {
             log.error("HashCache async refill error", e);

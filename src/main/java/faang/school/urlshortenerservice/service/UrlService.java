@@ -8,6 +8,7 @@ import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,9 @@ public class UrlService {
     private final UrlRepository urlRepository;
     private final UrlCacheRepository urlCacheRepository;
     private final HashRepository hashRepository;
+
+    @Value("${url.cleanup.expiration-days}")
+    private long expirationDays;
 
     @Transactional
     public String createShortUrl(String longUrl) {
@@ -56,11 +60,10 @@ public class UrlService {
         return url.getUrl();
     }
 
-    // todo  убрать хардкод
     @Transactional
     public void cleanOldUrls() {
 
-        LocalDateTime expired = LocalDateTime.now().minusDays(1);
+        LocalDateTime expired = LocalDateTime.now().minusDays(expirationDays);
 
         List<String> freedHashes = urlRepository.deleteOldUrlsAndReturnHashes(expired);
 
@@ -70,7 +73,6 @@ public class UrlService {
         }
 
         hashRepository.returnHashes(freedHashes.toArray(String[]::new));
-
         log.info("CleanerScheduler: finished. Freed {} hashes", freedHashes.size());
     }
 }

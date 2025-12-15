@@ -6,15 +6,13 @@ import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.collections4.ListUtils.partition;
@@ -70,26 +68,21 @@ public class HashGenerator {
 
     private int saveSingleBatch(List<Hash> batch) {
 
-        String sql = "INSERT INTO hash (hash) VALUES (?) ON CONFLICT (hash) DO NOTHING";
+        final String sql = SqlQueries.INSERT_HASH;
 
-
-        int[] results = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setString(1, batch.get(i).getHash());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return batch.size();
+        int[] results = jdbcTemplate.execute((Connection connection) -> {
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                for (Hash h : batch) {
+                    ps.setString(1, h.getHash());
+                    ps.addBatch();
+                }
+                return ps.executeBatch();
             }
         });
 
-        int inserted = 0;
-        for (int result : results) {
-            if (result > 0) inserted++;
-        }
-
-        return inserted;
+        assert results != null;
+        return (int) Arrays.stream(results)
+                .filter(r -> r == 1)
+                .count();
     }
 }

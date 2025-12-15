@@ -5,6 +5,7 @@ import faang.school.urlshortenerservice.service.UrlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,16 +27,17 @@ public class UrlController {
 
     private final UrlService urlService;
 
+    @Value("${url-shortener.base-url}")
+    private String baseUrl;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public URI createShortUrl(@Valid @RequestBody UrlRequestDto request) {
         String hash = urlService.createShortUrl(request.url());
-        // todo вынести в ямл
-        String url = "http://localhost:8079/v1/url/";
-        log.info("HashGenerator started batch generation {} {} ", hash, Thread.currentThread().getName());
-        return UriComponentsBuilder.fromHttpUrl(url)
-                .path(hash)
+
+        return UriComponentsBuilder
+                .fromHttpUrl(baseUrl)
+                .pathSegment(hash)
                 .build()
                 .toUri();
     }
