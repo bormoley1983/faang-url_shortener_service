@@ -26,6 +26,14 @@ logging:
 
 hash:
   batch-size: 100
+  cache:
+    max-size: 1000
+    refill-threshold-percent: 20
+    executor:
+      core-pool-size: 2
+      max-pool-size: 4
+      queue-capacity: 50
+      keep-alive-seconds: 60
   generator:
     retry:
       max-attempts: 3
