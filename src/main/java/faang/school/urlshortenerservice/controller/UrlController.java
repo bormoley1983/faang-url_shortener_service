@@ -19,7 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 
 @RequiredArgsConstructor
-@RequestMapping("c")
+@RequestMapping("/url-shortener")
 @RestController
 public class UrlController {
 
@@ -27,7 +27,7 @@ public class UrlController {
     private String baseGetRequest;
 
     private final ShortenerService shortenerService;
-    // fixme избавить от рекурсии
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public String create(@Valid @RequestBody UrlRequestDto urlRequestDto) {

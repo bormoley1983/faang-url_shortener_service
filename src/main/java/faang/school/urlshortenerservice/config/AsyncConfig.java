@@ -20,4 +20,26 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean("dbExecutor")
+    public Executor dbExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("db-");
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean("redisExecutor")
+    public Executor redisExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(50);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("redis-");
+        executor.initialize();
+        return executor;
+    }
 }

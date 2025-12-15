@@ -33,24 +33,17 @@ public class LocalHash {
     @Transactional
     public Hash getLocalHash() {
         int currentSizeLocalHash = localHash.size();
-        double currentOccupancyPercentage = currentSizeLocalHash / (countLocalHash*1.0);
+        double currentOccupancyPercentage = currentSizeLocalHash / (countLocalHash * 1.0);
 
-        log.info("current!!!!!!! {} {} {} ",currentOccupancyPercentage, currentSizeLocalHash, countLocalHash);
+        log.info("current!!!!!!! {} {} {} ", currentOccupancyPercentage, currentSizeLocalHash, countLocalHash);
         if (currentOccupancyPercentage <= minimumSizeLocalHash) {
-            // todo вызов асинхронно сделать
             generateLocalHash();
-            log.info("the current local hash fullness is less {}%", currentOccupancyPercentage*100);
+            log.info("the current local hash fullness is less {}%", currentOccupancyPercentage * 100);
         }
 
-        if (localHash.isEmpty()) {
-            generateLocalHash();
-            log.warn("local hash is empty!");
-        }
-        // todo есть возможность вернуть null
         return localHash.poll();
     }
 
-    @Transactional
     public void generateLocalHash() {
         List<Hash> hash = hashGenerator.getHash();
         localHash.addAll(hash);

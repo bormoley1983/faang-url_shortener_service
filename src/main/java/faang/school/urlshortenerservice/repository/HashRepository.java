@@ -20,18 +20,19 @@ public interface HashRepository extends JpaRepository<Hash, String> {
 
     @Modifying
     @Query(value = """
-        WITH deleted AS (
-            DELETE FROM hash 
-            WHERE ctid IN (
-                SELECT ctid 
-                FROM hash 
-                ORDER BY hash 
-                LIMIT :limit
+            
+            DELETE FROM hash\s
+            WHERE ctid = ANY(
+                ARRAY(
+                    SELECT ctid\s
+                    FROM hash\s
+                    ORDER BY hash\s
+                    LIMIT :limit
+                    FOR UPDATE SKIP LOCKED
+                )
             )
             RETURNING hash
-        )
-        SELECT * FROM deleted
-        """, nativeQuery = true)
+            """, nativeQuery = true)
     List<Hash> deleteAndReturnFirstN(@Param("limit") int limit);
 
     @Query(value = "SELECT COUNT(*) FROM hash", nativeQuery = true)

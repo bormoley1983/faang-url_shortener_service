@@ -8,7 +8,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -37,8 +37,6 @@ redis:
   pipeline:
     enabled: true
     batch-size: 100
-  lua:
-    enabled: true
   serialize:
     use-string-only: true
   local-buffer:
@@ -73,21 +71,20 @@ number:
 
 base:
   get:
-    request: http://localhost:8079/urt-shortener/
+    request: http://localhost:8079/url-shortener/
 
 hash:
   local:
     count:
-      hash: 10000
+      hash: 100000
     size:
-      minimum: 0.2 # проценты/100
+      minimum: 0.4 # проценты/100
   generator:
     count:
       pool-executor: 50
     batch-size:
-      executor: 2100
-      save-bd: 1000
-    max-range: 400000
+      save-bd: 5000
+    max-range: 500000
     hashes-in-bd:
       minimum: 150000
 

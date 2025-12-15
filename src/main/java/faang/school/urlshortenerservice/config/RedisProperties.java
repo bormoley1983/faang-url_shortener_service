@@ -16,7 +16,6 @@ public class RedisProperties {
     private String host;
     @Positive(message = "Redis port must be positive")
     private int port;
-    private String password;
     @Positive(message = "Redis connect timeout must be positive")
     private Long connectTimeout;
     @Positive(message = "Redis fixed timeout must be positive")

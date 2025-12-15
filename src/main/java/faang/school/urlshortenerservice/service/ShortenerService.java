@@ -3,53 +3,60 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
-import faang.school.urlshortenerservice.hash.Base62Encode;
 import faang.school.urlshortenerservice.hash.HashGenerator;
 import faang.school.urlshortenerservice.hash.LocalHash;
 import faang.school.urlshortenerservice.repository.UrlRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class ShortenerService {
+    private static final Integer POOL_SIZE_THREADS = 1500;
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE_THREADS);
 
     @Value(value = "${redis.hash.ttl}")
     private Integer daysTtl;
-
     @Value("${number.days.hash.storage}")
     private Integer daysStorageHashInBd;
 
+    private final JdbcTemplate jdbcTemplate;
+    private final TransactionTemplate transactionTemplate;
     private final UrlRepository urlRepository;
     private final LocalHash localHash;
     private final RedisTemplate<String, String> redisTemplate;
     private final HashGenerator hashGenerator;
-    private final Base62Encode base62Encode;
 
-    @Transactional
+
     public String create(String urlString) {
 
         Hash hash = localHash.getLocalHash();
-        Url url = Url.builder()
-                .hash(hash.getHash())
-                .longLing(urlString)
-                .build();
-        Url result = urlRepository.save(url);
+        String hashString = hash.getHash();
 
-        redisTemplate.opsForValue().set(hash.getHash(), url.getLongLing(), daysTtl, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(hashString, urlString, daysTtl, TimeUnit.DAYS);
 
-        log.info("get hash {} by url {}", url.getHash(), url.getLongLing());
-        return result.getHash();
+        CompletableFuture.runAsync(() -> asyncSaveToRedis(hashString, urlString), executorService);
+        log.info("get hash {} by url {}", hashString, urlString);
+        return hash.getHash();
     }
 
     @Transactional
@@ -58,15 +65,9 @@ public class ShortenerService {
         urlRedis = redisTemplate.opsForValue().get(hash);
 
         if (urlRedis == null) {
-            // todo вернуть ссылку в редис
             Url url = urlRepository.findById(hash)
                     .orElseThrow(() -> new UrlNotFoundException("URL not found for hash by db: " + hash));
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime cteatedAt = url.getCreatedAt();
-            long daysDifference = daysTtl - Duration.between(now, cteatedAt).toDays();
-            if (daysDifference > 0) {
-                redisTemplate.opsForValue().set(hash, url.getLongLing(), daysDifference, TimeUnit.DAYS);
-            }
+            checkAvailabilityInRedis(url, hash);
             log.info("get long URL {} by hash {}", url.getLongLing(), url.getHash());
             return url.getLongLing();
         }
@@ -77,7 +78,6 @@ public class ShortenerService {
 
     @Transactional
     public void cleanerUrlBd() {
-        //todo защита от 3 бекендов?
         LocalDateTime dateBefore = LocalDateTime.now().minusDays(daysStorageHashInBd);
         List<Url> listDeletedUrl = urlRepository.deleteOlderThanAndReturn(dateBefore);
 
@@ -86,4 +86,22 @@ public class ShortenerService {
                 .toList();
         hashGenerator.saveHashesInBatches(hashReturnInPool);
     }
+
+
+    private void asyncSaveToRedis(String hashString, String urlString) {
+
+        urlRepository.insertUrl(hashString, urlString, LocalDateTime.now());
+
+    }
+
+    private void checkAvailabilityInRedis(Url url, String hash) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime cteatedAt = url.getCreatedAt();
+        long daysDifference = daysTtl - Duration.between(now, cteatedAt).toDays();
+        if (daysDifference > 0) {
+            redisTemplate.opsForValue().set(hash, url.getLongLing(), daysDifference, TimeUnit.DAYS);
+        }
+    }
 }
+
+
