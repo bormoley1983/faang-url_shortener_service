@@ -52,8 +52,23 @@ class HashCacheImplTest {
     }
 
     @Test
-    @DisplayName("getHash returns first cached element and does not trigger refill when cache is above threshold")
-    void getHash_returnsFromCache_whenCacheAboveThreshold() throws Exception {
+    @DisplayName("getHash returns head element from cache")
+    void getHash_returnsHeadElement() throws Exception {
+        HashCacheImpl cache = new HashCacheImpl(
+                props(10, 20, 5),
+                hashRepository,
+                hashGenerator,
+                mock(ExecutorService.class)
+        );
+        internalQueue(cache).offer("A");
+        internalQueue(cache).offer("B");
+
+        assertThat(cache.getHash()).isEqualTo("A");
+    }
+
+    @Test
+    @DisplayName("getHash does not trigger refill when cache size is not below threshold")
+    void getHash_doesNotTriggerRefill_whenAboveThreshold() throws Exception {
         HashCacheProperties props = props(10, 20, 5); // threshold = 2
         ExecutorService executor = mock(ExecutorService.class);
 
@@ -62,19 +77,18 @@ class HashCacheImplTest {
 
         q.offer("A");
         q.offer("B");
-        q.offer("C"); // currentSize = 3 >= threshold
+        q.offer("C"); // size=3
 
-        String result = cache.getHash();
+        cache.getHash(); // poll -> size=2 (not below threshold)
 
-        assertThat(result).isEqualTo("A");
         verify(executor, never()).submit(any(Runnable.class));
         verifyNoInteractions(hashRepository);
     }
 
     @Test
-    @DisplayName("getHash triggers async refill when cache is below threshold")
-    void getHash_triggersRefill_whenCacheLow() throws Exception {
-        HashCacheProperties props = props(10, 20, 7);
+    @DisplayName("getHash triggers refill when cache size falls below threshold after poll")
+    void getHash_triggersRefill_whenBelowThreshold() throws Exception {
+        HashCacheProperties props = props(10, 20, 7); // threshold=2
         ExecutorService executor = mock(ExecutorService.class);
 
         when(executor.submit(any(Runnable.class))).thenAnswer(inv -> {
@@ -86,8 +100,9 @@ class HashCacheImplTest {
         when(hashGenerator.generateBatch()).thenReturn(CompletableFuture.completedFuture(3));
 
         HashCacheImpl cache = new HashCacheImpl(props, hashRepository, hashGenerator, executor);
+        internalQueue(cache).offer("A"); // size=1
 
-        cache.getHash();
+        cache.getHash(); // poll -> size=0 < threshold => refill
 
         verify(executor, times(1)).submit(any(Runnable.class));
         verify(hashRepository, times(1)).getHashBatch(anyInt());
@@ -98,6 +113,7 @@ class HashCacheImplTest {
     @Test
     @DisplayName("refill is exclusive: concurrent callers do not start multiple refills")
     void refill_isExclusive_underConcurrency() {
+        HashCacheProperties props = props(100, 20, 10);
         realExecutor = Executors.newSingleThreadExecutor();
 
         CountDownLatch refillStarted = new CountDownLatch(1);
@@ -109,14 +125,11 @@ class HashCacheImplTest {
             return List.of("X1", "X2");
         });
 
-        when(hashGenerator.generateBatch()).thenReturn(CompletableFuture.completedFuture(2));
-        HashCacheProperties props = props(100, 20, 10);
         HashCacheImpl cache = new HashCacheImpl(props, hashRepository, hashGenerator, realExecutor);
 
-        int callers = 20;
-        ExecutorService callersPool = Executors.newFixedThreadPool(callers);
+        ExecutorService callersPool = Executors.newFixedThreadPool(20);
         try {
-            for (int i = 0; i < callers; i++) {
+            for (int i = 0; i < 20; i++) {
                 callersPool.submit(cache::getHash);
             }
 
@@ -134,9 +147,9 @@ class HashCacheImplTest {
     }
 
     @Test
-    @DisplayName("refill respects remaining queue capacity and requests only what can be cached")
-    void refill_respectsRemainingCapacity() throws Exception {
-        HashCacheProperties props = props(5, 80, 10); // threshold = 4
+    @DisplayName("refill requests min(remainingCapacityAfterPoll, refillBatchSize)")
+    void refill_respectsRemainingCapacity_afterPoll() throws Exception {
+        HashCacheProperties props = props(5, 80, 10); // threshold=4
         ExecutorService executor = mock(ExecutorService.class);
 
         when(executor.submit(any(Runnable.class))).thenAnswer(inv -> {
@@ -151,9 +164,10 @@ class HashCacheImplTest {
 
         q.offer("A");
         q.offer("B");
-        q.offer("C"); // remainingCapacity = 2, currentSize = 3 < threshold
+        q.offer("C"); // size=3
 
-        when(hashRepository.getHashBatch(eq(2))).thenReturn(List.of("N1", "N2", "N3"));
+        // getHash() polls 1 => size=2 => remainingCapacity=3 => expected batchSize=3
+        when(hashRepository.getHashBatch(eq(3))).thenReturn(List.of("N1", "N2", "N3", "N4"));
 
         cache.getHash();
 
