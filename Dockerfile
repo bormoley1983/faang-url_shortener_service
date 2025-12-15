@@ -1,7 +1,7 @@
-FROM openjdk:17-jdk-slim-buster
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
-COPY /build/libs/service.jar build/
+COPY build/libs/service.jar ./build/
 
 WORKDIR /app/build
 EXPOSE 8080

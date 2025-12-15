@@ -3,6 +3,8 @@ package faang.school.urlshortenerservice.repository;
 import faang.school.urlshortenerservice.model.Url;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +20,10 @@ public class UrlCacheRepository {
     public void save(String hash, Url url, long ttlDays) {
         try {
             redisTemplate.opsForValue().set(PREFIX_URL + hash, url, Duration.ofDays(ttlDays));
-        } catch (Exception e) {
-            log.error("Не удалось записать хэш в Redis: {}", hash, e);
+        } catch (RedisConnectionFailureException e) {
+            log.error("Redis connection failure while saving hash: {}", hash, e);
+        } catch (DataAccessException e) {
+            log.error("Data access error while saving hash to Redis: {}", hash, e);
         }
     }
 
@@ -27,8 +31,11 @@ public class UrlCacheRepository {
         try {
             Object obj = redisTemplate.opsForValue().get(PREFIX_URL + hash);
             return obj instanceof Url ? (Url) obj : null;
-        } catch (Exception e) {
-            log.error("Не удалось получить хэш из Redis: {}", hash, e);
+        } catch (RedisConnectionFailureException e) {
+            log.error("Redis connection failure while retrieving hash: {}", hash, e);
+            return null;
+        } catch (DataAccessException e) {
+            log.error("Data access error while retrieving hash from Redis: {}", hash, e);
             return null;
         }
     }
@@ -36,8 +43,10 @@ public class UrlCacheRepository {
     public void delete(String hash) {
         try {
             redisTemplate.delete(PREFIX_URL + hash);
-        } catch (Exception e) {
-            log.error("Не удалось удалить хэш из Redis: {}", hash, e);
+        } catch (RedisConnectionFailureException e) {
+            log.error("Redis connection failure while deleting hash: {}", hash, e);
+        } catch (DataAccessException e) {
+            log.error("Data access error while deleting hash from Redis: {}", hash, e);
         }
     }
 }
