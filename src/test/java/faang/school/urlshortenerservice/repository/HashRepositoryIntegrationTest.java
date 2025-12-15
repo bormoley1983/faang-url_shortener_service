@@ -77,12 +77,12 @@ class HashRepositoryIntegrationTest extends AbstractIntegrationTest {
 
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM hash", Integer.class)).isEqualTo(100);
 
-        List<String> batch1 = hashRepository.getHashBatch();
+        List<String> batch1 = hashRepository.getHashBatch(10);
         assertThat(batch1).hasSize(10);
         assertThat(new HashSet<>(batch1)).hasSize(10);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM hash", Integer.class)).isEqualTo(90);
 
-        List<String> batch2 = hashRepository.getHashBatch();
+        List<String> batch2 = hashRepository.getHashBatch(10);
         assertThat(batch2).hasSize(10);
         assertThat(new HashSet<>(batch2)).hasSize(10);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM hash", Integer.class)).isEqualTo(80);

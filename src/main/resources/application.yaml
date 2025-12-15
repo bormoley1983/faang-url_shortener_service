@@ -23,6 +23,15 @@ hash:
     size: 4
     queueCapacity: 1000
 
+hash-cache:
+  capacity: 10_000
+  refill-threshold-percent: 20
+  refill-batch-size: 3_000
+
+hash-cache-executor:
+  pool-size: 2
+  queue-capacity: 10
+
 server:
   port: 8080
 

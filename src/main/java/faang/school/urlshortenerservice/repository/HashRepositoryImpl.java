@@ -4,6 +4,7 @@ import faang.school.urlshortenerservice.config.hash.HashProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -34,7 +35,8 @@ public class HashRepositoryImpl implements HashRepository {
     }
 
     @Override
-    public List<String> getHashBatch() {
+    @Transactional
+    public List<String> getHashBatch(int batchSize) {
         String sql = """
                 DELETE FROM hash
                 WHERE hash IN (
@@ -44,6 +46,6 @@ public class HashRepositoryImpl implements HashRepository {
                 )
                 RETURNING hash
                 """;
-        return jdbcTemplate.queryForList(sql, String.class, hashProperties.getBatchSize());
+        return jdbcTemplate.queryForList(sql, String.class, batchSize);
     }
 }
