@@ -25,11 +25,7 @@ public class Hash {
     @Column(name = "hash", length = 6, unique = true, nullable = false)
     private String hash;
 
-    @Column(name = "long_url")
-    private String longUrl;
-
-    public Hash(String hash, String longUrl) {
+    public Hash(String hash) {
         this.hash = hash;
-        this.longUrl = longUrl;
     }
 }

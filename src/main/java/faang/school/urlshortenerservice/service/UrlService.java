@@ -27,15 +27,16 @@ public class UrlService {
         Hash hash = hashCache.getHash();
         Url hashUrlConnection = new Url(hash.toString(), longUrlDto.longUrl());
         urlRepository.save(hashUrlConnection);
-        // urlCacheRepository.save(hashUrlConnection); //Redis допилить
+        urlCacheRepository.save(hash.toString(),
+                longUrlDto.longUrl());
 
         return hashMapper.shortUrlDto(hash);
     }
 
     @Transactional
-    public LongUrlDto getOriginUrl(ShortUrlDto shortUrlDto) {
-        Url originUrl = urlRepository.getReferenceById(shortUrlDto.id());
-        return urlMapper.toLongUrlDto(originUrl);
+    public LongUrlDto getOriginUrl(String shortUrl) {
+        Url longUrl = urlCacheRepository.findLongUrl(shortUrl);
+        return urlMapper.toLongUrlDto(longUrl);
     }
 }
 

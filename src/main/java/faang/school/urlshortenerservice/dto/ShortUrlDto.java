@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 public record ShortUrlDto(
         Long id,
         @NotBlank
-        String hash
-//        @NotBlank
-//        String longUrl
+        String shortUrl
 ) {
 }

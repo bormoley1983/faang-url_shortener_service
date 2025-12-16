@@ -33,9 +33,10 @@ hash:
   storage:
     max-size: 1000
     threshold: 20
-    range: 1000
+    range: 100
     batch_size: 100
-
+    hash-range: 100
+    INITIAL_WARMUP_AMOUNT: 100
 
 executor:
   pool-size: 10
