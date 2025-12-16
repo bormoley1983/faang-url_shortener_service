@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class HashCache {
     private final HashGenerator hashGenerator;
+    private final AsyncHashProvider asyncHashProvider;
 
     @Value("${hash.cache.capacity:10000}")
     private int cacheCapacity;
@@ -35,7 +36,7 @@ public class HashCache {
         if (calculateCurrentPercentFillingCache() < minPercentFillingCache) {
             if (isCacheFillingInProgress.compareAndSet(false, true)) {
                 log.info("Cache size became less then {}%, starts hashGeneration", minPercentFillingCache);
-                hashGenerator.getHashesAsync(cacheCapacity)
+                asyncHashProvider.getHashes(cacheCapacity)
                         .thenAccept(hashes::addAll)
                         .thenRun(() -> isCacheFillingInProgress.set(false));
             }

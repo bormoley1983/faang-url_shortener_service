@@ -6,11 +6,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -26,7 +24,9 @@ public class HashGenerator {
     public void generateHashes() {
         List<Long> numsForHash = hashRepository.getUniqueNumbers(cacheCapacity);
         log.info("HashGenerator got a new list of numbers with size {} from DB.", numsForHash.size());
-        List<Hash> hashes = base62Encoder.encode(numsForHash);
+        List<Hash> hashes = base62Encoder.encode(numsForHash).stream()
+                .map(Hash::new)
+                .toList();
         log.info("HashGenerator got a new list of hashes with size {} from encoder.", hashes.size());
         hashRepository.saveAll(hashes);
         log.info("HashGenerator saved {} new hashes into DB.", hashes.size());
@@ -43,10 +43,5 @@ public class HashGenerator {
         return hashes.stream()
                 .map(Hash::getHash)
                 .toList();
-    }
-
-    @Async()
-    public CompletableFuture<List<String>> getHashesAsync(int amount) {
-        return CompletableFuture.completedFuture(getHashes(amount));
     }
 }

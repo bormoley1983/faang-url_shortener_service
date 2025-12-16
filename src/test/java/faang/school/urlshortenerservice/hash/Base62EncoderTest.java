@@ -20,7 +20,6 @@ public class Base62EncoderTest {
     public void encode_EncodesSuccessfully() {
         List<Long> anyNumbers = List.of(1L, 61L, 62L, 123L);
 
-        assertEquals(List.of(new Hash("1"), new Hash("z"), new Hash("01"), new Hash("z1")),
-                base62Encoder.encode(anyNumbers));
+        assertEquals(List.of("1", "z", "10", "1z"), base62Encoder.encode(anyNumbers));
     }
 }

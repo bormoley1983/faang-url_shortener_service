@@ -14,17 +14,17 @@ import java.util.List;
 public class Base62Encoder {
     private static final String BASE_62_CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    public List<Hash> encode(List<Long> numbers) {
+    public List<String> encode(List<Long> numbers) {
         log.info("Encoder got List with size {} and begins encoding.", numbers.size());
-        List<Hash> hashes = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         for (Long number : numbers) {
             StringBuilder stringBuilder = new StringBuilder();
             while (number > 0) {
-                stringBuilder.append(BASE_62_CHARACTERS.charAt((int) (number % BASE_62_CHARACTERS.length())));
+                stringBuilder.append(BASE_62_CHARACTERS.charAt((int) (number % BASE_62_CHARACTERS.length()))).reverse();
                 number /= BASE_62_CHARACTERS.length();
             }
-            hashes.add(new Hash(stringBuilder.toString()));
+            result.add(stringBuilder.toString());
         }
-        return hashes;
+        return result;
     }
 }

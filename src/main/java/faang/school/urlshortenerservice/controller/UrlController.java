@@ -25,8 +25,11 @@ public class UrlController {
     private final UrlService urlService;
 
     @PostMapping
-    public ShortUrlDto createShortUrl(@RequestBody @Valid CreateShortUrlDto createShortUrlDto) {
-        return urlService.createShortUrl(createShortUrlDto);
+    public ResponseEntity<ShortUrlDto> createShortUrl(@RequestBody @Valid CreateShortUrlDto createShortUrlDto) {
+        ShortUrlDto result = urlService.createShortUrl(createShortUrlDto);
+        return ResponseEntity
+                .created(URI.create(result.shortUrl()))
+                .body(result);
     }
 
     @GetMapping("/{hash}")

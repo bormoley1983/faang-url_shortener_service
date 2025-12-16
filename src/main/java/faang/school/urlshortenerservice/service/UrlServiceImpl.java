@@ -20,13 +20,9 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class UrlServiceImpl implements UrlService {
-    private final static String URL_PREFIX = "https://";
 
-    @Value("${server.host}")
-    private String serverHost;
-
-    @Value("${server.port}")
-    private String serverPort;
+    @Value("${server.domain}")
+    private String domain;
 
     @Value("${request_mapping.url_controller:/api/v1/urls}")
     private String requestMapping;
@@ -65,10 +61,7 @@ public class UrlServiceImpl implements UrlService {
 
     private String concatenateShortUrl(String freeHash) {
         StringBuilder result = new StringBuilder();
-        result.append(URL_PREFIX);
-        result.append(serverHost);
-        result.append(":");
-        result.append(serverPort);
+        result.append(domain);
         result.append(requestMapping);
         result.append("/");
         result.append(freeHash);

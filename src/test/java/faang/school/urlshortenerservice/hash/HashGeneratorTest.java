@@ -48,7 +48,7 @@ public class HashGeneratorTest {
     @Test
     public void generateHashes_SuccessfullySavesIntoCache() {
         when(hashRepository.getUniqueNumbers(any(Integer.class))).thenReturn(anyLongs);
-        when(base62Encoder.encode(any(List.class))).thenReturn(anyHashes);
+        when(base62Encoder.encode(any(List.class))).thenReturn(List.of("anyString"));
         when(hashRepository.saveAll(any(List.class))).thenReturn(anyHashes);
 
         hashGenerator.generateHashes();
@@ -75,29 +75,6 @@ public class HashGeneratorTest {
     public void getHashes_EnoughHashesInRepository() {
         when(hashRepository.getHashBatchAndDelete(any(Integer.class))).thenReturn(anyHashes);
         assertEquals(List.of("a", "b", "c", "d", "e"), hashGenerator.getHashes(5));
-        verify(hashRepository, times(1)).getHashBatchAndDelete(any(Integer.class));
-        verify(hashRepository, never()).getUniqueNumbers(any(Integer.class));
-        verify(base62Encoder, never()).encode(any(List.class));
-        verify(hashRepository, never()).saveAll(any(List.class));
-    }
-
-    @Test
-    public void getHashesAsync_NotEnoughHashesInRepository() {
-        Hash anyHash = new Hash("anyHash");
-        when(hashRepository.getHashBatchAndDelete(any(Integer.class)))
-                .thenReturn(new ArrayList<>())
-                .thenReturn(List.of(anyHash));
-        assertEquals(List.of("anyHash"), hashGenerator.getHashesAsync(1).join());
-        verify(hashRepository, times(2)).getHashBatchAndDelete(any(Integer.class));
-        verify(hashRepository, times(1)).getUniqueNumbers(any(Integer.class));
-        verify(base62Encoder, times(1)).encode(any(List.class));
-        verify(hashRepository, times(1)).saveAll(any(List.class));
-    }
-
-    @Test
-    public void getHashesAsync_EnoughHashesInRepository() {
-        when(hashRepository.getHashBatchAndDelete(any(Integer.class))).thenReturn(anyHashes);
-        assertEquals(List.of("a", "b", "c", "d", "e"), hashGenerator.getHashesAsync(5).join());
         verify(hashRepository, times(1)).getHashBatchAndDelete(any(Integer.class));
         verify(hashRepository, never()).getUniqueNumbers(any(Integer.class));
         verify(base62Encoder, never()).encode(any(List.class));

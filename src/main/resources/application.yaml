@@ -29,6 +29,7 @@ spring:
 server:
   host: localhost
   port: 8080
+  domain: localhost:8080
 
 request_mapping:
   url_controller: /api/v1/urls

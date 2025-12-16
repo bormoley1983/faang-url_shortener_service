@@ -30,6 +30,9 @@ public class HashCacheTest {
     @Mock
     private HashGenerator hashGenerator;
 
+    @Mock
+    private AsyncHashProvider asyncHashProvider;
+
     private String anyString;
     private List<String> anyHashes;
     private CompletableFuture<List<String>> completableFutureOfAnyHashes;
@@ -76,17 +79,17 @@ public class HashCacheTest {
         hashCache.fillCache();
 
         assertEquals(anyString, hashCache.getFreeHash());
-        verify(hashGenerator, never()).getHashesAsync(any(Integer.class));
+        verify(asyncHashProvider, never()).getHashes(any(Integer.class));
     }
 
     @Test
     public void getFreeHash_CacheFillingIsNotInProgress() {
         when(hashGenerator.getHashes(any(Integer.class))).thenReturn(List.of(anyString));
-        when(hashGenerator.getHashesAsync(any(Integer.class))).thenReturn(completableFutureOfAnyHashes);
+        when(asyncHashProvider.getHashes(any(Integer.class))).thenReturn(completableFutureOfAnyHashes);
         hashCache.fillCache();
 
         assertEquals(anyString, hashCache.getFreeHash());
-        verify(hashGenerator, times(1)).getHashesAsync(any(Integer.class));
+        verify(asyncHashProvider, times(1)).getHashes(any(Integer.class));
     }
 
     @Test
@@ -95,6 +98,6 @@ public class HashCacheTest {
         hashCache.fillCache();
 
         assertEquals(anyHashes.get(0), hashCache.getFreeHash());
-        verify(hashGenerator, never()).getHashesAsync(any(Integer.class));
+        verify(asyncHashProvider, never()).getHashes(any(Integer.class));
     }
 }

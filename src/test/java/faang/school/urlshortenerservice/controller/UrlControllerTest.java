@@ -50,7 +50,7 @@ public class UrlControllerTest {
         mockMvc.perform(post("/api/v1/urls")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(anyCreateShortUrlDto)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.shortUrl", is(anyCorrectUrl)));
     }
 
