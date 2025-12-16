@@ -40,7 +40,7 @@ url:
     cron: "30 39 21 * * ?"
   cache:
     key: url_cache
-  prefix: http://127.0.0.1:8080/url
+  prefix: http://127.0.0.1:8080
 
 base62:
   chars: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
