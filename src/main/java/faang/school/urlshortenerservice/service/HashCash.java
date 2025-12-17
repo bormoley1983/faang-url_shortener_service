@@ -22,6 +22,7 @@ public class HashCash {
     private short percent;
     private AtomicBoolean inProcess;
     private final HashGenerator hashGenerator;
+    private final AcyncGetHashes asyncGetHashes;
 
     private Queue<String> hashes;
 
@@ -36,7 +37,7 @@ public class HashCash {
     public String getHash() {
         if (hashes.size() < capacity * percent / 100 &&
                 inProcess.getAndSet(true)) {
-            hashGenerator.getHashesAsync(capacity - hashes.size())
+            asyncGetHashes.getHashesAsync(capacity - hashes.size())
                     .thenAccept(hashes::addAll).thenRun(() -> inProcess.set(false));
         }
         return hashes.poll();

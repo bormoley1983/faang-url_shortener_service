@@ -42,10 +42,12 @@ public class UrlServiceTest {
     private static final String TEST_URL = "https://example.com";
     private static final String CACHED_URL = "https://cached-example.com";
     private static final long TTL_DAYS = 100L;
+    private static final String PREFIX_URL = "https://sh.c/";
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(urlService, "ttlDays", TTL_DAYS);
+        ReflectionTestUtils.setField(urlService, "prefixUrl", PREFIX_URL);
     }
 
     @Test
@@ -98,7 +100,7 @@ public class UrlServiceTest {
 
         String result = urlService.shortenUrl(dto);
 
-        assertEquals(TEST_HASH, result);
+        assertEquals(PREFIX_URL.concat(TEST_HASH), result);
 
         verify(hashCash).getHash();
         verify(urlRepository).save(argThat(url ->
@@ -121,7 +123,7 @@ public class UrlServiceTest {
 
         String result = urlService.shortenUrl(dto);
 
-        assertEquals(TEST_HASH, result);
+        assertEquals(PREFIX_URL.concat(TEST_HASH), result);
         verify(urlRepository).save(argThat(url ->
                 url.getUrl().equals(emptyUrl)
         ));
