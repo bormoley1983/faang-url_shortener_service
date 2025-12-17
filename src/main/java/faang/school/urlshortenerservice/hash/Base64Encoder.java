@@ -1,13 +1,13 @@
 package faang.school.urlshortenerservice.hash;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Base64;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
 @Component
 public class Base64Encoder {
 
-    //TODO сделать формирование безопасного кеша
     public List<String> encode(List<Long> numbers) {
         return numbers.stream()
                 .takeWhile(n -> n > 0)
@@ -25,6 +25,6 @@ public class Base64Encoder {
 
         String base64 = Base64.getEncoder().withoutPadding().encodeToString(bytes);
 
-        return base64.substring(0, 6); // берём первые 6 символов
+        return base64.substring(0, 6);
     }
 }

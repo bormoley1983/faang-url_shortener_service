@@ -17,6 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Hash {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hash_seq")
     @SequenceGenerator(name = "hash_seq", sequenceName = "unique_hash_number_seq", allocationSize = 1)

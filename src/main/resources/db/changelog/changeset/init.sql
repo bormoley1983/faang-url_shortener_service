@@ -5,14 +5,14 @@ CREATE SEQUENCE unique_hash_number_seq
 CREATE TABLE hash
 (
     id BIGINT PRIMARY KEY,
-    hash VARCHAR NOT NULL, --TODO подумать, нужно ли VARCHAR(6)
-    long_url TEXT NOT NULL
+    hash VARCHAR NOT NULL
 );
 
 CREATE TABLE url
 (
-    hash       VARCHAR(6) PRIMARY KEY,
-    url        TEXT        NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    hash       VARCHAR(6) UNIQUE NOT NULL,
+    long_url   TEXT NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW()
 );
 

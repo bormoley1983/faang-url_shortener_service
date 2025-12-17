@@ -37,7 +37,7 @@ public class HashGenerator {
         jdbcTemplate.batchUpdate(
                 SQL,
                 hashes,
-                100,
+                batchSize,
                 (ps, hash) -> ps.setString(1, hash)
         );
     }

@@ -7,7 +7,6 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface HashMapper {
-    ShortUrlDto shortUrlDto(Hash hash);
 
-    Hash toHash(ShortUrlDto toHashAndUrlDto);
+    ShortUrlDto shortUrlDto(Hash hash);
 }

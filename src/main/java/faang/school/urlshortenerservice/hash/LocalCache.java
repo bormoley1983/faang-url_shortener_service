@@ -3,14 +3,13 @@ package faang.school.urlshortenerservice.hash;
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repo.HashRepository;
 import jakarta.annotation.PostConstruct;
-
-import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
