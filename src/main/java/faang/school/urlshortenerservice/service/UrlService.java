@@ -41,7 +41,6 @@ public class UrlService {
 
         urlRepository.save(url);
         CompletableFuture.runAsync(() -> urlCacheRepository.save(hash, longUrl));
-        //urlCacheRepository.save(hash, longUrl);
 
         return hash;
     }
