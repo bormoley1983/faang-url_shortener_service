@@ -19,18 +19,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class UrlService {
-    private static final long DEFAULT_EXPIRATION_TIME_IN_YEAR = 1L;
+    private static final long DEFAULT_EXPIRATION_TIME_IN_WEEKS = 1L;
     private final UrlRepository urlRepository;
     private final UrlValidator urlValidator;
     private final HashCache hashCache;
     private final RedisUrlCacheService redisUrlCacheService;
 
-
-    public ShortUrl findByHash(String hash) {
-        return urlRepository.findByHash(hash)
-                .orElseThrow(() -> new RecordNotFoundException("Invalid short url, not found"));
-    }
-
+    @Transactional(readOnly = true)
     public ShortUrl getActualUrl(String hash) {
         Optional<ShortUrl> redisShortUrl = redisUrlCacheService.getUrl(hash);
 
@@ -48,6 +43,7 @@ public class UrlService {
         return shortUrl;
     }
 
+    @Transactional
     public ShortUrl createShortUrl(ShortUrlRequest request) {
         ShortUrl newShortUrl = ShortUrl.builder()
                 .hash(hashCache.getHash())
@@ -62,17 +58,25 @@ public class UrlService {
     }
 
     @Transactional
-    public void deleteExpiredShortUrls(int limit) {
+    public int deleteExpiredShortUrls(int limit) {
         List<String> expiredHashes = urlRepository.findExpiredUrlHashes(limit);
-        log.info("Batch contain {} expired hashes", expiredHashes.size());
+        int deletedCount = expiredHashes.size();
+        log.info("Batch contain {} expired hashes", deletedCount);
+
         if (!expiredHashes.isEmpty()) {
             urlRepository.deleteAllByIdInBatch(expiredHashes);
             redisUrlCacheService.deleteUrlsFromCache(expiredHashes);
         }
+        return deletedCount;
+    }
+
+    private ShortUrl findByHash(String hash) {
+        return urlRepository.findByHash(hash)
+                .orElseThrow(() -> new RecordNotFoundException("Invalid short url, not found"));
     }
 
     private LocalDateTime setExpireTimeOrDefault(ShortUrlRequest request) {
-        LocalDateTime maxExpireTime = LocalDateTime.now().plusYears(DEFAULT_EXPIRATION_TIME_IN_YEAR);
+        LocalDateTime maxExpireTime = LocalDateTime.now().plusWeeks(DEFAULT_EXPIRATION_TIME_IN_WEEKS);
         boolean defaultRequired = request.expireTime() == null || request.expireTime().isAfter(maxExpireTime);
 
         return defaultRequired ? maxExpireTime : request.expireTime();

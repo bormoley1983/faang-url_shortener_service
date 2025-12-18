@@ -29,9 +29,14 @@ public class HashCache {
     private final BlockingQueue<String> hashQueue = new LinkedBlockingQueue<>();
     private final AtomicBoolean refilling = new AtomicBoolean(false);
 
+    @PostConstruct
+    private void initCache() {
+        refillCache();
+    }
+
     public  String getHash() {
         try {
-            String hash = hashQueue.poll(30, TimeUnit.SECONDS);
+            String hash = hashQueue.poll(50, TimeUnit.MILLISECONDS);
             if (hash == null) {
                 log.error("Cache refilling stopped.");
                 throw new IllegalStateException("Failed to get hash from cache");
@@ -53,11 +58,6 @@ public class HashCache {
         hashQueue.addAll(hashes);
         cacheCounter.set(hashQueue.size());
         log.info("Updated cache with {} values, current size {}", hashConfig.getCache().getSize(), hashQueue.size());
-    }
-
-    @PostConstruct
-    private void initCache() {
-        refillCache();
     }
 
     private void startRefillIfNeeded() {

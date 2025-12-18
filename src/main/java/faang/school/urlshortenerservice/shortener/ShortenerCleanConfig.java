@@ -14,6 +14,7 @@ public class ShortenerCleanConfig {
     private String cron;
     private int batchSize;
     private int fetchLimit;
+    private int BatchDelayMs;
     private ExecutorConfig executorConfig = new ExecutorConfig();
 
     @Getter

@@ -23,7 +23,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -39,7 +39,7 @@ logging:
     root: info
 
 shortener:
-  address: https://short.u/
+  address: http://localhost:8080/
 
 hash:
   storage:
@@ -61,6 +61,7 @@ scheduler:
     zone: "Europe/Moscow"
     batch-size: 1000
     fetch-limit: 10000
+    batch-delay-ms: 50
     executor-config:
       core-pool-size: 5
       max-pool-size: 15
