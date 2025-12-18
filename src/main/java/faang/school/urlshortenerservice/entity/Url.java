@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "url")
 @Getter
@@ -26,6 +28,9 @@ public class Url {
 
     @Column(name = "long_url")
     private String longUrl;
+
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
+    private OffsetDateTime createdAt;
 
     public Url(String shortUrl, String longUrl) {
         this.shortUrl = shortUrl;

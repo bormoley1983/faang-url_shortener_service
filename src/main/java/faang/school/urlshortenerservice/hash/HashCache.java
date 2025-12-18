@@ -1,7 +1,6 @@
 package faang.school.urlshortenerservice.hash;
 
 import faang.school.urlshortenerservice.entity.Hash;
-import faang.school.urlshortenerservice.repo.HashRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,26 +15,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RequiredArgsConstructor
 public class HashCache {
 
-    @Value("${hash.storage.max-size}")
-    private int capacity;
-
-    @Value("${hash.storage.threshold}")
-    private int threshold;
-
-    @Value("${hash.storage.hash-range:100}")
-    private int hashRange;
-
     private LinkedBlockingQueue<Hash> cachedHashesQueue;
 
+    private final HashStorageProperties properties;
     private final ExecutorService executorService;
-    private final HashRepository hashRepository;
     private final LocalCache localCache;
-    private final HashGenerator hashGenerator;
     private final AtomicBoolean isLoadingHashCash = new AtomicBoolean(false);
 
     @PostConstruct
     public void init() {
-        cachedHashesQueue = new LinkedBlockingQueue<>(capacity);
+        cachedHashesQueue = new LinkedBlockingQueue<>(properties.getMaxSizeCachedQueue());
     }
 
     public Hash getHash() {
@@ -43,7 +32,7 @@ public class HashCache {
         int size = cachedHashesQueue.size();
         int maxSize = cachedHashesQueue.remainingCapacity() + size;
 
-        if (size <= threshold * maxSize) {
+        if (size <= properties.getThresholdToRefillCachedQueue() * maxSize) {
             checkHashLoading();
         }
         return hash;
@@ -55,13 +44,17 @@ public class HashCache {
         }
         executorService.submit(() -> {
             try {
-                List<Hash> hashes = localCache.getHashes(hashRange);
+                List<Hash> hashes = localCache.getHashes(properties.getHashRange());
                 for (Hash hash : hashes) {
-                    cachedHashesQueue.offer(hash);
+                    put(hash);
                 }
             } finally {
                 isLoadingHashCash.set(false);
             }
         });
+    }
+
+    public void put(Hash hash) {
+        cachedHashesQueue.offer(hash);
     }
 }

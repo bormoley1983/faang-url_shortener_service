@@ -31,12 +31,12 @@ logging:
 
 hash:
   storage:
-    max-size: 1000
-    threshold: 20
-    range: 100
-    batch_size: 100
+    max-size-cached-queue: 1000
+    threshold-to-refill-cached-queue: 20
     hash-range: 100
-    INITIAL_WARMUP_AMOUNT: 100
+    range-unique-numbers: 100
+    batch-size-generated-hashes: 100
+    initial-warmup-amount: 100
 
 executor:
   pool-size: 10
