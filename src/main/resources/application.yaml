@@ -4,11 +4,13 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+    hikari:
+      maximum-pool-size: 5000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     show-sql: false
     properties:
       hibernate:
@@ -21,16 +23,16 @@ spring:
         enabled: false
       password:
       database: 0
-      timeout: 100 #ms
+      timeout: 1000 #ms
       lettuce:
         pool:
-          max-active: 100
-          max-idle: 30
-          min-idle: 10
-          max-wait: 50 #ms
+          max-active: 5000
+          max-idle: 5000
+          min-idle: 1000
+          max-wait: 5000 #ms
           time-between-eviction-runs: 10s
-        shutdown-timeout: 10 #ms
-      connect-timeout: 50 #ms
+        shutdown-timeout: 1000 #ms
+      connect-timeout: 1000 #ms
       ssl: false
 
 redis:
@@ -51,10 +53,13 @@ redis:
 
 server:
   port: 8079
+  tomcat:
+    threads:
+      max: 5000
 
 logging:
   level:
-    root: info
+    root: INFO
 
 
 app:

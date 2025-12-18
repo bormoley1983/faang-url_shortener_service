@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
@@ -21,7 +22,7 @@ public class LocalHash {
     @Value("${hash.local.count.hash:1000}")
     private Integer countLocalHash;
     private final ConcurrentLinkedQueue<Hash> localHash = new ConcurrentLinkedQueue<>();
-
+    private final AtomicBoolean running = new AtomicBoolean(true);
     private final HashGenerator hashGenerator;
 
 
@@ -44,8 +45,11 @@ public class LocalHash {
         return localHash.poll();
     }
 
-    public void generateLocalHash() {
+    public void
+
+    private void generateLocalHash() {
         List<Hash> hash = hashGenerator.getHash();
         localHash.addAll(hash);
     }
+
 }

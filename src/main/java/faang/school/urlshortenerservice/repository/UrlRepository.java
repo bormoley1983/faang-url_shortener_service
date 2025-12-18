@@ -29,7 +29,6 @@ public interface UrlRepository extends JpaRepository<Url, String> {
     List<Url> deleteOlderThanAndReturn(@Param("cutoffDate") LocalDateTime cutoffDate);
 
     @Modifying
-    @Transactional
     @Query(value = "INSERT INTO url (hash, long_link, created_at) VALUES (:hash, :longLink, :createdAt)",
             nativeQuery = true)
     void insertUrl(@Param("hash") String hash,

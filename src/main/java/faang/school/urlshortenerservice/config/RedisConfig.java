@@ -4,6 +4,8 @@ import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.aop.target.PoolingConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -26,6 +28,7 @@ public class RedisConfig {
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
 
+
         SocketOptions socketOptions = SocketOptions.builder()
                 .connectTimeout(Duration.ofMillis(redisProperties.getConnectTimeout()))
                 .keepAlive(true)
@@ -46,9 +49,16 @@ public class RedisConfig {
                 .requestQueueSize(Integer.MAX_VALUE)
                 .build();
 
+        GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
+        genericObjectPoolConfig.setMaxIdle(5000);
+        genericObjectPoolConfig.setMinIdle(1000);
+        genericObjectPoolConfig.setMaxTotal(5000);
+        genericObjectPoolConfig.setMaxWait(Duration.ofMillis(2000));
+
         LettucePoolingClientConfiguration poolConfig = LettucePoolingClientConfiguration.builder()
                 .clientOptions(clientOptions)
                 .commandTimeout(Duration.ofMillis(redisProperties.getConnectTimeout()))
+                .poolConfig(genericObjectPoolConfig)
                 .build();
 
         return new LettuceConnectionFactory(config, poolConfig);

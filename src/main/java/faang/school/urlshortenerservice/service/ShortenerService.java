@@ -6,25 +6,22 @@ import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.hash.HashGenerator;
 import faang.school.urlshortenerservice.hash.LocalHash;
 import faang.school.urlshortenerservice.repository.UrlRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,22 +36,20 @@ public class ShortenerService {
     @Value("${number.days.hash.storage}")
     private Integer daysStorageHashInBd;
 
-    private final JdbcTemplate jdbcTemplate;
-    private final TransactionTemplate transactionTemplate;
     private final UrlRepository urlRepository;
     private final LocalHash localHash;
     private final RedisTemplate<String, String> redisTemplate;
     private final HashGenerator hashGenerator;
 
-
+    @Transactional
     public String create(String urlString) {
 
         Hash hash = localHash.getLocalHash();
         String hashString = hash.getHash();
 
-        redisTemplate.opsForValue().set(hashString, urlString, daysTtl, TimeUnit.DAYS);
-
-        CompletableFuture.runAsync(() -> asyncSaveToRedis(hashString, urlString), executorService);
+        urlRepository.save(new Url(hashString, urlString, LocalDateTime.now()));
+        CompletableFuture.runAsync(() -> redisTemplate.opsForValue().set(hashString, urlString, daysTtl, TimeUnit.MINUTES),
+                executorService);
         log.info("get hash {} by url {}", hashString, urlString);
         return hash.getHash();
     }
@@ -88,18 +83,12 @@ public class ShortenerService {
     }
 
 
-    private void asyncSaveToRedis(String hashString, String urlString) {
-
-        urlRepository.insertUrl(hashString, urlString, LocalDateTime.now());
-
-    }
-
     private void checkAvailabilityInRedis(Url url, String hash) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime cteatedAt = url.getCreatedAt();
         long daysDifference = daysTtl - Duration.between(now, cteatedAt).toDays();
         if (daysDifference > 0) {
-            redisTemplate.opsForValue().set(hash, url.getLongLing(), daysDifference, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set(hash, url.getLongLing(), daysDifference, TimeUnit.MINUTES);
         }
     }
 }
