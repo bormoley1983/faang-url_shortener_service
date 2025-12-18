@@ -10,7 +10,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -67,7 +67,7 @@ app:
     time:
       cleaner: "0 0 3 * * ?" # в 3 ночи
     check:
-      hash:  "*/15 * * * * ?" # каждые 20 секунд
+      hash:  "*/05 * * * * ?" # каждые 5 секунд
 
 number:
   days:
@@ -81,17 +81,15 @@ base:
 hash:
   local:
     count:
-      hash: 100000
+      hash: 200000
     size:
-      minimum: 0.4 # проценты/100
+      minimum: 0.6 # проценты/100
   generator:
-    count:
-      pool-executor: 50
     batch-size:
       save-bd: 5000
-    max-range: 500000
+    max-range: 1000000
     hashes-in-bd:
-      minimum: 150000
+      minimum: 600000
 
 management:
   endpoints:

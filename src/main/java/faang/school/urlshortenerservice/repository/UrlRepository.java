@@ -14,8 +14,6 @@ import java.util.List;
 @Repository
 public interface UrlRepository extends JpaRepository<Url, String> {
 
-
-
     @Query(value = """
         WITH locked_rows AS (
             SELECT hash FROM url 
@@ -27,11 +25,4 @@ public interface UrlRepository extends JpaRepository<Url, String> {
         RETURNING *
         """, nativeQuery = true)
     List<Url> deleteOlderThanAndReturn(@Param("cutoffDate") LocalDateTime cutoffDate);
-
-    @Modifying
-    @Query(value = "INSERT INTO url (hash, long_link, created_at) VALUES (:hash, :longLink, :createdAt)",
-            nativeQuery = true)
-    void insertUrl(@Param("hash") String hash,
-                   @Param("longLink") String longLink,
-                   @Param("createdAt") LocalDateTime createdAt);
 }

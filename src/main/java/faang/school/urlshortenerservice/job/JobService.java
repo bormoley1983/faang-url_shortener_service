@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.job;
 
-import faang.school.urlshortenerservice.hash.HashGenerator;
+import faang.school.urlshortenerservice.hash.LocalHash;
 import faang.school.urlshortenerservice.service.ShortenerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class JobService {
 
     private final ShortenerService shortenerService;
-    private final HashGenerator hashGenerator;
+    private final LocalHash localHash;
 
     @Scheduled(cron = "${app.sheduled.time.cleaner}")
     public void jobCleanerUrlFromBd() {
@@ -20,6 +20,6 @@ public class JobService {
 
     @Scheduled(cron = "${app.sheduled.check.hash}")
     private void jobCounterHashInHashBd() {
-        hashGenerator.checkCountHashInBd();
+        localHash.checkCountHashInBd();
     }
 }

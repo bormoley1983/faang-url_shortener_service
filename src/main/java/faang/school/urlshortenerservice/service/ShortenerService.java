@@ -10,10 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -50,7 +48,6 @@ public class ShortenerService {
         urlRepository.save(new Url(hashString, urlString, LocalDateTime.now()));
         CompletableFuture.runAsync(() -> redisTemplate.opsForValue().set(hashString, urlString, daysTtl, TimeUnit.MINUTES),
                 executorService);
-        log.info("get hash {} by url {}", hashString, urlString);
         return hash.getHash();
     }
 
