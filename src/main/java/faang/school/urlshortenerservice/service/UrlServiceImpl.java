@@ -1,0 +1,38 @@
+package faang.school.urlshortenerservice.service;
+
+import faang.school.urlshortenerservice.dto.UrlDto;
+import faang.school.urlshortenerservice.entity.Hash;
+import faang.school.urlshortenerservice.entity.Url;
+import faang.school.urlshortenerservice.entity.UrlCache;
+import faang.school.urlshortenerservice.mapper.UrlMapper;
+import faang.school.urlshortenerservice.repository.UrlCacheRepository;
+import faang.school.urlshortenerservice.repository.UrlRepository;
+import faang.school.urlshortenerservice.util.HashCache;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class UrlServiceImpl implements UrlService {
+
+    private final HashCache hashCache;
+    private final UrlMapper urlMapper;
+    private final UrlRepository urlRepository;
+    private final UrlCacheRepository urlCacheRepository;
+
+    @Override
+    @Transactional
+    public UrlDto getShortUrl(UrlDto urlDto) {
+        Url url = urlMapper.toUrl(urlDto);
+        Hash hash = hashCache.getHash();
+        url.setHash(hash.getHash());
+        url = urlRepository.save(url);
+        UrlCache urlCache = UrlCache.builder()
+                .hash(url.getHash())
+                .url(url.getUrl())
+                .build();
+        urlCacheRepository.save(urlCache);
+        return urlMapper.toUrlDto(url);
+    }
+}

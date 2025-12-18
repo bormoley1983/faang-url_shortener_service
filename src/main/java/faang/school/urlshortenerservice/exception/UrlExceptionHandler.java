@@ -4,6 +4,7 @@ import faang.school.urlshortenerservice.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,9 +15,11 @@ import java.time.Instant;
 @Slf4j
 public class UrlExceptionHandler {
 
-    @ExceptionHandler(DataValidationException.class)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(DataValidationException exception, HttpServletRequest request) {
+    public ErrorResponse handleValidationException(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, exception, request);
     }
 
@@ -28,7 +31,7 @@ public class UrlExceptionHandler {
 
     private ErrorResponse buildErrorResponse(
             HttpStatus status,
-            RuntimeException exception,
+            Exception exception,
             HttpServletRequest request) {
         log.error("Error occurred: {}", exception.getMessage());
         return ErrorResponse.builder()
