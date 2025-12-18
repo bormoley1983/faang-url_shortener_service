@@ -1,9 +1,13 @@
 spring:
+
+  config:
+    import: optional:classpath:application.properties
+
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: user
-    password: password
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -12,10 +16,22 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        generate_statistics: true
         format_sql: true
+
+  profiles:
+    active: ${APP_ENV}
+
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  jackson:
+    default-property-inclusion: non_null
 
 server:
   port: 8080
@@ -23,3 +39,44 @@ server:
 logging:
   level:
     root: info
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+    org.springframework.jdbc.core.StatementCreatorUtils: TRACE
+
+hash:
+  rangeSequence: 10000
+  cache:
+    capacity: 5000
+  fill:
+    percent: 30
+  executor:
+    corePoolSize: 2
+    maxPoolSize: 4
+    queueCapacity: 100
+    threadNamePrefix: HashGen-
+
+analytic:
+  executor:
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 500
+    threadNamePrefix: AnalyticExecutor-
+
+url:
+  ttl-days: 30
+  host: ${APP_HOST}
+
+scheduler:
+  cleaner:
+    cron: 0 0 0 * * *
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus, httptrace
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    enable:
+      all: true

@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/V0001_create_urls_table.sql
+  - include:
+      file: db/changelog/changeset/V0002_create_hashes_table.sql
+  - include:
+      file: db/changelog/changeset/V0003_create_sequence_table.sql
+  - include:
+      file: db/changelog/changeset/V0004_create_analytics_table.sql
