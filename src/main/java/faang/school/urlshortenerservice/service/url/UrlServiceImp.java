@@ -9,6 +9,7 @@ import faang.school.urlshortenerservice.repository.url.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.url.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,9 @@ public class UrlServiceImp implements UrlService {
     private final HashCache hashCache;
     private final UrlCacheRepository urlCacheRepository;
 
+    @Value("${server.base-url}")
+    private String baseUrl;
+
     @Override
     @Transactional
     public void cleanExpiredHashes(int yearsAgoToDeleteHashes) {
@@ -39,7 +43,7 @@ public class UrlServiceImp implements UrlService {
 
     @Override
     public String createShortUrl(CreateUrlDto createUrlDto) {
-        String baseUrl = extractBaseUrlAndValidate(createUrlDto.url());
+        extractBaseUrlAndValidate(createUrlDto.url());
         String hash = hashCache.getHash();
 
         Url urlToSave = Url.builder()
@@ -53,7 +57,7 @@ public class UrlServiceImp implements UrlService {
         urlCacheRepository.save(urlToSave.getHash(), urlToSave.getUrl());
         log.info("Save url {} with hash {} in redis", urlToSave.getUrl(), urlToSave.getHash());
 
-        return "%s%s".formatted(baseUrl, hash);
+        return "%s/%s".formatted(baseUrl, hash);
     }
 
     @Override

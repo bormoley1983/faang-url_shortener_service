@@ -29,16 +29,12 @@ public class UrlExceptionHandler {
         return new ErrorResponse(ex.getMessage());
     }
 
-
-    @ExceptionHandler(RuntimeException.class)
+    @ExceptionHandler({
+            RuntimeException.class,
+            Exception.class
+    })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleRuntimeExceptions(Exception ex) {
-        return new ErrorResponse(ex.getMessage());
-    }
-
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleExceptions(Exception ex) {
+    public ErrorResponse handleInternalServerErrorExceptions(Exception ex) {
         return new ErrorResponse(ex.getMessage());
     }
 }

@@ -7,11 +7,13 @@ import faang.school.urlshortenerservice.repository.hash.HashRepository;
 import faang.school.urlshortenerservice.repository.url.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.url.UrlRepository;
 import faang.school.urlshortenerservice.service.url.UrlServiceImp;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class UrlServiceTest {
 
+    private final String baseUrl = "http://127.0.0.1:8080";
+
     @Mock
     private UrlRepository urlRepository;
     @Mock
@@ -38,6 +42,11 @@ public class UrlServiceTest {
     @InjectMocks
     private UrlServiceImp urlService;
 
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(urlService, "baseUrl", baseUrl);
+    }
+
     @Test
     void testCreateShortUrl_ValidUrl_ShouldSaveAndReturnShortUrl() {
         CreateUrlDto dto = new CreateUrlDto("https://example.com/path");
@@ -45,7 +54,7 @@ public class UrlServiceTest {
 
         String result = urlService.createShortUrl(dto);
 
-        assertEquals("https://example.com/abc123", result);
+        assertEquals(baseUrl + "/abc123", result);
 
         verify(urlRepository).save(argThat(url -> url.getHash().equals("abc123") &&
                 url.getUrl().equals("https://example.com/path")
