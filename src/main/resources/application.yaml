@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: user
-    password: password
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -13,13 +13,49 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        generate_statistics: false
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 1000
+        show_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      TTL:
+        url-repository: 7d
 server:
   port: 8080
 
 logging:
   level:
+
     root: info
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+    org.springframework.jdbc.core.StatementCreatorUtils: TRACE
+    io.micrometer.grafana: DEBUG
+    org.springframework.boot.actuate.metrics: DEBUG
+
+generator:
+  maxRange: 100000
+domain:
+  prefix: "http://localhost:8080/api/v1/url/"
+
+hash:
+  capacity: 1000
+  min-capacity-percent: 20
+
+scheduler:
+  hash-cleaner-cron: "0 0 0 * * *"
+  check-hash-cron: "0 */10 * * * *"
+thread:
+  core-pool-size: 2
+  max-pool-size: 10
+  queue-capacity: 10000
+  await-termination-seconds: 60
+
