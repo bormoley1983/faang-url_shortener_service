@@ -20,23 +20,24 @@ public class HashService {
 
     @Transactional
     public List<String> getFreeHashes(long count) {
-        List<String> freeHashes = hashRepository.getFreeHashesBatchWithLockAndDelete(count);
         long currentRepositoryCount = hashRepository.count();
-        log.debug("Left free hashes: {}", currentRepositoryCount);
 
-        boolean lessThanNeeded = freeHashes.size() < count;
-        if (lessThanNeeded) {
-            int missingCount = (int) count - freeHashes.size();
-            log.warn("Not enough free hashes for cache, generate missing {}", missingCount);
+        if (currentRepositoryCount < count) {
+            log.warn("Not enough hashes in repository ({} < {}), generating missing ones synchronously",
+                    currentRepositoryCount, count);
+            int missingCount = (int) (count - currentRepositoryCount);
             List<String> missingHashes = hashGenerator.generateHashes(missingCount);
-            freeHashes.addAll(missingHashes);
         }
 
-        boolean needRefill = lessThanNeeded || currentRepositoryCount < hashConfig.getStorageUpdateCount();
+        List<String> freeHashes = hashRepository.getFreeHashesBatchWithLockAndDelete(count);
+        log.debug("Left free hashes in repository after getting {}: {}", count, hashRepository.count());
+
+        boolean needRefill = hashRepository.count() < hashConfig.getStorageUpdateCount();
         if (needRefill) {
             log.warn("Start refilling hash repository");
             hashStorageAsyncFiller.refillStorageAsync(hashConfig.getStorage().getSize());
         }
+
         return freeHashes;
     }
 }

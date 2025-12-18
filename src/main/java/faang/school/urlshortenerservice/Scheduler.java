@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -19,26 +21,49 @@ public class Scheduler {
         long start = System.currentTimeMillis();
         log.info("Scheduled job started.");
 
-        runCleanJob();
-        log.info("Scheduled job finished in {} millis", System.currentTimeMillis() - start);
+        try {
+            runCleanJob();
+            log.info("Scheduled job finished in {} millis", System.currentTimeMillis() - start);
+        } catch (Exception e) {
+            log.error("Scheduled job failed", e);
+        }
     }
 
     private void runCleanJob() {
-        int attempt = 0;
-        int maxAttempts = shortenerCleanConfig.getFetchLimit() / shortenerCleanConfig.getBatchSize();
+        int totalDeleted = 0;
+        int batchCount = shortenerCleanConfig.getFetchLimit() / shortenerCleanConfig.getBatchSize();
+        log.info("Starting cleanup. Total batches to process: {}", batchCount);
 
-        while (attempt < maxAttempts) {
-            attempt++;
+        for (int batchNumber = 1; batchNumber <= batchCount; batchNumber++) {
+            if (Thread.currentThread().isInterrupted()) {
+                log.info("Clean job interrupted");
+                break;
+            }
+
+            log.debug("Processing batch {}/{}", batchNumber, batchCount);
+
+            int deletedInBatch = shortenerCleaner.cleanExpiredUrlsBatchSync(
+                    shortenerCleanConfig.getBatchSize()
+            );
+
+            totalDeleted += deletedInBatch;
+            log.debug("Batch {}: deleted {} URLs", batchNumber, deletedInBatch);
+
+            if (deletedInBatch < shortenerCleanConfig.getBatchSize()) {
+                log.info("No more expired URLs found. Stopping early.");
+                break;
+            }
+
+            if (batchNumber < batchCount) {
                 try {
-                    shortenerCleaner.cleanExpiredUrlsBatchAsync(shortenerCleanConfig.getBatchSize());
-                    } catch (Exception e) {
-                    log.error("Clearing failed", e);
+                    TimeUnit.MILLISECONDS.sleep(shortenerCleanConfig.getBatchDelayMs());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.info("Clean job interrupted during pause");
                     break;
                 }
-
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
+            }
         }
+        log.info("Clean job completed. Total URLs deleted: {}", totalDeleted);
     }
 }

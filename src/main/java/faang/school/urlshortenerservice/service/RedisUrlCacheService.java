@@ -1,10 +1,9 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.entity.ShortUrl;
-import faang.school.urlshortenerservice.util.ObjectMapperUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -16,9 +15,7 @@ import java.util.Optional;
 public class RedisUrlCacheService {
 
     private final static String SHORT_URL_PREFIX = "short_url";
-
-    private final StringRedisTemplate redisTemplate;
-    private final ObjectMapperUtil objectMapper;
+    private final RedisTemplate<String, ShortUrl> shortUrlRedisTemplate;
 
     @Value(value = "${data.redis.default-ttl-seconds:3600}")
     private long defaultTtlSeconds;
@@ -27,25 +24,25 @@ public class RedisUrlCacheService {
         cacheUrl(shortUrl, defaultTtlSeconds);
     }
 
-    public void cacheUrl(ShortUrl shortUrl, long ttlSeconds) {
-        String key = getKey(shortUrl.getHash());
-        String json = objectMapper.writeAsString(shortUrl);
-        redisTemplate.opsForValue()
-                .set(key, json, Duration.ofSeconds(ttlSeconds));
-    }
-
     public Optional<ShortUrl> getUrl(String hash) {
         String key = getKey(hash);
-        String json = redisTemplate.opsForValue()
+        ShortUrl shortUrl = shortUrlRedisTemplate.opsForValue()
                 .getAndExpire(key, Duration.ofSeconds(defaultTtlSeconds));
-        return json == null ? Optional.empty() : Optional.of(objectMapper.readValueAs(json, ShortUrl.class));
+
+        return Optional.ofNullable(shortUrl);
     }
 
     public void deleteUrlsFromCache(List<String> hash) {
         List<String> keys = hash.stream()
                 .map(this::getKey)
                 .toList();
-        redisTemplate.delete(keys);
+        shortUrlRedisTemplate.delete(keys);
+    }
+
+    void cacheUrl(ShortUrl shortUrl, long ttlSeconds) {
+        String key = getKey(shortUrl.getHash());
+        shortUrlRedisTemplate.opsForValue()
+                .set(key, shortUrl, Duration.ofSeconds(ttlSeconds));
     }
 
     private String getKey(String hash) {
