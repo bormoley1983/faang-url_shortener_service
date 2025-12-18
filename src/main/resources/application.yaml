@@ -23,7 +23,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -39,7 +39,7 @@ logging:
     root: info
 
 shortener:
-  address: https://short.u/
+  address: http://localhost:8080/
 
 hash:
   storage:
