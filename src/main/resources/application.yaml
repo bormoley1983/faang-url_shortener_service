@@ -5,6 +5,12 @@ spring:
     username: user
     password: password
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -34,6 +40,10 @@ hash-cache-executor:
 
 server:
   port: 8080
+
+app:
+  shortener:
+    base-url: http://localhost:8080
 
 logging:
   level:

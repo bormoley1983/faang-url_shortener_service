@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.repository;
 
 import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.repository.db.HashRepository;
 import faang.school.urlshortenerservice.service.HashGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

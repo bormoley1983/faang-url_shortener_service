@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.repository;
+package faang.school.urlshortenerservice.repository.db;
 
 import faang.school.urlshortenerservice.config.hash.HashProperties;
 import lombok.RequiredArgsConstructor;
