@@ -40,7 +40,7 @@ public class UrlService {
     public LongUrlDto getOriginUrl(String shortUrl) {
         Optional<String> cached = urlCacheRepository.findLongUrl(shortUrl);
         String longUrl = cached.orElseGet(() -> {
-            Url url = urlRepository.shortUrl(shortUrl)
+            Url url = urlRepository.findByShortUrl(shortUrl)
                     .orElseThrow(() -> new UrlShortenerException("URL not found"));
             urlCacheRepository.save(shortUrl, url.getLongUrl());
             return url.getLongUrl();

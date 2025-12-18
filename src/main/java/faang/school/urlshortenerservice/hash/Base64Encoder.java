@@ -10,7 +10,7 @@ public class Base64Encoder {
 
     public List<String> encode(List<Long> numbers) {
         return numbers.stream()
-                .takeWhile(n -> n > 0)
+                .filter(n -> n > 0)
                 .map(this::encodeLong)
                 .toList();
     }

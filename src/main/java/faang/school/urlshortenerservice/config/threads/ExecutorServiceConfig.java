@@ -23,11 +23,16 @@ public class ExecutorServiceConfig {
 
     @Bean
     public ExecutorService taskExecutor() {
-        return new ThreadPoolExecutor(
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 poolSize,
                 maxPoolSize,
                 60L,
                 TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(queueCapacity));// TODO что делать , чтобы не потерять задачи, если очередь полная
+                new ArrayBlockingQueue<>(queueCapacity),
+                new ThreadPoolExecutor.CallerRunsPolicy()
+        );
+
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 }

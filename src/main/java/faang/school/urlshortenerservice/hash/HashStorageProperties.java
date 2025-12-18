@@ -29,4 +29,7 @@ public class HashStorageProperties {
 
     @Min(1)
     private int batchSizeGeneratedHashes;
+
+    @Min(1)
+    private int batchSizeRegeneratedHashes;
 }

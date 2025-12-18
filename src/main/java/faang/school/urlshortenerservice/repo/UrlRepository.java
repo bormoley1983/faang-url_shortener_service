@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface UrlRepository extends JpaRepository<Url, Long> {
 
-    Optional<Url> shortUrl(@NotBlank String shortUrl);
+    Optional<Url> findByShortUrl(@NotBlank String shortUrl);
 
     @Query(nativeQuery = true, value = """
             DELETE FROM url

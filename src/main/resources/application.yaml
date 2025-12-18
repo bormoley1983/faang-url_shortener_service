@@ -43,4 +43,5 @@ executor:
   max-pool-size: 15
   queue-capacity: 500
 
-
+scheduler:
+  cleanup-cron: "0 0 0 * * *"

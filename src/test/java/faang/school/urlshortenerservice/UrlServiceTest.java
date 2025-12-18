@@ -67,12 +67,12 @@ class UrlServiceTest {
     @Test
     void getOriginUrl_ShouldLoadFromDbIfCacheMiss() {
         when(urlCacheRepository.findLongUrl(SHORT_URL)).thenReturn(Optional.empty());
-        when(urlRepository.shortUrl(SHORT_URL)).thenReturn(Optional.of(url));
+        when(urlRepository.findByShortUrl(SHORT_URL)).thenReturn(Optional.of(url));
 
         LongUrlDto result = urlService.getOriginUrl(SHORT_URL);
 
         verify(urlCacheRepository).findLongUrl(SHORT_URL);
-        verify(urlRepository).shortUrl(SHORT_URL);
+        verify(urlRepository).findByShortUrl(SHORT_URL);
         verify(urlCacheRepository).save(SHORT_URL, LONG_URL);
 
         assertEquals(LONG_URL, result.longUrl());
@@ -81,7 +81,7 @@ class UrlServiceTest {
     @Test
     void getOriginUrl_ShouldThrowExceptionIfNotFound() {
         when(urlCacheRepository.findLongUrl(SHORT_URL)).thenReturn(Optional.empty());
-        when(urlRepository.shortUrl(SHORT_URL)).thenReturn(Optional.empty());
+        when(urlRepository.findByShortUrl(SHORT_URL)).thenReturn(Optional.empty());
 
         assertThrows(UrlShortenerException.class, () -> urlService.getOriginUrl(SHORT_URL));
     }
