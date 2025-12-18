@@ -23,6 +23,12 @@ public class UrlExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, exception, request);
     }
 
+    @ExceptionHandler(UrlNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFoundException(UrlNotFoundException exception, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, exception, request);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleRuntimeException(RuntimeException exception, HttpServletRequest request) {

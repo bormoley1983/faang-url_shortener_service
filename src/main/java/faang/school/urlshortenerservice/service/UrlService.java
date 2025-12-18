@@ -22,4 +22,17 @@ public interface UrlService {
      * @return объект {@link UrlDto}, содержащий информацию о полученной и возвращенной ссылках
      */
     UrlDto getShortUrl(UrlDto urlDto);
+
+    /**
+     * Пользователь возвращает оригинальную ссылку
+     * <p>
+     * Условия:
+     * <ul>
+     *     <li>Отсутствуют</li>
+     * </ul>
+     *
+     * @param hash — короткая ссылка
+     * @return оригинальная ссылка
+     */
+    String getOriginalUrl(String hash);
 }
