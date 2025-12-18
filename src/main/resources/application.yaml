@@ -34,13 +34,13 @@ url-shortener:
     pool-size: 10000
     queue-size: 50000
 
-    pool-core-size: 50      # Core pool size для hashGeneratorExecutor
-    pool-max-size: 100      # Max pool size для hashGeneratorExecutor
+    pool-core-size: 50
+    pool-max-size: 100
 
 
   hash-cache:
-    pool-core-size: 50     # Core pool size для hashCacheExecutor
-    pool-max-size: 100      # Max pool size для hashCacheExecutor
+    pool-core-size: 50
+    pool-max-size: 100
     size: 10000
     queue-size: 5000
     refill-threshold-percent: 30

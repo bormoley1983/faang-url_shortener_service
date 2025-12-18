@@ -73,7 +73,6 @@ class HashGeneratorTest {
 
         hashGenerator.saveHashesInBatches(hashes);
 
-        // batchSize = 3 -> 2 батча
         verify(jdbcTemplate, times(2))
                 .execute(any(ConnectionCallback.class));
     }
