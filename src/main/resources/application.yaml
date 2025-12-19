@@ -40,10 +40,15 @@ hash-cache-executor:
 
 server:
   port: 8080
+  servlet:
+    context-path: /api/v1
 
 app:
   shortener:
     base-url: http://localhost:8080
+  url-cache:
+    ttl: 30d
+    version: v1
 
 logging:
   level:

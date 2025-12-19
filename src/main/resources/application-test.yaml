@@ -3,3 +3,8 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+app:
+  url-cache:
+    version: v1
+    ttl: 1h

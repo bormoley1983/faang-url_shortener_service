@@ -1,10 +1,12 @@
 package faang.school.urlshortenerservice.integration;
 
 import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.config.UrlCacheProperties;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.repository.db.UrlRepository;
 import faang.school.urlshortenerservice.service.HashCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,13 +36,15 @@ class UrlIntegrationTest extends AbstractIntegrationTest {
     UrlRepository urlRepository;
     @Autowired
     StringRedisTemplate stringRedisTemplate;
-
+    @Autowired
+    private UrlCacheProperties urlCacheProperties;
     @MockBean
-    HashCache hashCache; // контролируем hash в тесте
+    HashCache hashCache;
 
     private static final String USER_ID_HEADER = "x-user-id";
 
     @Test
+    @DisplayName("Trigger controller POST and hash generation, check redis and DB have stored new hash and longUrl")
     void postUrl_persistsToDb_andSavesToRedis() throws Exception {
         when(hashCache.getHash()).thenReturn("ABC123");
 
@@ -53,11 +57,10 @@ class UrlIntegrationTest extends AbstractIntegrationTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
-        // DB
         assertThat(urlRepository.findById("ABC123")).isPresent();
 
-        // Redis
-        String cached = stringRedisTemplate.opsForValue().get("url:ABC123");
+        String expectedKey = "urlshortener:" + urlCacheProperties.getVersion() + ":url:ABC123";
+        String cached = stringRedisTemplate.opsForValue().get(expectedKey);
         assertThat(cached).isEqualTo(longUrl);
     }
 }
