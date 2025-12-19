@@ -4,6 +4,7 @@ import faang.school.urlshortenerservice.config.context.UserContext;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.service.UrlService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -16,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UrlController.class)
+@DisplayName("POST /url validation")
 class UrlControllerTest {
 
     @Autowired
@@ -32,6 +34,7 @@ class UrlControllerTest {
     private static final String USER_ID = "1";
 
     @Test
+    @DisplayName("Returns 400 Bad Request when URL is not a valid HTTP URL")
     void createUrl_invalidUrl_returns400() throws Exception {
         CreateUrlRequestDto dto = new CreateUrlRequestDto("not-a-url");
 
@@ -45,6 +48,7 @@ class UrlControllerTest {
     }
 
     @Test
+    @DisplayName("Returns 400 Bad Request when URL is blank")
     void createUrl_blankUrl_returns400() throws Exception {
         CreateUrlRequestDto dto = new CreateUrlRequestDto(" ");
 

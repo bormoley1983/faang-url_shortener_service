@@ -35,5 +35,7 @@ public abstract class AbstractIntegrationTest {
 
         registry.add("spring.data.redis.host", redis::getHost);
         registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
+        registry.add("app.url-cache.ttl", () -> "2s");
+        registry.add("app.url-cache.version", () -> "v1");
     }
 }
