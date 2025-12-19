@@ -40,5 +40,5 @@ public interface HashRepository extends JpaRepository<Hash, String> {
             SELECT * FROM deleted_hashes
             """,
             nativeQuery = true)
-    List<Hash> getHashBatch(@Param("amount") int amount);
+    List<String> getHashBatch(@Param("amount") int amount);
 }

@@ -1,7 +1,6 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.dto.UrlDto;
-import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.entity.UrlCache;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;
@@ -28,8 +27,7 @@ public class UrlServiceImpl implements UrlService {
     @Transactional
     public UrlDto getShortUrl(UrlDto urlDto) {
         Url url = urlMapper.toUrl(urlDto);
-        Hash hash = hashCache.getHash();
-        url.setHash(hash.getHash());
+        url.setHash(hashCache.getHash());
         url = urlRepository.save(url);
         UrlCache urlCache = UrlCache.builder()
                 .hash(url.getHash())

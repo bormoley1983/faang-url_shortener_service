@@ -1,6 +1,5 @@
 package faang.school.urlshortenerservice.util;
 
-import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +20,7 @@ public class HashGenerator {
     @Async("hashGeneratorExecutor")
     public void generateBatch() {
         List<Long> numbers = hashRepository.getUniqueNumbers(batch);
-        List<String> hashes = base62Encoder.encode(numbers).stream()
-                .map(Hash::getHash)
-                .toList();
+        List<String> hashes = base62Encoder.encode(numbers);
         hashRepository.save(hashes);
     }
 }

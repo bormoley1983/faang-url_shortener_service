@@ -1,6 +1,5 @@
 package faang.school.urlshortenerservice.util;
 
-import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,7 @@ public class HashCache {
     private final HashGenerator hashGenerator;
     private final HashRepository hashRepository;
     private final ExecutorService hashCacheExecutor;
-    private final LinkedBlockingQueue<Hash> cache = new LinkedBlockingQueue<>(limit);
+    private final LinkedBlockingQueue<String> cache = new LinkedBlockingQueue<>(limit);
 
     public HashCache(
             HashGenerator hashGenerator,
@@ -32,7 +31,7 @@ public class HashCache {
         this.hashCacheExecutor = hashCacheExecutor;
     }
 
-    public Hash getHash() {
+    public String getHash() {
         try {
             if (cache.size() < bound) {
                 hashCacheExecutor.execute(() -> cache.addAll(hashRepository.getHashBatch(batch)));
