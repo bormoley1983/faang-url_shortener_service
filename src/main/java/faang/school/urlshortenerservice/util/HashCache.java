@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.util;
 
 import faang.school.urlshortenerservice.repository.HashRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,22 @@ public class HashCache {
         this.hashCacheExecutor = hashCacheExecutor;
     }
 
+    @PostConstruct
+    public void init() {
+        log.info("Initializing HashCache");
+        if (cache.isEmpty() && isGenerating.compareAndSet(false, true)) {
+            try {
+                hashGenerator.generateBatch();
+                cache.addAll(hashRepository.getHashBatch(batch));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                isGenerating.set(false);
+            }
+        }
+        log.info("Initialization of HashCache is finished");
+    }
+
     public String getHash() {
         try {
             if (cache.size() < bound && isGenerating.compareAndSet(false, true)) {
@@ -43,6 +60,7 @@ public class HashCache {
                 CompletableFuture.runAsync(() -> {
                             cache.addAll(hashRepository.getHashBatch(batch));
                             hashGenerator.generateBatch();
+                            log.info("The cache is filled");
                         }, hashCacheExecutor)
                         .whenComplete((result, ex) -> isGenerating.set(false))
                         .exceptionally(ex -> {
