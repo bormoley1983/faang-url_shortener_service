@@ -4,22 +4,136 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+    hikari:
+      maximum-pool-size: 5000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      repositories:
+        enabled: false
+      password:
+      database: 0
+      timeout: 1000 #ms
+      lettuce:
+        pool:
+          max-active: 5000
+          max-idle: 5000
+          min-idle: 1000
+          max-wait: 5000 #ms
+          time-between-eviction-runs: 10s
+        shutdown-timeout: 1000 #ms
+      connect-timeout: 1000 #ms
+      ssl: false
+
+redis:
+  pipeline:
+    enabled: true
+    batch-size: 100
+  serialize:
+    use-string-only: true
+  local-buffer:
+    enabled: true
+    size: 500
+    refill-threshold: 100
+  hash:
+    ttl: 4 # cколько дней храниться хеш в редис
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
 server:
-  port: 8080
+  port: 8079
+  tomcat:
+    threads:
+      max: 5000
 
 logging:
   level:
-    root: info
+    root: INFO
+
+
+app:
+  sheduled:
+    time:
+      cleaner: "0 0 3 * * ?" # в 3 ночи
+    check:
+      hash:  "*/05 * * * * ?" # каждые 5 секунд
+
+number:
+  days:
+    hash:
+      storage: 5 # cколько дней храниться хеш в бд
+
+base:
+  get:
+    request: http://localhost:8079/url-shortener/
+
+hash:
+  local:
+    count:
+      hash: 200000
+    size:
+      minimum: 0.6 # проценты/100
+  generator:
+    batch-size:
+      save-bd: 5000
+    max-range: 1000000
+    hashes-in-bd:
+      minimum: 600000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, metrics, info
+      base-path: /actuator
+
+    # Настройки конкретных эндпоинтов
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+  metrics:
+    # 1. ТЕГИ приложения (обязательно!)
+    tags:
+      application: ${spring.application.name}
+      environment: development
+      instance: ${spring.application.instance-id:${random.value}}
+
+    # 2. ВКЛЮЧЕНИЕ метрик
+    enable:
+      # Основные
+      jvm: true              # JVM метрики (память, GC, threads)
+      http: true             # HTTP метрики
+      process: true          # Процесс (uptime, CPU)
+      system: true           # Системные метрики
+
+      # Базы данных
+      hikaricp: true         # HikariCP connection pool
+      jdbc: true             # JDBC метрики
+      data.source: true      # DataSource метрики
+
+      # Кэш и очереди
+      cache: true            # Spring Cache
+      redis: true            # Redis (если есть spring-data-redis)
+      kafka: true            # Kafka (если есть)
+
+      # Логирование
+      logback: true          # Logback метрики
+
+      # Веб-сервер
+      tomcat: true           # Tomcat метрики
+      undertow: true         # Undertow метрики
