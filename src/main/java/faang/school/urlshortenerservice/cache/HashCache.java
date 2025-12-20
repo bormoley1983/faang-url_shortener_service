@@ -70,6 +70,8 @@ public class HashCache {
 
     public void refill() {
         try {
+            //todo узкое место есть
+            // мб стоит как то по другому проверять количество хеша в бд
             int needed = cacheMaxSize - cache.size();
             if (needed <= 0) return;
 
