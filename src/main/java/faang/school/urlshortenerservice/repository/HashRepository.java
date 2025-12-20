@@ -74,4 +74,38 @@ public class HashRepository {
     public List<String> getHashBatch() {
         return getHashBatch(batchSize);
     }
+
+    public List<String> getHashBatchAtomic(int limit) {
+        String sql = """
+                UPDATE hash
+                SET available = false
+                WHERE hash IN (
+                    SELECT hash FROM hash
+                    WHERE available = true
+                    LIMIT ?
+                    FOR UPDATE SKIP LOCKED
+                )
+                RETURNING hash
+                """;
+        return jdbcTemplate.queryForList(sql, String.class, limit);
+    }
+
+    public void saveAsUsed(String hash) {
+        String sql = """
+                INSERT INTO hash (hash, available)
+                VALUES (?, false)
+                ON CONFLICT (hash) DO UPDATE SET available = false
+                """;
+        jdbcTemplate.update(sql, hash);
+    }
+
+    public List<String> getAvailableHashes(int limit) {
+        String sql = """
+                SELECT hash FROM hash
+                WHERE available IS NULL OR available = true
+                ORDER BY random()
+                LIMIT ?
+                """;
+        return jdbcTemplate.queryForList(sql, String.class, limit);
+    }
 }

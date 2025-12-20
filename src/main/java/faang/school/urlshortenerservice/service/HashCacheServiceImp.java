@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "hash.cache.type", havingValue = "in-memory", matchIfMissing = false)
 public class HashCacheServiceImp implements HashCacheService {
 
     private final HashRepository hashRepository;
@@ -177,6 +179,18 @@ public class HashCacheServiceImp implements HashCacheService {
             
         } catch (Exception e) {
             log.error("Error during cache refill", e);
+        }
+    }
+
+    @Override
+    public void returnHash(String hash) {
+        if (hash != null && !hash.isEmpty()) {
+            if (cache.size() < maxCacheSize) {
+                cache.addFirst(hash);
+                log.debug("Returned hash to cache: {}", hash);
+            } else {
+                log.debug("Cache is full, hash not returned: {}", hash);
+            }
         }
     }
 

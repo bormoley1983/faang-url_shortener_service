@@ -25,7 +25,7 @@ public class HashGenerator {
     private final Base62Encoder encoder;
     private final MeterRegistry meterRegistry;
 
-    @Async("hashGenerationExecutor")
+    @Async("hashGeneratorExecutor")
     public CompletableFuture<Void> generateHashBatch() {
         long startTime = System.currentTimeMillis();
 
