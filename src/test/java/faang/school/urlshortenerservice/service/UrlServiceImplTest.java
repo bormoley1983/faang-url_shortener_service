@@ -2,6 +2,7 @@ package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.entity.UrlEntity;
 import faang.school.urlshortenerservice.exception.HashUnavailableException;
+import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.repository.db.UrlRepository;
 import faang.school.urlshortenerservice.repository.redis.UrlCacheRepository;
 import faang.school.urlshortenerservice.config.UrlServiceProperties;
@@ -10,6 +11,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.RedisSystemException;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-@DisplayName("UrlService createShortUrl")
+@DisplayName("UrlService createShortUrl, getOriginalUrl")
 class UrlServiceImplTest {
 
     private HashCache hashCache;
@@ -48,7 +53,6 @@ class UrlServiceImplTest {
         String longUrl = "https://example.com/abc";
         when(hashCache.getHash()).thenReturn("AAAAAA", "BBBBBB");
 
-        // 1-я попытка: коллизия в БД
         doThrow(new DataIntegrityViolationException("dup"))
                 .doAnswer(inv -> inv.getArgument(0))
                 .when(urlRepository).save(any(UrlEntity.class));
@@ -57,10 +61,8 @@ class UrlServiceImplTest {
 
         assertThat(shortUrl).isEqualTo("http://short/BBBBBB");
 
-        // DB save должен быть вызван 2 раза (2 попытки)
         verify(urlRepository, times(2)).save(any(UrlEntity.class));
 
-        // Redis должен быть вызван 1 раз и только с финальным hash
         verify(urlCacheRepository, times(1)).save("BBBBBB", longUrl);
         verify(urlCacheRepository, never()).save("AAAAAA", longUrl);
     }
@@ -91,5 +93,111 @@ class UrlServiceImplTest {
 
         verifyNoInteractions(urlRepository);
         verifyNoInteractions(urlCacheRepository);
+    }
+
+    @Test
+    @DisplayName("Throws HashUnavailableException after max attempts exhausted")
+    void createShortUrl_maxAttemptsExceeded_throws() {
+        when(hashCache.getHash()).thenReturn(null, " ", null);
+
+        assertThatThrownBy(() -> service.createShortUrl("https://example.com"))
+                .isInstanceOf(HashUnavailableException.class);
+
+        verifyNoInteractions(urlRepository);
+        verifyNoInteractions(urlCacheRepository);
+    }
+
+    @Test
+    @DisplayName("getOriginalUrl throws UrlNotFoundException for null or blank hash")
+    void getOriginalUrl_invalidHash_throws() {
+        assertThatThrownBy(() -> service.getOriginalUrl(null))
+                .isInstanceOf(UrlNotFoundException.class);
+
+        assertThatThrownBy(() -> service.getOriginalUrl(" "))
+                .isInstanceOf(UrlNotFoundException.class);
+
+        verifyNoInteractions(urlRepository);
+        verifyNoInteractions(urlCacheRepository);
+    }
+
+    @Test
+    @DisplayName("getOriginalUrl returns value from cache when cache hit")
+    void getOriginalUrl_cacheHit_returnsCached() {
+        when(urlCacheRepository.find("ABC123"))
+                .thenReturn(Optional.of("https://example.com"));
+
+        String result = service.getOriginalUrl("ABC123");
+
+        assertThat(result).isEqualTo("https://example.com");
+
+        verify(urlCacheRepository).find("ABC123");
+        verifyNoInteractions(urlRepository);
+    }
+
+    @Test
+    @DisplayName("getOriginalUrl loads from DB on cache miss and saves to cache")
+    void getOriginalUrl_cacheMiss_dbHit_savesToCache() {
+        UrlEntity entity = new UrlEntity("ABC123", "https://example.com");
+
+        when(urlCacheRepository.find("ABC123"))
+                .thenReturn(Optional.empty());
+        when(urlRepository.findById("ABC123"))
+                .thenReturn(Optional.of(entity));
+
+        String result = service.getOriginalUrl("ABC123");
+
+        assertThat(result).isEqualTo("https://example.com");
+
+        verify(urlCacheRepository).find("ABC123");
+        verify(urlRepository).findById("ABC123");
+        verify(urlCacheRepository).save("ABC123", "https://example.com");
+    }
+
+    @Test
+    @DisplayName("getOriginalUrl throws when not found in cache and DB")
+    void getOriginalUrl_notFoundInCacheAndDb_throws() {
+        when(urlCacheRepository.find("ABC123"))
+                .thenReturn(Optional.empty());
+        when(urlRepository.findById("ABC123"))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getOriginalUrl("ABC123"))
+                .isInstanceOf(UrlNotFoundException.class);
+
+        verify(urlRepository).findById("ABC123");
+    }
+
+    @Test
+    @DisplayName("getOriginalUrl ignores Redis exception on read and falls back to DB")
+    void getOriginalUrl_redisReadFails_fallsBackToDb() {
+        UrlEntity entity = new UrlEntity("ABC123", "https://example.com");
+
+        when(urlCacheRepository.find("ABC123"))
+                .thenThrow(new RedisSystemException("boom", null));
+        when(urlRepository.findById("ABC123"))
+                .thenReturn(Optional.of(entity));
+
+        String result = service.getOriginalUrl("ABC123");
+
+        assertThat(result).isEqualTo("https://example.com");
+
+        verify(urlRepository).findById("ABC123");
+    }
+
+    @Test
+    @DisplayName("getOriginalUrl ignores Redis exception on write")
+    void getOriginalUrl_redisWriteFails_doesNotFailRequest() {
+        UrlEntity entity = new UrlEntity("ABC123", "https://example.com");
+
+        when(urlCacheRepository.find("ABC123"))
+                .thenReturn(Optional.empty());
+        when(urlRepository.findById("ABC123"))
+                .thenReturn(Optional.of(entity));
+        doThrow(new RedisConnectionFailureException("down"))
+                .when(urlCacheRepository).save(any(), any());
+
+        String result = service.getOriginalUrl("ABC123");
+
+        assertThat(result).isEqualTo("https://example.com");
     }
 }
