@@ -48,6 +48,13 @@ dependencies {
     implementation("net.jodah:failsafe:2.4.4")
     
     /**
+     * Rate Limiting
+     */
+    implementation("com.bucket4j:bucket4j-core:8.7.0")
+    implementation("com.bucket4j:bucket4j-redis:8.7.0")
+    implementation("io.lettuce:lettuce-core:6.2.4.RELEASE")
+    
+    /**
      * Scheduler Lock (ShedLock)
      */
     implementation("net.javacrumbs.shedlock:shedlock-spring:5.9.1")
@@ -58,6 +65,12 @@ dependencies {
      */
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-core")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    
+    /**
+     * API Documentation (Swagger/OpenAPI)
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
     /**
      * Test containers

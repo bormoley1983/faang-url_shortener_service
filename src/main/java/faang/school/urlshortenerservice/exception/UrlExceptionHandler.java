@@ -70,6 +70,76 @@ public class UrlExceptionHandler {
         );
     }
 
+    @ExceptionHandler(InvalidUrlException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUrlException(
+            InvalidUrlException ex,
+            HttpServletRequest request) {
+        
+        log.warn("Invalid URL: {}", ex.getMessage());
+        
+        return buildErrorResponse(
+                ex.getMessage(),
+                request.getRequestURI(),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(NoAvailableHashException.class)
+    public ResponseEntity<ErrorResponse> handleNoAvailableHashException(
+            NoAvailableHashException ex,
+            HttpServletRequest request) {
+        
+        log.error("No available hash: {}", ex.getMessage());
+        
+        return buildErrorResponse(
+                ex.getMessage(),
+                request.getRequestURI(),
+                HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+    @ExceptionHandler(UrlAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUrlAlreadyExistsException(
+            UrlAlreadyExistsException ex,
+            HttpServletRequest request) {
+        
+        log.warn("URL already exists: {}", ex.getMessage());
+        
+        return buildErrorResponse(
+                ex.getMessage(),
+                request.getRequestURI(),
+                HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler(UrlNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUrlNotFoundException(
+            UrlNotFoundException ex,
+            HttpServletRequest request) {
+        
+        log.warn("URL not found: {}", ex.getMessage());
+        
+        return buildErrorResponse(
+                ex.getMessage(),
+                request.getRequestURI(),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitExceededException(
+            RateLimitExceededException ex,
+            HttpServletRequest request) {
+        
+        log.warn("Rate limit exceeded: {}", ex.getMessage());
+        
+        return buildErrorResponse(
+                ex.getMessage(),
+                request.getRequestURI(),
+                HttpStatus.TOO_MANY_REQUESTS
+        );
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(
             RuntimeException ex,
