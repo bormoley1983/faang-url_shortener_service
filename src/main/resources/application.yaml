@@ -5,6 +5,26 @@ spring:
     username: user
     password: password
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      repositories:
+        enabled: false
+      password:
+      database: 0
+      timeout: 1000 #ms
+      lettuce:
+        pool:
+          max-active: 5000
+          max-idle: 5000
+          min-idle: 1000
+          max-wait: 5000 #ms
+          time-between-eviction-runs: 10s
+        shutdown-timeout: 1000 #ms
+      connect-timeout: 1000 #ms
+      ssl: false
+
 redis:
   host: localhost
   port: 6379
