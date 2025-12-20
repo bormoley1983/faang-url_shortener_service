@@ -41,7 +41,7 @@ public class UrlService {
 
         urlRepository.save(url);
         CompletableFuture.runAsync(() -> urlCacheRepository.save(hash, longUrl));
-
+        log.info("Created new shortUrl: {}", longUrl);
         return hash;
     }
 

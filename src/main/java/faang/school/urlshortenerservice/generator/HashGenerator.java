@@ -92,7 +92,7 @@ public class HashGenerator {
 
     public int saveSingleBatch(List<Hash> batch) {
 
-        String sql = "INSERT INTO hash_table(hash) VALUES (?) ON CONFLICT DO NOTHING";
+        String sql = "INSERT INTO hash(hash) VALUES (?) ON CONFLICT DO NOTHING";
 
         int[] results = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override

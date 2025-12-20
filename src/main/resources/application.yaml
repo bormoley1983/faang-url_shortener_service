@@ -4,6 +4,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+    hikari:
+      maximum-pool-size: 5000
 
   data:
     redis:
@@ -59,11 +61,11 @@ url-shortener:
 
 
   hash-cache:
-    pool-core-size: 50
-    pool-max-size: 100
-    size: 10000
+    pool-core-size: 500
+    pool-max-size: 1000
+    size: 200000
     queue-size: 5000
-    refill-threshold-percent: 20
+    refill-threshold-percent: 60
   base-url: "http://localhost:8079/v1/url"
 
 

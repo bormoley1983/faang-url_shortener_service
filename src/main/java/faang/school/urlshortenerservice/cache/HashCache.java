@@ -36,6 +36,7 @@ public class HashCache {
 
     @PostConstruct
     public void init() {
+        hashGenerator.generateBatch();
         refill();
     }
 
@@ -46,6 +47,7 @@ public class HashCache {
 
         if (cache.size() < threshold) {
            CompletableFuture.runAsync(this::triggerRefill);
+           log.info("HashGenerator started batch generation {}", cache.size());
         }
 
         String hash = cache.pollFirst();
