@@ -1,65 +1,61 @@
 package faang.school.urlshortenerservice.exception;
 
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
 @Slf4j
-@ControllerAdvice
 public class UrlExceptionHandler {
 
-    @ExceptionHandler({
-            MethodArgumentNotValidException.class,
-            BindException.class,
-            IllegalArgumentException.class
-    })
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex) {
-        log.warn("Validation error: {}", ex.getMessage());
-
-        return buildResponse(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage()
-        );
-    }
-
-    @ExceptionHandler(UrlShortenerException.class)
-    public ResponseEntity<ErrorResponse> handleUrlShortenerError(UrlShortenerException ex) {
-        log.error("URL Shortener internal error: {}", ex.getMessage(), ex);
-        // todo  подумай, что возвращать?
-        return buildResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage()
-        );
-    }
+    private static final Map<Class<? extends Exception>, HttpStatus> EXCEPTION_STATUS_MAP =
+            Map.ofEntries(
+                    Map.entry(MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST),
+                    Map.entry(BindException.class, HttpStatus.BAD_REQUEST),
+                    Map.entry(IllegalArgumentException.class, HttpStatus.BAD_REQUEST),
+                    Map.entry(NoFreeHashesException.class, HttpStatus.SERVICE_UNAVAILABLE),
+                    Map.entry(EntityNotFoundException.class, HttpStatus.NOT_FOUND),
+                    Map.entry(UrlShortenerException.class, HttpStatus.INTERNAL_SERVER_ERROR),
+                    Map.entry(RuntimeException.class, HttpStatus.INTERNAL_SERVER_ERROR)
+            );
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
-        log.error("Unexpected error", ex);
+    public ErrorResponse handleException(Exception e, HttpServletRequest rq) {
+        HttpStatus status = EXCEPTION_STATUS_MAP.getOrDefault(e.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
+        String message = buildMessage(e, status);
+        log.error("[{} {}] -> {}", rq.getMethod(), rq.getRequestURL(), e.getMessage(), e);
 
-        return buildResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Internal server error occurred"
+        return new ErrorResponse(
+                LocalDateTime.now(),
+                rq.getRequestURL().toString(),
+                e.getClass().getSimpleName(),
+                message,
+                status.value()
         );
     }
 
-    @ExceptionHandler(NoFreeHashesException.class)
-    public ResponseEntity<ErrorResponse> handleNoFreeHashes(NoFreeHashesException ex) {
-        log.error("No free hashes found: {}", ex.getMessage(), ex);
+    private String buildMessage(Exception ex, HttpStatus status) {
+        if (status.is4xxClientError()) {
+            if (ex instanceof MethodArgumentNotValidException e) {
+                return e.getBindingResult()
+                        .getFieldErrors()
+                        .stream()
+                        .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                        .collect(Collectors.joining("; "));
+            }
+            return ex.getMessage();
+        }
 
-        return buildResponse(
-                HttpStatus.NOT_FOUND,
-                ex.getMessage()
-        );
-    }
-
-    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
-        return ResponseEntity
-                .status(status)
-                .body(new ErrorResponse(status.value(), message));
+        return "Internal server error";
     }
 }

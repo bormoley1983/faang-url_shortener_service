@@ -51,9 +51,8 @@ public class HashCache {
         String hash = cache.pollFirst();
 
         if (hash == null) {
-            log.warn("HashCache empty — forcing refill");
-            triggerRefill();
-            throw new RuntimeException("No free hashes available");
+            log.warn("HashCache empty — generating hash synchronously");
+            hash = getHash();
         }
 
         return hash;

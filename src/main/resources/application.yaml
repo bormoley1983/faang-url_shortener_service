@@ -43,7 +43,7 @@ url-shortener:
     pool-max-size: 100
     size: 10000
     queue-size: 5000
-    refill-threshold-percent: 30
+    refill-threshold-percent: 20
   base-url: "http://localhost:8079/v1/url"
 
 
