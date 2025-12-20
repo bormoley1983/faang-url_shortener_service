@@ -49,6 +49,8 @@ app:
   url-cache:
     ttl: 30d
     version: v1
+    module: urlshortener
+    urlEntity: url
 
 logging:
   level:

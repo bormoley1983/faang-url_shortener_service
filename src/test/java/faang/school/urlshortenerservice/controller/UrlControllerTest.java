@@ -13,7 +13,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UrlController.class)
@@ -59,5 +62,17 @@ class UrlControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(urlService);
+    }
+
+    @Test
+    @DisplayName("Returns 302 Found and Location header when URL is valid")
+    void redirect_returns302_andLocationHeader() throws Exception {
+        when(urlService.getOriginalUrl("abc123"))
+                .thenReturn("https://example.com");
+
+        mvc.perform(get("/url/abc123")
+                        .header(USER_ID_HEADER, USER_ID))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", "https://example.com"));
     }
 }

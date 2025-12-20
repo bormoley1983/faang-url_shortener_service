@@ -10,4 +10,6 @@ import java.time.Duration;
 public class UrlCacheProperties {
     private Duration ttl = Duration.ofDays(30);
     private String version = "v1";
+    private String module = "urlshortener";
+    private String urlEntity = "url";
 }

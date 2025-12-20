@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.integration;
 
 import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.config.UrlCacheProperties;
 import faang.school.urlshortenerservice.repository.redis.UrlCacheRepositoryImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
@@ -26,19 +25,27 @@ public class UrlCacheRepositoryTtlTest extends AbstractIntegrationTest {
 
     @Autowired
     StringRedisTemplate redisTemplate;
+    @Autowired
+    private UrlCacheProperties urlCacheProperties;
 
     @Test
     @DisplayName("""
-        Stores URL with TTL and
-        removes key from Redis after TTL expiration
-        """)
+            Stores URL with TTL and
+            removes key from Redis after TTL expiration
+            """)
     void save_setsTtl_andKeyExpires() throws Exception {
         String hash = "ABC123";
         String longUrl = "https://example.com";
 
         repository.save(hash, longUrl);
 
-        String key = "urlshortener:v1:url:" + hash;
+        String key = urlCacheProperties.getModule()
+                + ":"
+                + urlCacheProperties.getVersion()
+                + ":"
+                + urlCacheProperties.getUrlEntity()
+                + ":"
+                + hash;
 
         assertThat(redisTemplate.opsForValue().get(key))
                 .isEqualTo(longUrl);

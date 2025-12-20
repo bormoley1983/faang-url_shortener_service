@@ -59,7 +59,12 @@ class UrlIntegrationTest extends AbstractIntegrationTest {
 
         assertThat(urlRepository.findById("ABC123")).isPresent();
 
-        String expectedKey = "urlshortener:" + urlCacheProperties.getVersion() + ":url:ABC123";
+        String expectedKey = urlCacheProperties.getModule()
+                + ":"
+                + urlCacheProperties.getVersion()
+                + ":"
+                + urlCacheProperties.getUrlEntity()
+                + ":ABC123";
         String cached = stringRedisTemplate.opsForValue().get(expectedKey);
         assertThat(cached).isEqualTo(longUrl);
     }

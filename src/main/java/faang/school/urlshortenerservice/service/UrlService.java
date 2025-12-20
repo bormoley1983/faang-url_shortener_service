@@ -8,4 +8,12 @@ public interface UrlService {
      * @return String короткую ссылку
      */
     String createShortUrl(String longUrl);
+
+    /**
+     * Вернуть длинную ссылку для переданного hash
+     *
+     * @param hash String с хешом длинной ссылки
+     * @return String длинную ссылку
+     */
+    String getOriginalUrl(String hash);
 }
