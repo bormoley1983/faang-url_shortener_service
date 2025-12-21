@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.repository;
 
-import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.integration.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.repository.db.HashRepository;
 import faang.school.urlshortenerservice.service.HashGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +34,7 @@ class HashRepositoryIntegrationTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanDb() {
+        jdbcTemplate.execute("TRUNCATE TABLE url");
         jdbcTemplate.execute("TRUNCATE TABLE hash");
         jdbcTemplate.execute("ALTER SEQUENCE unique_number_seq RESTART WITH 1");
     }

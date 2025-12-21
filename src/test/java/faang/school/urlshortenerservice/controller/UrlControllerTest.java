@@ -89,7 +89,7 @@ class UrlControllerTest {
         when(urlService.getOriginalUrl("abc123"))
                 .thenReturn("https://example.com");
 
-        mvc.perform(get("/url/abc123")
+        mvc.perform(get("/abc123")
                         .header(USER_ID_HEADER, USER_ID))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", "https://example.com"));
@@ -103,7 +103,7 @@ class UrlControllerTest {
         when(urlService.getOriginalUrl("missing"))
                 .thenThrow(new UrlNotFoundException("Invalid hash: missing"));
 
-        mvc.perform(get("/url/missing")
+        mvc.perform(get("/missing")
                         .header(USER_ID_HEADER, USER_ID))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -119,7 +119,7 @@ class UrlControllerTest {
         when(urlService.getOriginalUrl("abc123"))
                 .thenThrow(new IllegalArgumentException("Bad request"));
 
-        mvc.perform(get("/url/abc123")
+        mvc.perform(get("/abc123")
                         .header(USER_ID_HEADER, USER_ID))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("bad_request"))
@@ -134,7 +134,7 @@ class UrlControllerTest {
         when(urlService.getOriginalUrl("abc123"))
                 .thenThrow(new RuntimeException("boom"));
 
-        mvc.perform(get("/url/abc123")
+        mvc.perform(get("/abc123")
                         .header(USER_ID_HEADER, USER_ID))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value("internal_error"))

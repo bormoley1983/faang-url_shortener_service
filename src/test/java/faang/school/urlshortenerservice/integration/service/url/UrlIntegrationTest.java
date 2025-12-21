@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.integration.service.url;
 
-import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.integration.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.config.UrlCacheProperties;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.repository.db.UrlRepository;

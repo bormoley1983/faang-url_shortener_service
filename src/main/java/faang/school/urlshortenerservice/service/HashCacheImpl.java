@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -32,10 +33,30 @@ public class HashCacheImpl implements HashCache {
         this.hashCacheExecutor = hashCacheExecutor;
     }
 
+    /*
+        async refill on cache miss with wait timeout
+     */
     @Override
     public String getHash() {
+
         String hash = cache.poll();
+        if (hash != null) {
+            maybeTriggerRefill();
+            return hash;
+        }
+
         maybeTriggerRefill();
+
+        try {
+            long timeoutMs = properties.getWaitTimeout().toMillis();
+            hash = cache.poll(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
+        } finally {
+            maybeTriggerRefill();
+        }
+
         return hash;
     }
 

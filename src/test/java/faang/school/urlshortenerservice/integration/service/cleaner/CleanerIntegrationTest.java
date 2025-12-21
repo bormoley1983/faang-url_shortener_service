@@ -10,7 +10,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import faang.school.urlshortenerservice.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.integration.AbstractIntegrationTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
