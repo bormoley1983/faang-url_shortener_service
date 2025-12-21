@@ -37,12 +37,11 @@ public class URLControllerTest extends BaseContext {
         UrlRequest request = new UrlRequest();
         request.setUrl("https://test-tracker.com/");
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/short-url")
-                        .header("x-user-id", 5)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertTrue(result.getResponse().getContentAsString().contains("http://localhost:8080/sh.c/1"));
+        assertTrue(result.getResponse().getContentAsString().contains("http://localhost:8080/short-url/1"));
     }
 
     @Test

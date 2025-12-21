@@ -22,12 +22,12 @@ public class HashGenerator {
 
     private final HashRepository repository;
     private final Base62Encoder encoder;
-    @Value("${spring.jpa.hibernate.batch_size}")
-    private Long batchSize;
+    @Value("${spring.jpa.hibernate.seq_batch_size}")
+    private Long seqBatchSize;
 
     @Transactional
     public void generateHashes() {
-        List<Long> uniqueNumbers = repository.getUniqueNumbers(batchSize);
+        List<Long> uniqueNumbers = repository.getUniqueNumbers(seqBatchSize);
         List<String> stringHashes = encoder.encodeNumbers(uniqueNumbers);
         List<Hash> hashes = stringHashes.stream()
                 .map(Hash::new)

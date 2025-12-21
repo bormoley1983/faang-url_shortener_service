@@ -9,12 +9,14 @@ spring:
     redis:
       port: 6379
       host: localhost
+      ttl-days: 1
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-      batch_size: 5000  # Группирует до 5000 операций в батч
+      batch_size: 1000  # Группирует до 5000 операций в батч
+      seq_batch_size: 1020
       order_inserts: true
 
     show-sql: true

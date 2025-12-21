@@ -12,7 +12,7 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.stereotype.Service;
 
 /**
- * Сервис для работы с хэшами и ассоциациями url - hash
+ * Сервис для работы с хэшами и ассоциациями url - hash.
  */
 @Slf4j
 @Service
@@ -48,7 +48,6 @@ public class URLService {
     public String getUrl(String hash) {
         String url = urlCacheRepository.getCacheUrl(hash);
         if (url != null) {
-            log.info("url {} получен из Redis", url);
             return url;
         }
         return urlRepository.findUrlByHashOrElseThrow(hash);

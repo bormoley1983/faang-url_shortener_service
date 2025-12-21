@@ -26,7 +26,7 @@ public class HashCache {
 
     private static final AtomicBoolean isRefilling = new AtomicBoolean(false);
     private static ConcurrentLinkedQueue<String> hashes = new ConcurrentLinkedQueue<>();
-    private static Long queueSize = 100L;
+    private static Long queueSize = 1000L;
     private final HashGenerator hashGenerator;
     private final HashRepository hashRepository;
     @Value("${spring.jpa.hibernate.batch_size}")
@@ -34,7 +34,7 @@ public class HashCache {
 
     @Transactional
     public String getHash() {
-        if (hashes.size() < queueSize / 5 && isRefilling.compareAndSet(false, true)) {
+        if (hashes.size() <= queueSize / 5 && isRefilling.compareAndSet(false, true)) {
             CompletableFuture.runAsync(this::generateAndGetHashesBatch);
         }
         return hashes.poll();
