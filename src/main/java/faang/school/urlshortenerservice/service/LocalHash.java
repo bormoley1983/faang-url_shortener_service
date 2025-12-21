@@ -40,7 +40,6 @@ public class LocalHash {
         String hash = hashDeque.pollFirst();
 
         if (hash == null) {
-            // Кэш пуст - попытаемся получить хэши синхронно
             log.warn("Hash cache is empty, refilling synchronously");
             refillCacheSynchronously();
             hash = hashDeque.pollFirst();
@@ -101,7 +100,7 @@ public class LocalHash {
         }
     }
 
-    private List<Hash> addToHashDeque(int needed) {
+    public List<Hash> addToHashDeque(int needed) {
         List<Hash> unusedHashes = hashRepository.findAndDelete(needed);
 
         for (Hash hash : unusedHashes) {

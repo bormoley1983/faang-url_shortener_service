@@ -4,6 +4,8 @@ import faang.school.urlshortenerservice.dto.URLRequestDto;
 import faang.school.urlshortenerservice.dto.URLResponseDto;
 import faang.school.urlshortenerservice.exception.InvalidURLException;
 import faang.school.urlshortenerservice.exception.URLNotFoundException;
+import faang.school.urlshortenerservice.service.HashGenerator;
+import faang.school.urlshortenerservice.service.LocalHash;
 import faang.school.urlshortenerservice.service.URLService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,10 @@ import org.springframework.web.bind.annotation.*;
 public class URLController {
     private final URLService urlService;
 
+    private final HashGenerator hashGenerator;
+
+    private final LocalHash localHash;
+
     @PostMapping("/shorten")
     public ResponseEntity<String> shortenURL(@Valid @RequestBody URLRequestDto request) {
         try {
@@ -29,6 +35,16 @@ public class URLController {
             log.error("Error shortening URL", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @PostMapping("/generate")
+    public void generate() {
+        hashGenerator.generateAndSaveHashes(1_000_000);
+    }
+
+    @PostMapping("/add")
+    public int addToHash() {
+        return localHash.addToHashDeque(100_000).size();
     }
 
     @GetMapping("/{hash}")

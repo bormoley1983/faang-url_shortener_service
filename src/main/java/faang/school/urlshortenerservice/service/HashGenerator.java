@@ -23,38 +23,38 @@ public class HashGenerator {
     private final EntityManager em;
 
     @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
-    private Integer chunkSize;
+    private Integer batchSize;
 
-    @Transactional
     public void generateAndSaveHashes(int count) {
         log.warn("Start generate hashes");
         long startTime = System.currentTimeMillis();
 
         List<Long> ids = uniqueIdRepository.getNextRange(count);
 
-        List<Hash> buffer = new ArrayList<>(chunkSize);
+        List<Hash> buffer = new ArrayList<>(batchSize);
 
-        for (Long id : ids) {
+        for (int i = 0; i < ids.size(); i++) {
+            Long id = ids.get(i);
             buffer.add(Hash.builder()
                     .hashValue(base62Encoder.encode(id))
                     .build());
 
-            if (buffer.size() == chunkSize) {
-                hashRepository.saveAll(buffer);
-                hashRepository.flush();
-                em.clear();
+            // Сохраняй каждый батч в ОТДЕЛЬНОЙ транзакции
+            if (buffer.size() == batchSize || i == ids.size() - 1) {
+                saveBatchWithNewTransaction(buffer);
                 buffer.clear();
             }
-        }
-
-        if (!buffer.isEmpty()) {
-            hashRepository.saveAll(buffer);
-            hashRepository.flush();
-            em.clear();
         }
 
         log.warn("Generated and saved {} hashes in {} ms",
                 String.format("%,d", count),
                 String.format("%,d", System.currentTimeMillis() - startTime));
+    }
+
+    @Transactional
+    private void saveBatchWithNewTransaction(List<Hash> batch) {
+        hashRepository.saveAll(batch);
+        hashRepository.flush();
+        em.clear();
     }
 }
