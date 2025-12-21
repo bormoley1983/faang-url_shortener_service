@@ -59,16 +59,13 @@ url-shortener:
     pool-core-size: 50
     pool-max-size: 100
 
-
   hash-cache:
-    pool-core-size: 500
-    pool-max-size: 1000
-    size: 200000
-    queue-size: 5000
-    refill-threshold-percent: 60
+    pool-core-size: 50
+    pool-max-size: 100
+    size: 20000
+    queue-size: 500
+    refill-threshold-percent: 50
   base-url: "http://localhost:8079/v1/url"
-
-
 
   cleanup:
     expiration-days: 1

@@ -21,22 +21,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 public class AsyncConfig {
 
-    @Value("${url-shortener.hash-generator.pool-core-size:50}")
+    @Value("${url-shortener.hash-generator.pool-core-size:5")
     private int hashGeneratorCorePool;
 
-    @Value("${url-shortener.hash-generator.pool-max-size:100}")
+    @Value("${url-shortener.hash-generator.pool-max-size:10}")
     private int hashGeneratorMaxPool;
 
-    @Value("${url-shortener.hash-generator.queue-size:5000}")
+    @Value("${url-shortener.hash-generator.queue-size:500")
     private int hashGeneratorQueueSize;
 
-    @Value("${url-shortener.hash-cache.pool-core-size:50}")
+    @Value("${url-shortener.hash-cache.pool-core-size:5")
     private int hashCacheCorePool;
 
-    @Value("${url-shortener.hash-cache.pool-max-size:100}")
+    @Value("${url-shortener.hash-cache.pool-max-size:10")
     private int hashCacheMaxPool;
 
-    @Value("${url-shortener.hash-cache.queue-size:5000}")
+    @Value("${url-shortener.hash-cache.queue-size:500}")
     private int hashCacheQueueSize;
 
     @Bean(name = "hashGeneratorExecutor")
@@ -53,7 +53,6 @@ public class AsyncConfig {
             log.warn("HashGenerator task rejected! Active threads={}, Queue size={}",
                     pool.getActiveCount(),
                     pool.getQueue().size());
-            r.run();
         });
 
         executor.initialize();
@@ -63,10 +62,11 @@ public class AsyncConfig {
     @Bean(name = "hashCacheExecutor")
     public ExecutorService hashCacheExecutor() {
         AtomicInteger counter = new AtomicInteger(0);
+
         return new ThreadPoolExecutor(
                 hashCacheCorePool,
                 hashCacheMaxPool,
-                60L,
+                30L,
                 TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(hashCacheQueueSize),
                 r -> {
@@ -74,14 +74,12 @@ public class AsyncConfig {
                     t.setDaemon(true);
                     return t;
                 },
-                new ThreadPoolExecutor.CallerRunsPolicy()
-        ) {
-            @Override
-            protected void beforeExecute(Thread t, Runnable r) {
-                super.beforeExecute(t, r);
-                log.debug("Executing task in {} | Active threads={}, Queue size={}",
-                        t.getName(), getActiveCount(), getQueue().size());
-            }
-        };
+                (r, executor) -> {
+
+                    log.warn("HashCache refill rejected (skip). Active={}, Queue={}",
+                            executor.getActiveCount(),
+                            executor.getQueue().size());
+                }
+        );
     }
 }

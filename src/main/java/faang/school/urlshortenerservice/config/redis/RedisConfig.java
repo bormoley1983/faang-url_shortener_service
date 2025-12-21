@@ -25,46 +25,47 @@ public class RedisConfig {
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+
+        RedisStandaloneConfiguration redisConfig =
+                new RedisStandaloneConfiguration(
+                        redisProperties.getHost(),
+                        redisProperties.getPort()
+                );
 
         SocketOptions socketOptions = SocketOptions.builder()
                 .connectTimeout(Duration.ofMillis(redisProperties.getConnectTimeout()))
-                .keepAlive(true)
                 .tcpNoDelay(true)
-                .build();
-
-        TimeoutOptions timeoutOptions = TimeoutOptions.builder()
-                .fixedTimeout(Duration.ofMillis(redisProperties.getTimeout()))
+                .keepAlive(true)
                 .build();
 
         ClientOptions clientOptions = ClientOptions.builder()
                 .socketOptions(socketOptions)
-                .timeoutOptions(timeoutOptions)
-                .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
                 .autoReconnect(true)
-                .cancelCommandsOnReconnectFailure(false)
-                .suspendReconnectOnProtocolFailure(false)
-                .requestQueueSize(Integer.MAX_VALUE)
+                .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
+                .requestQueueSize(10_000)
                 .build();
 
-        GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
-        genericObjectPoolConfig.setMaxIdle(5000);
-        genericObjectPoolConfig.setMinIdle(1000);
-        genericObjectPoolConfig.setMaxTotal(5000);
-        genericObjectPoolConfig.setMaxWait(Duration.ofMillis(2000));
+        GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
+        poolConfig.setMaxTotal(320);
+        poolConfig.setMaxIdle(16);
+        poolConfig.setMinIdle(4);
+        poolConfig.setMaxWait(Duration.ofMillis(500));
 
-        LettucePoolingClientConfiguration poolConfig = LettucePoolingClientConfiguration.builder()
-                .clientOptions(clientOptions)
-                .commandTimeout(Duration.ofMillis(redisProperties.getConnectTimeout()))
-                .poolConfig(genericObjectPoolConfig)
-                .build();
+        LettucePoolingClientConfiguration lettuceConfig =
+                LettucePoolingClientConfiguration.builder()
+                        .clientOptions(clientOptions)
+                        .commandTimeout(Duration.ofMillis(redisProperties.getTimeout()))
+                        .poolConfig(poolConfig)
+                        .build();
 
-        return new LettuceConnectionFactory(config, poolConfig);
+        return new LettuceConnectionFactory(redisConfig, lettuceConfig);
     }
 
     @Bean
     @Primary
-    public RedisTemplate<String, String> ultraFastRedisTemplate(RedisConnectionFactory factory) {
+    public RedisTemplate<String, String> redisTemplate(
+            RedisConnectionFactory factory
+    ) {
         RedisTemplate<String, String> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
 
@@ -76,8 +77,8 @@ public class RedisConfig {
         template.setHashValueSerializer(serializer);
 
         template.setEnableTransactionSupport(false);
-        template.setExposeConnection(false);
 
+        template.afterPropertiesSet();
         return template;
     }
 }

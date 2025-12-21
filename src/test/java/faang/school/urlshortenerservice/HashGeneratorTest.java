@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,9 +39,6 @@ class HashGeneratorTest {
 
     @Mock
     private JdbcTemplate jdbcTemplate;
-
-    @Mock
-    private ExecutorService hashCacheExecutor;
 
     @InjectMocks
     private HashGenerator hashGenerator;
@@ -57,13 +55,6 @@ class HashGeneratorTest {
 
         when(hashRepository.getUniqueNumbers(3)).thenReturn(numbers);
         when(base62Encoder.encode(numbers)).thenReturn(encoded);
-
-        when(hashCacheExecutor.submit(any(Callable.class)))
-                .thenAnswer(invocation -> {
-                    Callable<Integer> task = invocation.getArgument(0);
-                    return CompletableFuture.completedFuture(task.call());
-                });
-
         when(jdbcTemplate.batchUpdate(anyString(), any(BatchPreparedStatementSetter.class)))
                 .thenReturn(new int[]{1, 1, 1});
 
@@ -71,48 +62,43 @@ class HashGeneratorTest {
 
         verify(hashRepository).getUniqueNumbers(3);
         verify(base62Encoder).encode(numbers);
-        verify(jdbcTemplate, atLeastOnce()).batchUpdate(anyString(), any(BatchPreparedStatementSetter.class));
-    }
-
-    @Test
-    void saveHashesInBatchesParallel_shouldSplitIntoBatches() throws Exception {
-        List<Hash> hashes = List.of(
-                hash("a"), hash("b"), hash("c"),
-                hash("d"), hash("e")
-        );
-
-        when(hashCacheExecutor.submit(any(Callable.class)))
-                .thenAnswer(invocation -> {
-                    Callable<Integer> task = invocation.getArgument(0);
-                    return CompletableFuture.completedFuture(task.call());
-                });
-
-        when(jdbcTemplate.batchUpdate(anyString(), any(BatchPreparedStatementSetter.class)))
-                .thenReturn(new int[]{1, 1, 1});
-
-        hashGenerator.saveHashesInBatches(hashes);
-
-        verify(jdbcTemplate, times(2)).batchUpdate(anyString(), any(BatchPreparedStatementSetter.class));
-    }
-
-    @Test
-    void saveSingleBatch_shouldCountOnlySuccessfulInserts() {
-        List<Hash> hashes = List.of(
-                hash("a"), hash("b"), hash("c")
-        );
-
-        when(jdbcTemplate.batchUpdate(anyString(), any(BatchPreparedStatementSetter.class)))
-                .thenReturn(new int[]{1, 0, 1});
-
-        int saved = hashGenerator.saveSingleBatch(hashes);
-
-        Assertions.assertEquals(2, saved);
         verify(jdbcTemplate).batchUpdate(anyString(), any(BatchPreparedStatementSetter.class));
     }
 
-    private Hash hash(String value) {
-        Hash h = new Hash();
-        h.setHash(value);
-        return h;
+    @Test
+    void generateBatch_shouldDoNothingIfNoNumbersAvailable() {
+        when(hashRepository.getUniqueNumbers(3)).thenReturn(List.of());
+
+        hashGenerator.generateBatch();
+
+        verify(hashRepository).getUniqueNumbers(3);
+        verifyNoInteractions(base62Encoder);
+        verifyNoInteractions(jdbcTemplate);
+    }
+
+    @Test
+    void generateSingleHashSynchronously_shouldGenerateAndSaveHash() {
+        List<Long> numbers = List.of(42L);
+        List<String> encoded = List.of("abc");
+
+        when(hashRepository.getUniqueNumbers(1)).thenReturn(numbers);
+        when(base62Encoder.encode(numbers)).thenReturn(encoded);
+        when(jdbcTemplate.batchUpdate(anyString(), any(BatchPreparedStatementSetter.class)))
+                .thenReturn(new int[]{1});
+
+        String result = hashGenerator.generateSingleHashSynchronously();
+
+        Assertions.assertEquals("abc", result);
+        verify(jdbcTemplate).batchUpdate(anyString(), any(BatchPreparedStatementSetter.class));
+    }
+
+    @Test
+    void generateSingleHashSynchronously_shouldFailIfNoNumbers() {
+        when(hashRepository.getUniqueNumbers(1)).thenReturn(List.of());
+
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> hashGenerator.generateSingleHashSynchronously()
+        );
     }
 }
