@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.integration;
+package faang.school.urlshortenerservice.integration.service.url;
 
 import faang.school.urlshortenerservice.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.config.UrlCacheProperties;
@@ -29,10 +29,7 @@ public class UrlCacheRepositoryTtlTest extends AbstractIntegrationTest {
     private UrlCacheProperties urlCacheProperties;
 
     @Test
-    @DisplayName("""
-            Stores URL with TTL and
-            removes key from Redis after TTL expiration
-            """)
+    @DisplayName("Stores URL with TTL and removes key from Redis after TTL expiration")
     void save_setsTtl_andKeyExpires() throws Exception {
         String hash = "ABC123";
         String longUrl = "https://example.com";

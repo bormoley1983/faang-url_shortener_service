@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.integration;
+package faang.school.urlshortenerservice.integration.service.url;
 
 import faang.school.urlshortenerservice.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.config.UrlCacheProperties;

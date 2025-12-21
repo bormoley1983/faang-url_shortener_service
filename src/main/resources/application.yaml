@@ -51,6 +51,9 @@ app:
     version: v1
     module: urlshortener
     urlEntity: url
+  cleaner:
+    cron: "0 0 3 * * *"     # every day at 03:00
+    retention: "P365D"      # 1 year (ISO-8601 duration)
 
 logging:
   level:
