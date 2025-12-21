@@ -21,6 +21,7 @@ public class HashCacheImpl implements HashCache {
     private final BlockingQueue<String> cache;
     private final HashCacheProperties properties;
     private final AtomicBoolean refillInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean generationInProgress = new AtomicBoolean(false);
 
     public HashCacheImpl(HashCacheProperties properties,
                          HashRepository hashRepository,
@@ -90,17 +91,33 @@ public class HashCacheImpl implements HashCache {
                 }
             }
 
-            // generate hashes (asynchronously)
-            hashGenerator.generateBatch()
-                    .exceptionally(ex -> {
-                        log.error("Hash batch generation failed", ex);
-                        return 0;
-                    });
+            if (hashes.size() < batchSize) {
+                triggerGenerationIfNeeded();
+            }
 
         } catch (Exception e) {
             log.error("Failed to refill hash cache", e);
         } finally {
             refillInProgress.set(false);
         }
+    }
+
+    private void triggerGenerationIfNeeded() {
+        if (!generationInProgress.compareAndSet(false, true)) {
+            return; // already in progress
+        }
+
+        hashGenerator.generateBatch()
+                .whenComplete((generatedCount, ex) -> {
+                    try {
+                        if (ex != null) {
+                            log.error("Hash batch generation failed", ex);
+                        } else {
+                            log.debug("Hash batch generation completed, generated={}", generatedCount);
+                        }
+                    } finally {
+                        generationInProgress.set(false);
+                    }
+                });
     }
 }

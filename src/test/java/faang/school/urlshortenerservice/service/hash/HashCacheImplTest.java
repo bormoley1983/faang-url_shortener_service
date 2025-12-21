@@ -157,8 +157,6 @@ class HashCacheImplTest {
             return CompletableFuture.completedFuture(null);
         });
 
-        when(hashGenerator.generateBatch()).thenReturn(CompletableFuture.completedFuture(0));
-
         HashCacheImpl cache = new HashCacheImpl(props, hashRepository, hashGenerator, executor);
         BlockingQueue<String> q = internalQueue(cache);
 
