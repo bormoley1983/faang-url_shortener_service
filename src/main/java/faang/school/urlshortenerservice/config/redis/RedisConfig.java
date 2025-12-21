@@ -2,7 +2,6 @@ package faang.school.urlshortenerservice.config.redis;
 
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
-import io.lettuce.core.TimeoutOptions;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.context.annotation.Bean;

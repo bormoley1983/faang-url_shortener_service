@@ -74,12 +74,10 @@ public class AsyncConfig {
                     t.setDaemon(true);
                     return t;
                 },
-                (r, executor) -> {
-
-                    log.warn("HashCache refill rejected (skip). Active={}, Queue={}",
-                            executor.getActiveCount(),
-                            executor.getQueue().size());
-                }
+                (r, executor) ->
+                        log.warn("HashCache refill rejected (skip). Active={}, Queue={}",
+                        executor.getActiveCount(),
+                        executor.getQueue().size())
         );
     }
 }
