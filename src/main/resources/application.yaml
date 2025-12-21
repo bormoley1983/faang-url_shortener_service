@@ -61,8 +61,8 @@ server:
     max-connections: 10000
 
 cache:
-  max-size: 100000
-  min-threshold-percent: 20
+  max-size: 100_000
+  min-threshold-percent: 35
 
 retention:
   days: 365

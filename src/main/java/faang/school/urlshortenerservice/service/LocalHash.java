@@ -76,6 +76,7 @@ public class LocalHash {
             return;
         }
 
+        long startTime = System.currentTimeMillis();
         try {
             int needed = maxCacheSize - hashDeque.size();
             if (needed <= 0) {
@@ -86,19 +87,22 @@ public class LocalHash {
 
             if (unusedHashes.size() < needed) {
                 needed -= unusedHashes.size();
-                // Асинхронно генерируем новые хэши для БД (в 10 раз больше)
-                generateNewHashesAsync(needed * 10);
-                addToHashDeque(needed);
+                checkAndGenerateNewHashesAsync();
+                unusedHashes = addToHashDeque(needed);
             }
 
-            log.warn("Refilled hash cache with {} hashes", unusedHashes.size());
+            checkAndGenerateNewHashesAsync();
+
+            log.warn("Refilled hash cache with {} hashes in {} ms",
+                    String.format("%,d", unusedHashes.size()),
+                    String.format("%,d", System.currentTimeMillis() - startTime));
         } finally {
             refillSemaphore.release();
         }
     }
 
     private List<Hash> addToHashDeque(int needed) {
-        List<Hash> unusedHashes = hashRepository.findUnusedHashes(needed);
+        List<Hash> unusedHashes = hashRepository.findAndDelete(needed);
 
         for (Hash hash : unusedHashes) {
             hashDeque.addLast(hash.getHashValue());
@@ -107,10 +111,10 @@ public class LocalHash {
     }
 
     @Async
-    private void generateNewHashesAsync(int count) {
+    private void checkAndGenerateNewHashesAsync() {
         try {
             if (hashRepository.countUnusedHashes() <= maxCacheSize * 10L * minThresholdPercent / 100) {
-                hashGenerator.generateAndSaveHashes(count);
+                hashGenerator.generateAndSaveHashes(maxCacheSize * 10);
             }
         } catch (Exception e) {
             log.error("Error generating new hashes", e);

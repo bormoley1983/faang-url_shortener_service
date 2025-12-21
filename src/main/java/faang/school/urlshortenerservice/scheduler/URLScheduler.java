@@ -48,8 +48,6 @@ public class URLScheduler {
         for (String hashValue : hashesToRecycle) {
             hashesToSave.add(Hash.builder()
                     .hashValue(hashValue)
-                    .isUsed(false)
-                    .createdAt(LocalDateTime.now())
                     .build());
         }
 

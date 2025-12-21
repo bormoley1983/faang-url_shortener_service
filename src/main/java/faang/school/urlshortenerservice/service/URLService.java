@@ -40,9 +40,6 @@ public class URLService {
 
         redisURLCacheRepository.save(hash, request.url());
 
-        // Отмечаем хэш как использованный
-        markHashAsUsed(hash);
-
         String shortUrl = baseUrl + "/" + hash;
         log.info("Created short URL: {} -> {}", shortUrl, request.url());
 
@@ -87,15 +84,6 @@ public class URLService {
             }
         } catch (Exception e) {
             log.warn("Failed to increment access count for hash: {}", hash, e);
-        }
-    }
-
-    @Async
-    void markHashAsUsed(String hash) {
-        try {
-            hashRepository.markAsUsed(java.util.List.of(hash));
-        } catch (Exception e) {
-            log.warn("Failed to mark hash as used: {}", hash, e);
         }
     }
 }

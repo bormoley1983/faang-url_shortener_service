@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +17,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "urls", indexes = {
-        @Index(name = "idx_hash", columnList = "hash"),
-        @Index(name = "idx_created_at", columnList = "created_at")
+@Table(name = "url", indexes = {
+        @Index(name = "idx_url_hash", columnList = "hash")
 })
 @Data
 @NoArgsConstructor
@@ -26,7 +26,12 @@ import java.time.LocalDateTime;
 @Builder
 public class URL {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "url_id_seq_gen")
+    @SequenceGenerator(
+            name = "url_id_seq_gen",
+            sequenceName = "url_id_seq",
+            allocationSize = 100
+    )
     private Long id;
 
     @Column(name = "hash", nullable = false, unique = true, length = 10)

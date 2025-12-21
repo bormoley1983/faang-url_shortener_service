@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +27,7 @@ public class HashGenerator {
 
     @Transactional
     public void generateAndSaveHashes(int count) {
+        log.warn("Start generate hashes");
         long startTime = System.currentTimeMillis();
 
         List<Long> ids = uniqueIdRepository.getNextRange(count);
@@ -37,7 +37,6 @@ public class HashGenerator {
         for (Long id : ids) {
             buffer.add(Hash.builder()
                     .hashValue(base62Encoder.encode(id))
-                    .isUsed(false)
                     .build());
 
             if (buffer.size() == chunkSize) {
@@ -54,6 +53,8 @@ public class HashGenerator {
             em.clear();
         }
 
-        log.warn("Generated and saved {} hashes in {} ms", count, System.currentTimeMillis() - startTime);
+        log.warn("Generated and saved {} hashes in {} ms",
+                String.format("%,d", count),
+                String.format("%,d", System.currentTimeMillis() - startTime));
     }
 }

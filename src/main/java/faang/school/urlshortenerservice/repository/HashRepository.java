@@ -5,29 +5,28 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
-public interface HashRepository extends JpaRepository<Hash, Long> {
+public interface HashRepository extends JpaRepository<Hash, String> {
+    @Modifying
     @Query(value = """
-            SELECT * FROM hashes
-            WHERE is_used = false
-            LIMIT :limit
+            WITH delete_batch AS (
+              SELECT h.ctid
+              FROM hash h
+              ORDER BY h.id
+              FOR UPDATE SKIP LOCKED
+              LIMIT :limit
+            )
+            DELETE FROM hash h
+            USING delete_batch b
+            WHERE h.ctid = b.ctid
+            RETURNING h.*;
             """,
             nativeQuery = true)
-    List<Hash> findUnusedHashes(int limit);
+    List<Hash> findAndDelete(int limit);
 
-    @Query(value = """
-            SELECT count(h) FROM Hash h
-            WHERE h.isUsed = false
-            """)
+    @Query(value = "SELECT count(h) FROM Hash h")
     Long countUnusedHashes();
-
-    @Modifying
-    @Query("""
-            UPDATE Hash h
-            SET h.isUsed = true
-            WHERE h.hashValue IN :hashValues
-            """)
-    void markAsUsed(List<String> hashValues);
 }
