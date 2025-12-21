@@ -21,19 +21,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 public class AsyncConfig {
 
-    @Value("${url-shortener.hash-generator.pool-core-size:5")
+    @Value("${url-shortener.hash-generator.pool-core-size:5}")
     private int hashGeneratorCorePool;
 
     @Value("${url-shortener.hash-generator.pool-max-size:10}")
     private int hashGeneratorMaxPool;
 
-    @Value("${url-shortener.hash-generator.queue-size:500")
+    @Value("${url-shortener.hash-generator.queue-size:500}")
     private int hashGeneratorQueueSize;
 
-    @Value("${url-shortener.hash-cache.pool-core-size:5")
+    @Value("${url-shortener.hash-cache.pool-core-size:5}")
     private int hashCacheCorePool;
 
-    @Value("${url-shortener.hash-cache.pool-max-size:10")
+    @Value("${url-shortener.hash-cache.pool-max-size:10}")
     private int hashCacheMaxPool;
 
     @Value("${url-shortener.hash-cache.queue-size:500}")

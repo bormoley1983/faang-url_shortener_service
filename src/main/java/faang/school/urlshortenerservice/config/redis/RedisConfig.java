@@ -45,10 +45,10 @@ public class RedisConfig {
                 .build();
 
         GenericObjectPoolConfig<?> poolConfig = new GenericObjectPoolConfig<>();
-        poolConfig.setMaxTotal(320);
-        poolConfig.setMaxIdle(16);
-        poolConfig.setMinIdle(4);
-        poolConfig.setMaxWait(Duration.ofMillis(500));
+        poolConfig.setMaxTotal(5000);
+        poolConfig.setMaxIdle(5000);
+        poolConfig.setMinIdle(1000);
+        poolConfig.setMaxWait(Duration.ofMillis(5000));
 
         LettucePoolingClientConfiguration lettuceConfig =
                 LettucePoolingClientConfiguration.builder()
