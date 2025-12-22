@@ -60,7 +60,7 @@ server:
     max-connections: 10000
 
 cache:
-  max-size: 50_000
+  max-size: 100_000
   min-threshold-percent: 35
 
 retention:
