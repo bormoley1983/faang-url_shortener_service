@@ -41,7 +41,7 @@ public class URLService {
         String shortUrl = baseUrl + "/" + hash;
         log.info("Created short URL: {} -> {}", shortUrl, request.url());
 
-        return shortUrl;
+        return hash;
     }
 
     @Transactional(readOnly = true)

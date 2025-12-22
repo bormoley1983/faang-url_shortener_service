@@ -67,7 +67,7 @@ retention:
   days: 365
 
 service:
-  base-url: https://sh.c
+  base-url: http://localhost:8089/api/v1/urls/
 
 logging:
   level:
