@@ -5,7 +5,7 @@ spring:
     username: user
     password: password
     hikari:
-      maximum-pool-size: 200
+      maximum-pool-size: 2000
       minimum-idle: 10
       connection-timeout: 30000
       idle-timeout: 600000
@@ -21,8 +21,7 @@ spring:
       hibernate:
         format_sql: true
         jdbc:
-          batch_size: 1500
-#          fetch_size: 50
+          batch_size: 10000
         order_inserts: true
         order_updates: true
         generate_statistics: false
@@ -55,13 +54,13 @@ server:
       - text/plain
   tomcat:
     threads:
-      max: 1000
+      max: 10000
       min-spare: 50
     accept-count: 200
     max-connections: 10000
 
 cache:
-  max-size: 100_000
+  max-size: 50_000
   min-threshold-percent: 35
 
 retention:

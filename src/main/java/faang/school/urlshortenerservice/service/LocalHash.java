@@ -3,13 +3,18 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.entity.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import java.util.*;
-import java.util.concurrent.*;
+
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
 
 @Slf4j
 @Service
@@ -17,9 +22,11 @@ import java.util.concurrent.*;
 public class LocalHash {
     private final HashRepository hashRepository;
     private final HashGenerator hashGenerator;
+
     private final Deque<String> hashDeque = new ConcurrentLinkedDeque<>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private final Semaphore refillSemaphore = new Semaphore(1);
+    private final Semaphore generateNewHashesSemaphore = new Semaphore(1);
+    private final ExecutorService executorService;
 
     @Value("${cache.max-size:10000}")
     private int maxCacheSize;
@@ -28,7 +35,7 @@ public class LocalHash {
     private int minThresholdPercent;
 
     @PostConstruct
-    private void initializeCache() {
+    public void initializeCache() {
         try {
             refillCacheSynchronously();
         } catch (Exception e) {
@@ -54,7 +61,6 @@ public class LocalHash {
         return hash;
     }
 
-    @Async
     private void checkAndRefillAsync() {
         int currentSize = hashDeque.size();
         int threshold = (maxCacheSize * minThresholdPercent) / 100;
@@ -62,16 +68,18 @@ public class LocalHash {
         if (currentSize < threshold) {
             log.debug("Hash cache level: {} (threshold: {}), refilling asynchronously",
                     currentSize, threshold);
-            refillCacheAsync();
-        }
-    }
 
-    private void refillCacheAsync() {
-        executorService.submit(this::refillCacheSynchronously);
+            CompletableFuture.runAsync(this::refillCacheSynchronously, executorService)
+                    .exceptionally(ex -> {
+                        log.error("Error during async cache refill", ex);
+                        return null;
+                    });
+        }
     }
 
     private void refillCacheSynchronously() {
         if (!refillSemaphore.tryAcquire()) {
+            log.debug("Refill already in progress, skipping");
             return;
         }
 
@@ -86,21 +94,24 @@ public class LocalHash {
 
             if (unusedHashes.size() < needed) {
                 needed -= unusedHashes.size();
-                checkAndGenerateNewHashesAsync();
+
+                generateNewHashesAsync().join();
+
                 unusedHashes = addToHashDeque(needed);
             }
 
-            checkAndGenerateNewHashesAsync();
+            generateNewHashesAsync();
 
+            long duration = System.currentTimeMillis() - startTime;
             log.warn("Refilled hash cache with {} hashes in {} ms",
                     String.format("%,d", unusedHashes.size()),
-                    String.format("%,d", System.currentTimeMillis() - startTime));
+                    String.format("%,d", duration));
         } finally {
             refillSemaphore.release();
         }
     }
 
-    public List<Hash> addToHashDeque(int needed) {
+    private List<Hash> addToHashDeque(int needed) {
         List<Hash> unusedHashes = hashRepository.findAndDelete(needed);
 
         for (Hash hash : unusedHashes) {
@@ -109,14 +120,50 @@ public class LocalHash {
         return unusedHashes;
     }
 
-    @Async
-    private void checkAndGenerateNewHashesAsync() {
-        try {
-            if (hashRepository.countUnusedHashes() <= maxCacheSize * 10L * minThresholdPercent / 100) {
-                hashGenerator.generateAndSaveHashes(maxCacheSize * 10);
+    private CompletableFuture<Void> generateNewHashesAsync() {
+        return CompletableFuture.runAsync(() -> {
+            if (!generateNewHashesSemaphore.tryAcquire()) {
+                log.debug("Generate new hashes already in progress, skipping");
+                return;
             }
-        } catch (Exception e) {
-            log.error("Error generating new hashes", e);
+
+            try {
+                long unusedCount = hashRepository.countUnusedHashes();
+                long threshold = maxCacheSize * 10L * minThresholdPercent / 100;
+
+                if (unusedCount <= threshold) {
+                    log.warn("Start generating {} new hashes asynchronously (unused: {})",
+                            String.format("%,d", maxCacheSize * 10),
+                            String.format("%,d", unusedCount));
+
+                    long startTime = System.currentTimeMillis();
+                    hashGenerator.generateAndSaveHashes(maxCacheSize * 10);
+
+                    long duration = System.currentTimeMillis() - startTime;
+                    log.warn("Generated {} new hashes in {} ms",
+                            String.format("%,d", maxCacheSize * 10),
+                            String.format("%,d", duration));
+                }
+            } catch (Exception e) {
+                log.error("Error generating new hashes", e);
+            } finally {
+                generateNewHashesSemaphore.release();
+            }
+        }, executorService);
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS)) {
+                log.warn("Executor service did not terminate within 30 seconds, forcing shutdown");
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            log.error("Interrupted while waiting for executor service shutdown", e);
+            executorService.shutdownNow();
         }
     }
 }
+

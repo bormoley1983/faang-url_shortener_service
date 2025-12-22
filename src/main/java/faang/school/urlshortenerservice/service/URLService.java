@@ -3,15 +3,14 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.dto.URLRequestDto;
 import faang.school.urlshortenerservice.entity.URL;
 import faang.school.urlshortenerservice.exception.URLNotFoundException;
-import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.RedisURLCacheRepository;
 import faang.school.urlshortenerservice.repository.URLRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -21,7 +20,6 @@ import java.util.Optional;
 public class URLService {
     private final URLRepository urlRepository;
     private final RedisURLCacheRepository redisURLCacheRepository;
-    private final HashRepository hashRepository;
     private final LocalHash localHash;
 
     @Value("${service.base-url}")
@@ -48,14 +46,12 @@ public class URLService {
 
     @Transactional(readOnly = true)
     public String getOriginalURL(String hash) {
-        // Сначала проверяем Redis
         Optional<String> cached = redisURLCacheRepository.getByHash(hash);
         if (cached.isPresent()) {
-            incrementAccessCountAsync(hash);
+            incrementAccessCount(hash);
             return cached.get();
         }
 
-        // Затем проверяем БД
         Optional<URL> urlOpt = urlRepository.findByHash(hash);
         if (urlOpt.isEmpty()) {
             throw new URLNotFoundException("URL not found for hash: " + hash);
@@ -63,17 +59,14 @@ public class URLService {
 
         URL url = urlOpt.get();
 
-        // Сохраняем в Redis для будущего доступа
         redisURLCacheRepository.save(hash, url.getOriginalUrl());
 
-        // Асинхронно обновляем счетчик доступа
-        incrementAccessCountAsync(hash);
+        incrementAccessCount(hash);
 
         return url.getOriginalUrl();
     }
 
-    @Async
-    void incrementAccessCountAsync(String hash) {
+    private void incrementAccessCount(String hash) {
         try {
             Optional<URL> urlOpt = urlRepository.findByHash(hash);
             if (urlOpt.isPresent()) {

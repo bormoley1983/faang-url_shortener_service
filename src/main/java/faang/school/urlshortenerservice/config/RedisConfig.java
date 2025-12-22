@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.config;
 
-import faang.school.urlshortenerservice.dto.URLCacheData;
+import faang.school.urlshortenerservice.dto.URLCacheDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -9,20 +9,18 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class CacheConfig {
+public class RedisConfig {
 
     @Bean
-    public RedisTemplate<String, URLCacheData> redisTemplate(
+    public RedisTemplate<String, URLCacheDto> redisTemplate(
             RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, URLCacheData> template = new RedisTemplate<>();
+        RedisTemplate<String, URLCacheDto> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // String serializer for keys
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
 
-        // JSON serializer for values
         GenericJackson2JsonRedisSerializer jsonSerializer =
                 new GenericJackson2JsonRedisSerializer();
         template.setValueSerializer(jsonSerializer);

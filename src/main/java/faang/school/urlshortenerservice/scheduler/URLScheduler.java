@@ -24,7 +24,7 @@ public class URLScheduler {
     @Value("${retention.days:365}")
     private int retentionDays;
 
-    @Scheduled(cron = "0 0 3 * * *") // Запускается в 3:00 AM каждый день
+    @Scheduled(cron = "0 0 3 * * *")
     @Transactional
     public void cleanupOldURLs() {
         long startTime = System.currentTimeMillis();
@@ -37,13 +37,11 @@ public class URLScheduler {
             return;
         }
 
-        // Извлекаем хэши для переиспользования
         List<String> hashesToRecycle = new ArrayList<>(oldUrls.size());
         for (URL url : oldUrls) {
             hashesToRecycle.add(url.getHash());
         }
 
-        // Переносим хэши в таблицу hash как свободные
         List<Hash> hashesToSave = new ArrayList<>(oldUrls.size());
         for (String hashValue : hashesToRecycle) {
             hashesToSave.add(Hash.builder()
@@ -51,14 +49,12 @@ public class URLScheduler {
                     .build());
         }
 
-        // Сохраняем хэши пачками
         int batchSize = 1000;
         for (int i = 0; i < hashesToSave.size(); i += batchSize) {
             int end = Math.min(i + batchSize, hashesToSave.size());
             hashRepository.saveAll(hashesToSave.subList(i, end));
         }
 
-        // Удаляем старые URL
         urlRepository.deleteAll(oldUrls);
 
         long duration = System.currentTimeMillis() - startTime;
