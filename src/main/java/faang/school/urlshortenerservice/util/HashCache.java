@@ -2,8 +2,8 @@ package faang.school.urlshortenerservice.util;
 
 import faang.school.urlshortenerservice.repository.HashRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class HashCache {
 
@@ -27,15 +28,6 @@ public class HashCache {
     private final ExecutorService hashCacheExecutor;
     private final LinkedBlockingQueue<String> cache = new LinkedBlockingQueue<>(limit);
     private final AtomicBoolean isGenerating = new AtomicBoolean(false);
-
-    public HashCache(
-            HashGenerator hashGenerator,
-            HashRepository hashRepository,
-            @Qualifier("hashCacheExecutor") ExecutorService hashCacheExecutor) {
-        this.hashGenerator = hashGenerator;
-        this.hashRepository = hashRepository;
-        this.hashCacheExecutor = hashCacheExecutor;
-    }
 
     @PostConstruct
     public void init() {
