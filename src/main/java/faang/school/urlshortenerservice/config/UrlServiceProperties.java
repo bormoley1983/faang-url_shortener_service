@@ -6,5 +6,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "app.shortener")
 public class UrlServiceProperties {
-    String baseUrl;
+    private String baseUrl;
 }

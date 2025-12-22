@@ -1,6 +1,6 @@
-package faang.school.urlshortenerservice.integration.service.url;
+package faang.school.urlshortenerservice.integration.redis;
 
-import faang.school.urlshortenerservice.integration.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.integration.base.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.config.UrlCacheProperties;
 import faang.school.urlshortenerservice.repository.redis.UrlCacheRepositoryImpl;
 import org.junit.jupiter.api.DisplayName;

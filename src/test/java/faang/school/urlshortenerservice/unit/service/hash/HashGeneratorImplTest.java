@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.service.hash;
+package faang.school.urlshortenerservice.unit.service.hash;
 
 import faang.school.urlshortenerservice.config.hash.HashProperties;
 import faang.school.urlshortenerservice.repository.db.HashRepository;

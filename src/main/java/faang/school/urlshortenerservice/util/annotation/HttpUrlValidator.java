@@ -6,24 +6,29 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.net.URI;
 
 public class HttpUrlValidator implements ConstraintValidator<HttpUrl, String> {
+
     @Override
     public boolean isValid(String value, ConstraintValidatorContext ctx) {
         if (value == null || value.isBlank()) {
             return true;
         }
+
+        String v = value.trim();
+
         try {
-            var uri = URI.create(value.trim());
+            URI uri = URI.create(v);
 
             if (!uri.isAbsolute()) {
                 return false;
             }
 
-            var scheme = uri.getScheme();
-            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+            String scheme = uri.getScheme();
+            if (!"http".equalsIgnoreCase(scheme)
+                    && !"https".equalsIgnoreCase(scheme)) {
                 return false;
             }
 
-            var host = uri.getHost();
+            String host = uri.getHost();
             if (host == null || host.isBlank()) {
                 return false;
             }
@@ -31,7 +36,9 @@ public class HttpUrlValidator implements ConstraintValidator<HttpUrl, String> {
             if (uri.getUserInfo() != null) {
                 return false;
             }
-            return !value.contains(" ");
+
+            return !v.contains(" ");
+
         } catch (IllegalArgumentException ex) {
             return false;
         }

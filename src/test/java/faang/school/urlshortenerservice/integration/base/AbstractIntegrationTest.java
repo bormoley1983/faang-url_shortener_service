@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.integration;
+package faang.school.urlshortenerservice.integration.base;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -9,6 +9,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.lifecycle.Startables;
 
 @Testcontainers
 @SpringBootTest
@@ -18,6 +19,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractIntegrationTest {
 
+    private static final int REDIS_PORT = 6379;
+
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:13")
             .withDatabaseName("testdb")
@@ -25,8 +28,13 @@ public abstract class AbstractIntegrationTest {
             .withPassword("password");
 
     @Container
-    static final GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
-            .withExposedPorts(6379);
+    static final GenericContainer<?> REDIS = new GenericContainer<>("redis:7-alpine")
+            .withExposedPorts(REDIS_PORT);
+
+    static {
+        // Гарантия: контейнеры запущены ДО чтения mappedPort в @DynamicPropertySource
+        Startables.deepStart(POSTGRES, REDIS).join();
+    }
 
     @DynamicPropertySource
     static void registerDataSourceProps(DynamicPropertyRegistry registry) {
@@ -35,8 +43,9 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
 
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
+        registry.add("spring.data.redis.host", REDIS::getHost);
+        registry.add("spring.data.redis.port", () -> REDIS.getMappedPort(REDIS_PORT));
+
         registry.add("app.url-cache.ttl", () -> "2s");
         registry.add("app.url-cache.version", () -> "v1");
     }

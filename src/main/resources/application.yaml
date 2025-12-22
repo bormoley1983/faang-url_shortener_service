@@ -15,7 +15,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -24,22 +24,6 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/changelog-master.yaml
 
-hash:
-  batch-size: 1000
-  thread-pool:
-    size: 4
-    queue-capacity: 1000
-
-hash-cache:
-  capacity: 10000
-  refill-threshold-percent: 20
-  refill-batch-size: 3000
-  wait-timeout: 200ms
-
-hash-cache-executor:
-  pool-size: 2
-  queue-capacity: 10
-
 server:
   port: 8080
   servlet:
@@ -47,16 +31,35 @@ server:
 
 app:
   shortener:
-    base-url: http://localhost:8080/api/v1
+    base-url: http://localhost:${server.port}${server.servlet.context-path}
+
   url-cache:
     ttl: 30d
     version: v1
     module: urlshortener
     urlEntity: url
+
   cleaner:
     cron: "0 0 3 * * *"     # every day at 03:00
     retention: 365d
 
+  hash-cache:
+    capacity: 10000
+    refill-threshold-percent: 20
+    refill-batch-size: 3000
+    wait-timeout: 200ms
+
+  hash:
+    batch-size: 1000
+    thread-pool:
+      size: 4
+      queue-capacity: 1000
+
+  hash-cache-executor:
+    pool-size: 2
+    queue-capacity: 10
+
 logging:
   level:
     root: info
+    faang.school.urlshortenerservice: debug

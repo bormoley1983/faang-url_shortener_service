@@ -13,9 +13,13 @@ public class CleanerScheduler {
 
     private final CleanerService cleanerService;
 
-    @Scheduled(cron = "#{@cleanerProperties.cron}")
+    @Scheduled(cron = "${app.cleaner.cron}")
     public void run() {
-        int deleted = cleanerService.clean();
-        log.info("CleanerScheduler finished: deleted={}", deleted);
+        try {
+            int deleted = cleanerService.clean();
+            log.info("CleanerScheduler finished: deleted={}", deleted);
+        } catch (Exception ex) {
+            log.error("CleanerScheduler failed", ex);
+        }
     }
 }

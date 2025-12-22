@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice.service;
+package faang.school.urlshortenerservice.unit.service;
 
 import faang.school.urlshortenerservice.entity.UrlEntity;
 import faang.school.urlshortenerservice.exception.HashUnavailableException;
@@ -6,6 +6,8 @@ import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.repository.db.UrlRepository;
 import faang.school.urlshortenerservice.repository.redis.UrlCacheRepository;
 import faang.school.urlshortenerservice.config.UrlServiceProperties;
+import faang.school.urlshortenerservice.service.HashCache;
+import faang.school.urlshortenerservice.service.UrlServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.RedisSystemException;
-
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -108,13 +109,15 @@ class UrlServiceImplTest {
     }
 
     @Test
-    @DisplayName("getOriginalUrl throws UrlNotFoundException for null or blank hash")
+    @DisplayName("getOriginalUrl throws IllegalArgumentException for null or blank hash")
     void getOriginalUrl_invalidHash_throws() {
         assertThatThrownBy(() -> service.getOriginalUrl(null))
-                .isInstanceOf(UrlNotFoundException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Hash");
 
         assertThatThrownBy(() -> service.getOriginalUrl(" "))
-                .isInstanceOf(UrlNotFoundException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Hash");
 
         verifyNoInteractions(urlRepository);
         verifyNoInteractions(urlCacheRepository);

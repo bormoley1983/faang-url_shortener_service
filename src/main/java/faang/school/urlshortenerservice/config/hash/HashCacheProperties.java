@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 @Data
-@ConfigurationProperties(prefix = "hash-cache")
+@ConfigurationProperties(prefix = "app.hash-cache")
 public class HashCacheProperties {
     private int capacity;
     private int refillThresholdPercent;

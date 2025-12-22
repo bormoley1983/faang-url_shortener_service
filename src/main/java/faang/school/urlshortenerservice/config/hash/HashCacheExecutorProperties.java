@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
-@ConfigurationProperties(prefix = "hash-cache-executor")
+@ConfigurationProperties(prefix = "app.hash-cache-executor")
 public class HashCacheExecutorProperties {
     private int poolSize;
     private int queueCapacity;

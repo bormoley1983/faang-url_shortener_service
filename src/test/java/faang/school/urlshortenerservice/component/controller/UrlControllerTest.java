@@ -1,6 +1,7 @@
-package faang.school.urlshortenerservice.controller;
+package faang.school.urlshortenerservice.component.controller;
 
 import faang.school.urlshortenerservice.config.context.UserContext;
+import faang.school.urlshortenerservice.controller.UrlController;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.exception.UrlExceptionHandler;
 import faang.school.urlshortenerservice.exception.UrlNotFoundException;

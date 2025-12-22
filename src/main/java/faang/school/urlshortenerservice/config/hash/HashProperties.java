@@ -7,7 +7,7 @@ import org.springframework.validation.annotation.Validated;
 
 @Data
 @Validated
-@ConfigurationProperties(prefix = "hash")
+@ConfigurationProperties(prefix = "app.hash")
 public class HashProperties {
 
     @Min(1)

@@ -1,6 +1,6 @@
-package faang.school.urlshortenerservice.integration.service.url;
+package faang.school.urlshortenerservice.integration.controller;
 
-import faang.school.urlshortenerservice.integration.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.integration.base.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.config.UrlCacheProperties;
 import faang.school.urlshortenerservice.dto.CreateUrlRequestDto;
 import faang.school.urlshortenerservice.repository.db.UrlRepository;
@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
-class UrlIntegrationTest extends AbstractIntegrationTest {
+class UrlEndToEndIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     MockMvc mvc;

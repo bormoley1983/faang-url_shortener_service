@@ -12,7 +12,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -29,7 +28,6 @@ public class UrlServiceImpl implements UrlService {
     private final UrlServiceProperties urlServiceProperties;
 
     @Override
-    @Transactional
     public String createShortUrl(String longUrl) {
         log.debug("Creating short URL");
 
@@ -62,8 +60,8 @@ public class UrlServiceImpl implements UrlService {
         log.debug("Resolving original URL for hash={}", hash);
 
         if (hash == null || hash.isBlank()) {
-            log.warn("Invalid hash received: {}", hash);
-            throw new UrlNotFoundException("Invalid hash: " + hash);
+            log.warn("Hash must not be blank");
+            throw new IllegalArgumentException("Hash must not be blank");
         }
 
         Optional<String> cachedUrl = getFromCacheBestEffort(hash);

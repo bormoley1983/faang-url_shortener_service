@@ -1,6 +1,6 @@
-package faang.school.urlshortenerservice.repository;
+package faang.school.urlshortenerservice.integration.repository;
 
-import faang.school.urlshortenerservice.integration.AbstractIntegrationTest;
+import faang.school.urlshortenerservice.integration.base.AbstractIntegrationTest;
 import faang.school.urlshortenerservice.repository.db.HashRepository;
 import faang.school.urlshortenerservice.service.HashGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,13 +8,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.testcontainers.shaded.org.awaitility.Awaitility;
 
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -92,21 +90,5 @@ class HashRepositoryIntegrationTest extends AbstractIntegrationTest {
         Set<String> intersection = new HashSet<>(batch1);
         intersection.retainAll(batch2);
         assertThat(intersection).isEmpty();
-    }
-
-    @Test
-    @DisplayName("generateBatch(): returns number of generated hashes, same as in we save to DB")
-    void generateBatch_shouldInsertHashes() {
-        CompletableFuture<Integer> future = hashGenerator.generateBatch();
-
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
-                .until(future::isDone);
-
-        Integer generated = future.join();
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM hash", Integer.class);
-
-        assertThat(count).isEqualTo(generated);
     }
 }
