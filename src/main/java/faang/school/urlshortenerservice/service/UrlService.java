@@ -5,11 +5,10 @@ import faang.school.urlshortenerservice.entity.ShortUrl;
 import faang.school.urlshortenerservice.exception.RecordNotFoundException;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 import faang.school.urlshortenerservice.validation.UrlValidator;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,9 +36,7 @@ public class UrlService {
         ShortUrl shortUrl = findByHash(hash);
         redisUrlCacheService.cacheUrl(shortUrl);
 
-        urlValidator.validateUrlNotExpired(shortUrl);
-
-        log.debug("Url from db");
+        log.debug("Url from db {}", shortUrl);
         return shortUrl;
     }
 
