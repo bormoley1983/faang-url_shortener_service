@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice;
+package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.shortener.ShortenerCleanConfig;
 import faang.school.urlshortenerservice.shortener.ShortenerCleaner;
@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -26,37 +24,38 @@ public class Scheduler {
             log.info("Scheduled job finished in {} millis", System.currentTimeMillis() - start);
         } catch (Exception e) {
             log.error("Scheduled job failed", e);
+            throw e;
         }
     }
 
-    private void runCleanJob() {
-        int totalDeleted = 0;
-        int batchCount = shortenerCleanConfig.getFetchLimit() / shortenerCleanConfig.getBatchSize();
-        log.info("Starting cleanup. Total batches to process: {}", batchCount);
+    private int runCleanJob() {
+        int batchSize = shortenerCleanConfig.getBatchSize();
+        int fetchLimit = shortenerCleanConfig.getFetchLimit();
 
-        for (int batchNumber = 1; batchNumber <= batchCount; batchNumber++) {
+        int maxBatches = (int) Math.ceil((double) fetchLimit / batchSize);
+        int totalDeleted = 0;
+        log.info("Starting cleanup. Batch size: {}, Max batches: {}", batchSize, maxBatches);
+
+        for (int batchNumber = 1; batchNumber <= maxBatches; batchNumber++) {
             if (Thread.currentThread().isInterrupted()) {
                 log.info("Clean job interrupted");
                 break;
             }
 
-            log.debug("Processing batch {}/{}", batchNumber, batchCount);
+            log.debug("Processing batch {}/{}", batchNumber, maxBatches);
 
-            int deletedInBatch = shortenerCleaner.cleanExpiredUrlsBatchSync(
-                    shortenerCleanConfig.getBatchSize()
-            );
-
+            int deletedInBatch = shortenerCleaner.cleanExpiredUrlsBatchSync(batchSize);
             totalDeleted += deletedInBatch;
             log.debug("Batch {}: deleted {} URLs", batchNumber, deletedInBatch);
 
-            if (deletedInBatch < shortenerCleanConfig.getBatchSize()) {
+            if (deletedInBatch < batchSize) {
                 log.info("No more expired URLs found. Stopping early.");
                 break;
             }
 
-            if (batchNumber < batchCount) {
+            if (batchNumber < maxBatches && shortenerCleanConfig.getBatchDelayMs() > 0) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(shortenerCleanConfig.getBatchDelayMs());
+                    Thread.sleep(shortenerCleanConfig.getBatchDelayMs());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     log.info("Clean job interrupted during pause");
@@ -65,5 +64,6 @@ public class Scheduler {
             }
         }
         log.info("Clean job completed. Total URLs deleted: {}", totalDeleted);
+        return totalDeleted;
     }
 }

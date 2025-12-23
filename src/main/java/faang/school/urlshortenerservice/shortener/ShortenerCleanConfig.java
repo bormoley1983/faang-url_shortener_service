@@ -1,6 +1,5 @@
 package faang.school.urlshortenerservice.shortener;
 
-import faang.school.urlshortenerservice.executor.ExecutorConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -14,7 +13,7 @@ public class ShortenerCleanConfig {
     private String cron;
     private int batchSize;
     private int fetchLimit;
-    private int BatchDelayMs;
+    private int batchDelayMs;
     private ExecutorConfig executorConfig = new ExecutorConfig();
 
     @Getter

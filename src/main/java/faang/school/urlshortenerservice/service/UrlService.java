@@ -12,13 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UrlService {
-    private static final long DEFAULT_EXPIRATION_TIME_IN_WEEKS = 1L;
+    private static final long EXPIRATION_TIME_IN_WEEKS = 1L;
     private final UrlRepository urlRepository;
     private final UrlValidator urlValidator;
     private final HashCache hashCache;
@@ -26,30 +25,28 @@ public class UrlService {
 
     @Transactional(readOnly = true)
     public ShortUrl getActualUrl(String hash) {
-        Optional<ShortUrl> redisShortUrl = redisUrlCacheService.getUrl(hash);
-
-        if (redisShortUrl.isPresent()) {
-            log.debug("Url from cache");
-            return redisShortUrl.get();
-        }
-
-        ShortUrl shortUrl = findByHash(hash);
-        redisUrlCacheService.cacheUrl(shortUrl);
-
-        log.debug("Url from db {}", shortUrl);
-        return shortUrl;
+        return redisUrlCacheService.getUrl(hash)
+                .orElseGet(() -> {
+                    ShortUrl shortUrl = findByHash(hash);
+                    redisUrlCacheService.cacheUrl(shortUrl);
+                    log.debug("Url from db {}", shortUrl);
+                    return shortUrl;
+                });
     }
 
     @Transactional
     public ShortUrl createShortUrl(ShortUrlRequest request) {
+        urlValidator.validate(request.url());
+
         ShortUrl newShortUrl = ShortUrl.builder()
                 .hash(hashCache.getHash())
                 .actualUrl(request.url())
-                .expireTime(setExpireTimeOrDefault(request))
+                .expireTime(LocalDateTime.now().plusWeeks(EXPIRATION_TIME_IN_WEEKS))
                 .build();
 
         newShortUrl = urlRepository.save(newShortUrl);
         redisUrlCacheService.cacheUrl(newShortUrl);
+        log.info("Created short URL: {} -> {}", newShortUrl.getHash(), request.url());
 
         return newShortUrl;
     }
@@ -63,6 +60,7 @@ public class UrlService {
         if (!expiredHashes.isEmpty()) {
             urlRepository.deleteAllByIdInBatch(expiredHashes);
             redisUrlCacheService.deleteUrlsFromCache(expiredHashes);
+            hashCache.returnHashes(expiredHashes);
         }
         return deletedCount;
     }
@@ -70,12 +68,5 @@ public class UrlService {
     private ShortUrl findByHash(String hash) {
         return urlRepository.findByHash(hash)
                 .orElseThrow(() -> new RecordNotFoundException("Invalid short url, not found"));
-    }
-
-    private LocalDateTime setExpireTimeOrDefault(ShortUrlRequest request) {
-        LocalDateTime maxExpireTime = LocalDateTime.now().plusWeeks(DEFAULT_EXPIRATION_TIME_IN_WEEKS);
-        boolean defaultRequired = request.expireTime() == null || request.expireTime().isAfter(maxExpireTime);
-
-        return defaultRequired ? maxExpireTime : request.expireTime();
     }
 }

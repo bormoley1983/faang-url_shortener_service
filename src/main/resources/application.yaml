@@ -18,6 +18,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+    hikari:
+      maximum-pool-size: 2000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
