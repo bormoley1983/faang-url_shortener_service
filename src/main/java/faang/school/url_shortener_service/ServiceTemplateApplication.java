@@ -1,4 +1,4 @@
-package faang.school.urlshortenerservice;
+package faang.school.url_shortener_service;
 
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
