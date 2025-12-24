@@ -19,8 +19,7 @@ public class HashGenerator {
     private final HashRepository hashRepository;
 
     public List<Hash> getHash() {
-        List<Hash> result = hashRepository.deleteAndReturnFirstN(100);
-        return result;
+        return hashRepository.deleteAndReturnFirstN(100);
     }
 
     //toDO saveAll работает медленно, нужно сохранять бачами
