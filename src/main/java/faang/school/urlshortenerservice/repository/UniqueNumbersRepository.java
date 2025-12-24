@@ -19,9 +19,9 @@ public class UniqueNumbersRepository {
 
     @Transactional
     public List<Long> getUniqueNumbers(Long count) {
-        String sql = "SELECT nextval('unique_number_seq') FROM generate_series(1, :count)";
+        String sql = "SELECT nextval('unique_number_seq') FROM generate_series(1, ?1)";
         return em.createNativeQuery(sql)
-                .setParameter("count", count)
+                .setParameter(1, count)
                 .getResultList();
     }
 }
