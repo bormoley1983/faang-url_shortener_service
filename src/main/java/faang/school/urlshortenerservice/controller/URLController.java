@@ -37,10 +37,10 @@ public class URLController {
     }
 
     @GetMapping("/{hash}")
-    public ResponseEntity<String> getUrl(@PathVariable String hash) {
-        HttpHeaders headers = new HttpHeaders();
+    public ResponseEntity<Void> getUrl(@PathVariable String hash) {
         String url = service.getUrl(hash);
-        headers.add("Location", url);
-        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, url)
+                .build();
     }
 }

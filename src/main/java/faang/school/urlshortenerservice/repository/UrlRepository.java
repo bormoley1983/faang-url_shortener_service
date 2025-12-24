@@ -21,9 +21,9 @@ public interface UrlRepository extends JpaRepository<Url, String> {
 
     @Modifying
     @Query(nativeQuery = true, value = """
-                DELETE FROM url WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '1 YEAR' RETURNING hash
+                DELETE FROM url WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '1 YEAR'
             """)
-    List<String> deleteAndReturnOldHashes();
+    List<String> deleteOldHashes();
 
     default String findUrlByHashOrElseThrow(String hash) {
         return findUrlByHash(hash)

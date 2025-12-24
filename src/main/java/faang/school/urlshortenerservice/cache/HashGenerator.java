@@ -1,7 +1,6 @@
 package faang.school.urlshortenerservice.cache;
 
-import faang.school.urlshortenerservice.entity.Hash;
-import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.UniqueNumbersRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,19 +19,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HashGenerator {
 
-    private final HashRepository repository;
+    private final UniqueNumbersRepository repository;
     private final Base62Encoder encoder;
     @Value("${spring.jpa.hibernate.seq_batch_size}")
     private Long seqBatchSize;
 
     @Transactional
-    public void generateHashes() {
+    public List<String> generateHashes() {
         List<Long> uniqueNumbers = repository.getUniqueNumbers(seqBatchSize);
-        List<String> stringHashes = encoder.encodeNumbers(uniqueNumbers);
-        List<Hash> hashes = stringHashes.stream()
-                .map(Hash::new)
-                .toList();
-        repository.saveAll(hashes);
-        log.info("Успешное сохранение хэшей в БД");
+        return encoder.encodeNumbers(uniqueNumbers);
     }
 }

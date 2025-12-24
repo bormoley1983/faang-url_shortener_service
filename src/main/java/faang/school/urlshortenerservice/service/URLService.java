@@ -5,11 +5,11 @@ import faang.school.urlshortenerservice.entity.Url;
 import faang.school.urlshortenerservice.exception.BadRequestException;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Сервис для работы с хэшами и ассоциациями url - hash.
@@ -44,13 +44,15 @@ public class URLService {
      * @param hash уникальный хэш, передаваемый пользователем
      * @return оригинальный url для дальнейшего редиректа
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public String getUrl(String hash) {
         String url = urlCacheRepository.getCacheUrl(hash);
         if (url != null) {
             return url;
         }
-        return urlRepository.findUrlByHashOrElseThrow(hash);
+        url = urlRepository.findUrlByHashOrElseThrow(hash);
+        urlCacheRepository.save(hash, url);
+        return url;
     }
 
     /**

@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.cache;
 
-import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.UniqueNumbersRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,20 +15,16 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 public class HashCacheTest {
     @Mock
-    private HashRepository repository;
+    private UniqueNumbersRepository repository;
     @Mock
     private HashGenerator hashGenerator;
     @InjectMocks
     private HashCache hashCache;
-    @Value("${spring.jpa.hibernate.batch_size}")
-    private Long batchSize;
 
     @Test
     @DisplayName("Тестирование получения хэша")
     void getHash() {
         hashCache.generateAndGetHashesBatch();
-        verify(repository).getHashesBatch(batchSize);
-        verify(repository).deleteAllByIdInBatch(any());
         verify(hashGenerator).generateHashes();
     }
 }

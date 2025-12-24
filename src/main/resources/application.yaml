@@ -1,24 +1,23 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: user
-    password: password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://master_postgres:5432/postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
 
   data:
     redis:
-      port: 6379
-      host: localhost
+      host: ${SPRING_REDIS_HOST:master_redis}
+      port: ${SPRING_REDIS_PORT:6379}
       ttl-days: 1
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-      batch_size: 1000  # Группирует до 5000 операций в батч
-      seq_batch_size: 1020
+      queue_size: 100
+      seq_batch_size: 110
       order_inserts: true
-
     show-sql: true
     properties:
       hibernate:
@@ -39,4 +38,4 @@ logging:
     root: info
 
 shortener:
-  host:  "http://localhost:8080/short-url/"
+  host: "http://localhost:8080/short-url/"

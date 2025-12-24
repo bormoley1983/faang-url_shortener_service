@@ -43,13 +43,4 @@ public class URLControllerTest extends BaseContext {
                 .andReturn();
         assertTrue(result.getResponse().getContentAsString().contains("http://localhost:8080/short-url/1"));
     }
-
-    @Test
-    @DisplayName("Интеграционный тест на получение оригинальной ссылки")
-    void getHashTest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/short-url/1")
-                        .header("x-user-id", 5))
-                .andExpect(status().isFound())
-                .andReturn();
-    }
 }

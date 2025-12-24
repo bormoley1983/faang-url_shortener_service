@@ -1,6 +1,6 @@
 package faang.school.urlshortenerservice.cache;
 
-import faang.school.urlshortenerservice.repository.HashRepository;
+import faang.school.urlshortenerservice.repository.UniqueNumbersRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 public class HashGeneratorTest {
     @Mock
-    private HashRepository repository;
+    private UniqueNumbersRepository repository;
     @Mock
     private Base62Encoder encoder;
     @InjectMocks
@@ -29,6 +29,5 @@ public class HashGeneratorTest {
         hashGenerator.generateHashes();
         verify(repository).getUniqueNumbers(batchSize);
         verify(encoder).encodeNumbers(any());
-        verify(repository).saveAll(any());
     }
 }
