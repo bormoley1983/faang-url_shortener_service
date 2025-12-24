@@ -8,8 +8,8 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
-    show-sql: true
+      ddl-auto: create-drop
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -23,3 +23,13 @@ server:
 logging:
   level:
     root: info
+
+faang:
+  school:
+    url-shortener-service:
+      threshold: 100
+      refillBatchSize: 500
+
+hash-generator:
+  batch-size: 100
+  generation-batch-size: 1000
