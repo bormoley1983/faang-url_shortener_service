@@ -12,6 +12,6 @@ public class JobService {
 
     @Scheduled(cron = "*/05 * * * * ?")
     public void checkHashInBd() {
-        hashGenerator.temp();
+        hashGenerator.scheduler();
     }
 }

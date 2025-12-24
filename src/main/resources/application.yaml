@@ -26,6 +26,10 @@ logging:
 
 faang:
   school:
-    urlshortenerservice:
+    url-shortener-service:
       threshold: 100
       refillBatchSize: 500
+
+hash-generator:
+  batch-size: 100
+  generation-batch-size: 1000

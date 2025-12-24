@@ -17,10 +17,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class LocalHash {
 
-    @Value("${faang.school.urlshortenerservice.threshold}")
+    @Value("${faang.school.url-shortener-service.threshold}")
     private int threshold;
 
-    @Value("${faang.school.urlshortenerservice.refillBatchSize}")
+    @Value("${faang.school.url-shortener-service.refillBatchSize}")
     private int refillBatchSize;
 
     private final Queue<Hash> localHash = new ConcurrentLinkedQueue<>();

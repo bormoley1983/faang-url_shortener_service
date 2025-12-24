@@ -4,6 +4,7 @@ import faang.school.url_shortener_service.entity.Hash;
 import faang.school.url_shortener_service.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -16,20 +17,26 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 public class HashGenerator {
 
+    @Value("${hash-generator.batch-size}")
+    private int batchSize;
+
+    @Value("${hash-generator.generation-batch-size}")
+    private int generationBatchSize;
+
     private static final String BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final int BASE = BASE62_CHARS.length();
 
     private final HashRepository hashRepository;
 
     public List<Hash> getHash() {
-        List<Hash> hash = hashRepository.deleteAndReturnFirstN(100);
+        List<Hash> hash = hashRepository.deleteAndReturnFirstN(batchSize);
         List<Hash> mutableHash = new ArrayList<>(hash);
         Collections.shuffle(mutableHash, ThreadLocalRandom.current());
         return mutableHash;
     }
 
     public void generateHash() {
-        List<Long> result = hashRepository.getNextRange(1000);
+        List<Long> result = hashRepository.getNextRange(generationBatchSize);
         List<Hash> resultListHash = generateHashByBase62(result);
         hashRepository.saveAll(resultListHash);
 
@@ -56,11 +63,11 @@ public class HashGenerator {
         return result.toString();
     }
 
-    public void temp() {
+    public void scheduler() {
         Long count = hashRepository.countTotal();
         if (count <=400) {
             generateHash();
         }
-        log.info("Sheduler has run {}", count);
+        log.info("Scheduler has run {}", count);
     }
 }
