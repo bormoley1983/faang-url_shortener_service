@@ -18,8 +18,8 @@ import java.util.List;
 @Slf4j
 public class CleanerScheduler {
 
-    @Value("${hash-cleaner.time-ago.year}")
-    private int yearsAgo;
+    @Value("${hash-cleaner.retention-period.years}")
+    private int retentionPeriodYears;
     private final UrlRepository urlRepository;
     private final HashRepository hashRepository;
 
@@ -27,7 +27,7 @@ public class CleanerScheduler {
     @Scheduled(cron = "${hash-cleaner.cron}")
     public void cleanOldUrls() {
         log.info("Starting a cleanup of the old urls");
-        List<Url> urls = urlRepository.findAllByCreatedAtBefore(LocalDateTime.now().minusYears(yearsAgo));
+        List<Url> urls = urlRepository.findAllByCreatedAtBefore(LocalDateTime.now().minusYears(retentionPeriodYears));
         if (urls.isEmpty()) {
             return;
         }

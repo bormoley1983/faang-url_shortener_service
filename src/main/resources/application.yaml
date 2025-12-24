@@ -38,5 +38,5 @@ thread-pool:
 
 hash-cleaner:
   cron: 0 0 1 * * *
-  time-ago:
-    year: 1
+  retention-period:
+    years: 1
