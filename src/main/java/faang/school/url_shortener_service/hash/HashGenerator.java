@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,12 +22,12 @@ public class HashGenerator {
     private final HashRepository hashRepository;
 
     public List<Hash> getHash() {
-        return hashRepository.deleteAndReturnFirstN(100);
+        List<Hash> hash = hashRepository.deleteAndReturnFirstN(100);
+        List<Hash> mutableHash = new ArrayList<>(hash);
+        Collections.shuffle(mutableHash, ThreadLocalRandom.current());
+        return mutableHash;
     }
 
-    //toDO saveAll работает медленно, нужно сохранять бачами
-    //подумать где распаралелить и как (узкие места)
-    //сделать проверку количества в базе данных, если ниже то запускать HashGenerator
     public void generateHash() {
         List<Long> result = hashRepository.getNextRange(1000);
         List<Hash> resultListHash = generateHashByBase62(result);
@@ -51,5 +54,13 @@ public class HashGenerator {
         }
 
         return result.toString();
+    }
+
+    public void temp() {
+        Long count = hashRepository.countTotal();
+        if (count <=400) {
+            generateHash();
+        }
+        log.info("Sheduler has run {}", count);
     }
 }

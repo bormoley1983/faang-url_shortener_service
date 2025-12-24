@@ -31,4 +31,7 @@ public interface HashRepository extends JpaRepository<Hash, String> {
             SELECT nextval('unique_hash_number_seq') FROM generate_series(1, :maxRange)
             """)
     List<Long> getNextRange(@Param("maxRange") long maxRange);
+
+    @Query(value = "SELECT COUNT(*) FROM hash", nativeQuery = true)
+    Long countTotal();
 }
