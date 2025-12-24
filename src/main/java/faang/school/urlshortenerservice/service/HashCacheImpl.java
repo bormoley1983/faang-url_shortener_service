@@ -91,6 +91,13 @@ public class HashCacheImpl implements HashCache {
                 }
             }
 
+            log.debug("refill: currentSize={}, threshold={}, remainingCap={}, batchSize={}, fetched={}",
+                    properties.getCapacity() - cache.remainingCapacity(),
+                    properties.getCapacity() * properties.getRefillThresholdPercent() / 100,
+                    cache.remainingCapacity(),
+                    batchSize,
+                    hashes.size());
+
             if (hashes.size() < batchSize) {
                 triggerGenerationIfNeeded();
             }

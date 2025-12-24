@@ -16,12 +16,12 @@ public class HashRepositoryImpl implements HashRepository {
     private final HashProperties hashProperties;
 
     @Override
-    public List<Long> getUniqueNumbers(int n) {
+    public List<Long> getUniqueNumbers(int count) {
         String sql = """
                 SELECT nextval('unique_number_seq')
                 FROM generate_series(1, ?)
                 """;
-        return jdbcTemplate.queryForList(sql, Long.class, n);
+        return jdbcTemplate.queryForList(sql, Long.class, count);
     }
 
     @Override
