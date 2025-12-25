@@ -10,11 +10,17 @@ import faang.school.urlshortenerservice.mapper.HashMapper;
 import faang.school.urlshortenerservice.repo.UrlCacheRepository;
 import faang.school.urlshortenerservice.repo.UrlRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UrlService {
@@ -24,29 +30,76 @@ public class UrlService {
     private final UrlCacheRepository urlCacheRepository;
     private final HashMapper hashMapper;
 
+    @Value("${retry.maxAttempts}")
+    int maxAttempts;
+
+    @Value("${retry.sleep}")
+    int sleep;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     @Transactional
     public ShortUrlDto makeShortUrl(LongUrlDto longUrlDto) {
-        Hash hash = hashCache.getHash();
-        Url url = new Url(hash.getHash(), longUrlDto.longUrl());
+        int attempt = 0;
 
-        urlRepository.save(url);
+        while (attempt++ < maxAttempts) {
+            Hash hash = hashCache.getHash();
 
-        urlCacheRepository.save(hash.getHash(), longUrlDto.longUrl());
+            if (hash == null) {
+                log.warn("Hash is null, retrying... attempt {}/{}", attempt, maxAttempts);
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new UrlShortenerException("Thread interrupted while waiting for hash", ex);
+                }
+                continue;
+            }
 
-        return hashMapper.shortUrlDto(hash);
+            try {
+                Url url = new Url(hash.getHash(), longUrlDto.longUrl());
+                urlRepository.save(url);
+                registerAfterCommit(hash.getHash(), longUrlDto.longUrl());
+                String fullShortUrl = baseUrl + "/" + hash.getHash();
+
+                return new ShortUrlDto(url.getId(), fullShortUrl);
+            } catch (DataIntegrityViolationException ex) {
+                log.warn("Hash collision for {}. Returning hash to cache and retrying...", hash.getHash());
+                hashCache.put(hash);
+            } catch (RuntimeException ex) {
+                hashCache.put(hash);
+                throw ex;
+            }
+        }
+        throw new IllegalStateException("Failed to generate short URL after " + maxAttempts + " retries");
     }
 
     @Transactional
     public LongUrlDto getOriginUrl(String shortUrl) {
+        log.info("Looking up URL for hash: {}", shortUrl);
         Optional<String> cached = urlCacheRepository.findLongUrl(shortUrl);
+        log.info("Cache hit: {}", cached.isPresent());
         String longUrl = cached.orElseGet(() -> {
             Url url = urlRepository.findByShortUrl(shortUrl)
                     .orElseThrow(() -> new UrlShortenerException("URL not found"));
+            log.info("Loaded from DB: {}", url.getLongUrl());
             urlCacheRepository.save(shortUrl, url.getLongUrl());
             return url.getLongUrl();
         });
 
         return new LongUrlDto(longUrl);
+    }
+
+    private void registerAfterCommit(String hash, String longUrl) {
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        urlCacheRepository.save(hash, longUrl);
+                    }
+                }
+        );
     }
 }
 

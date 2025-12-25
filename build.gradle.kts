@@ -42,6 +42,7 @@ dependencies {
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
     annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+    implementation ("org.sqids:sqids:0.1.0")
 
     /**
      * Test containers

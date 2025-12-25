@@ -13,7 +13,7 @@ import java.util.List;
 public class HashGenerator {
 
     private final HashRepository hashRepository;
-    private final Base64Encoder base64Encoder;
+    private final SqidsEncoder sqidsEncoder;
     private final JdbcTemplate jdbcTemplate;
     private final HashStorageProperties properties;
 
@@ -26,7 +26,7 @@ public class HashGenerator {
     @Transactional
     public void generateHash() {
         List<Long> numbers = hashRepository.getUniqueNumbers(properties.getRangeUniqueNumbers());
-        List<String> hashes = base64Encoder.encode(numbers);
+        List<String> hashes = sqidsEncoder.encode(numbers);
 
         jdbcTemplate.batchUpdate(
                 SQL,

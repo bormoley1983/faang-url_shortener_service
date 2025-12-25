@@ -21,12 +21,15 @@ public class ExecutorServiceConfig {
     @Value("${executor.queue-capacity}")
     private int queueCapacity;
 
+    @Value("${executor.aliveTime}")
+    private long aliveTime;
+
     @Bean
     public ExecutorService taskExecutor() {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 poolSize,
                 maxPoolSize,
-                60L,
+                aliveTime,
                 TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(queueCapacity),
                 new ThreadPoolExecutor.CallerRunsPolicy()

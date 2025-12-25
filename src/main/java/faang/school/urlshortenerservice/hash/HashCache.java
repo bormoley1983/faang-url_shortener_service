@@ -20,17 +20,18 @@ public class HashCache {
     private final HashStorageProperties properties;
     private final ExecutorService executorService;
     private final LocalCache localCache;
-    private final AtomicBoolean isLoadingHashCash = new AtomicBoolean(false);
+    private final AtomicBoolean isLoadingHashCache = new AtomicBoolean(false);
+    private int maxSize;
 
     @PostConstruct
     public void init() {
-        cachedHashesQueue = new LinkedBlockingQueue<>(properties.getMaxSizeCachedQueue());
+        maxSize = properties.getMaxSizeCachedQueue();
+        cachedHashesQueue = new LinkedBlockingQueue<>(maxSize);
     }
 
     public Hash getHash() {
         Hash hash = cachedHashesQueue.poll();
         int size = cachedHashesQueue.size();
-        int maxSize = cachedHashesQueue.remainingCapacity() + size;
 
         if (size <= properties.getThresholdToRefillCachedQueue() * maxSize) {
             checkHashLoading();
@@ -40,7 +41,7 @@ public class HashCache {
 
     @Async("taskExecutor")
     private void checkHashLoading() {
-        if (!isLoadingHashCash.compareAndSet(false, true)) {
+        if (!isLoadingHashCache.compareAndSet(false, true)) {
             return;
         }
         executorService.submit(() -> {
@@ -50,7 +51,7 @@ public class HashCache {
                     put(hash);
                 }
             } finally {
-                isLoadingHashCash.set(false);
+                isLoadingHashCache.set(false);
             }
         });
     }

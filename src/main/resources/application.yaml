@@ -42,6 +42,15 @@ executor:
   pool-size: 10
   max-pool-size: 15
   queue-capacity: 500
+  aliveTime: 60
 
 scheduler:
   cleanup-cron: "0 0 0 * * *"
+  clean-period: 1
+
+retry:
+  maxAttempts: 5
+  sleep: 10
+
+app:
+  base-url: http://localhost:8080
