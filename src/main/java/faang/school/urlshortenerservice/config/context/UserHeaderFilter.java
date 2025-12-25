@@ -1,32 +1,80 @@
 package faang.school.urlshortenerservice.config.context;
 
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
-public class UserHeaderFilter implements Filter {
+public class UserHeaderFilter extends OncePerRequestFilter {
+
+    private static final String USER_ID_HEADER = "x-user-id";
+    private static final String HTTP_METHOD_GET = "GET";
+
+    private static final String CONTENT_TYPE_JSON = "application/json";
+    private static final Pattern TOP_LEVEL_PATH_PATTERN = Pattern.compile("^/[^/]+$");
+
+    private static final String MISSING_USER_ID_JSON = """
+            {"code":"bad_request","message":"Missing required header 'x-user-id'.\s
+            Please include 'x-user-id' with a valid user ID."}
+           \s""";
+    private static final String INVALID_USER_ID_JSON = """
+            {"code":"bad_request","message":"Invalid 'x-user-id' header value. Must be a number."}
+            """;
 
     private final UserContext userContext;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        String userId = req.getHeader("x-user-id");
-        if (userId != null) {
-            userContext.setUserId(Long.parseLong(userId));
-        }else {
-            throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        if (!HTTP_METHOD_GET.equalsIgnoreCase(request.getMethod())) {
+            return false;
         }
+        String path = request.getRequestURI();
+        return path != null && TOP_LEVEL_PATH_PATTERN.matcher(path).matches();
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        Long userId = parseUserIdHeader(request, response);
+        if (userId == null) {
+            return;
+        }
+
+        userContext.setUserId(userId);
         try {
-            chain.doFilter(request, response);
+            filterChain.doFilter(request, response);
         } finally {
             userContext.clear();
         }
+    }
+
+    private Long parseUserIdHeader(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String rawUserId = request.getHeader(USER_ID_HEADER);
+        if (rawUserId == null || rawUserId.isBlank()) {
+            writeBadRequest(response, MISSING_USER_ID_JSON);
+            return null;
+        }
+
+        try {
+            return Long.parseLong(rawUserId.trim());
+        } catch (NumberFormatException ex) {
+            writeBadRequest(response, INVALID_USER_ID_JSON);
+            return null;
+        }
+    }
+
+    private void writeBadRequest(HttpServletResponse response, String body) throws IOException {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.setContentType(CONTENT_TYPE_JSON);
+        response.getWriter().write(body);
     }
 }

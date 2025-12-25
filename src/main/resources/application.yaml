@@ -5,21 +5,61 @@ spring:
     username: user
     password: password
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
 
   liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.yaml
 
 server:
   port: 8080
+  servlet:
+    context-path: /api/v1
+
+app:
+  shortener:
+    base-url: http://localhost:${server.port}${server.servlet.context-path}
+
+  url-cache:
+    ttl: 30d
+    version: v1
+    module: urlshortener
+    urlEntity: url
+
+  cleaner:
+    cron: "0 0 3 * * *"     # every day at 03:00
+    retention: 365d
+
+  hash-cache:
+    capacity: 10000
+    refill-threshold-percent: 20
+    refill-batch-size: 3000
+    wait-timeout: 200ms
+
+  hash:
+    batch-size: 1000
+    thread-pool:
+      size: 4
+      queue-capacity: 1000
+
+  hash-cache-executor:
+    pool-size: 2
+    queue-capacity: 10
 
 logging:
   level:
     root: info
+    faang.school.urlshortenerservice: debug

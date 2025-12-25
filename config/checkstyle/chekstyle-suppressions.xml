@@ -1,0 +1,9 @@
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- отключаем правило только для тестов -->
+    <suppress checks="VariableDeclarationUsageDistance"
+              files=".*(Test|IT|ITCase|IntegrationTest)\.java$"/>
+</suppressions>
