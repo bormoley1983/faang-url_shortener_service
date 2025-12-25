@@ -34,7 +34,6 @@ public class CleanScheduler {
                 cleanBatch((int) count);
                 count = 0;
             }
-
         }
     }
 
