@@ -19,7 +19,14 @@ public interface UrlRepository extends JpaRepository<Url, Hash> {
     @Query(nativeQuery = true, value = """
             DELETE FROM url
                WHERE created_at < NOW() - INTERVAL '1 year'
+               LIMIT: limit
                RETURNING *
             """)
-    List<Url> deleteOldUrls();
+    List<Url> deleteOldUrls(@Param("limit") int limit);
+
+    @Query(nativeQuery = true, value = """
+            SELECT COUNT(*) FROM url
+               WHERE created_at < NOW() - INTERVAL '1 year'
+            """)
+    Long countOldUrls();
 }

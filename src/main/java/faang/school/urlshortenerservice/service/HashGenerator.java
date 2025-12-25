@@ -25,7 +25,7 @@ public class HashGenerator {
     @Scheduled(cron = "${scheduler.tasks.generate-batch.cron:0 0 0 * * *}")
     public void generateBatch() {
         List<Long> uniqueNumbers = hashRepository.getUniqueNumbers(batchSize);
-        List<Hash> hashes = base62Encoder.encode(uniqueNumbers).stream()
+        List<Hash> hashes = base62Encoder.encodeTheList(uniqueNumbers).stream()
                 .map(Hash::new)
                 .toList();
 
@@ -35,10 +35,10 @@ public class HashGenerator {
 
     @Transactional
     public List<String> getHashes(int amount) {
-        List<Hash> hashes = hashRepository.getHashBatch(amount);
+        List<Hash> hashes = hashRepository.getAndDeleteHashBatch(amount);
         if (hashes.size() < amount) {
             generateBatch();
-            hashes.addAll(hashRepository.getHashBatch(amount - hashes.size()));
+            hashes.addAll(hashRepository.getAndDeleteHashBatch(amount - hashes.size()));
         }
         return hashes.stream().map(Hash::getHash).toList();
     }

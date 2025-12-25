@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UrlService {
 
     private final UrlRepository urlRepository;
-    private final HashCash hashCash;
+    private final HashCache hashCash;
     private final UrlCashRepository urlCacheRepository;
 
     @Value("${url.ttl-days:100}")

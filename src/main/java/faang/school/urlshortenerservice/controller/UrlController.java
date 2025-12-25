@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/url-shortener")
@@ -22,7 +24,9 @@ public class UrlController {
 
     @GetMapping("/{hash}")
     public ResponseEntity<String> getUrl(@PathVariable String hash) {
-        return ResponseEntity.status(HttpStatus.FOUND).body(urlService.getUrl(hash));
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(urlService.getUrl(hash)))
+                .build();
     }
 
     @PostMapping

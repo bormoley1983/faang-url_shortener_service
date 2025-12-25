@@ -26,7 +26,7 @@ public class HashRepositoryJdbc {
         );
     }
 
-    public List<Hash> getHashBatch(int amount) {
+    public List<Hash> getAndDeleteHashBatch(int amount) {
         String sql = """
                 DELETE FROM hash
                 WHERE hash IN (

@@ -25,7 +25,7 @@ public class Base62EncoderTest {
     void testEncodeEmptyList() {
         List<Long> emptyList = Collections.emptyList();
 
-        List<String> result = encoder.encode(emptyList);
+        List<String> result = encoder.encodeTheList(emptyList);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -33,21 +33,21 @@ public class Base62EncoderTest {
 
     @Test
     void testEncodeNullInput() {
-        assertThrows(NullPointerException.class, () -> encoder.encode(null));
+        assertThrows(NullPointerException.class, () -> encoder.encodeTheList(null));
     }
 
     @Test
     void testEncodeListWithNullElement() {
         List<Long> listWithNull = Arrays.asList(1L, null, 2L);
 
-        assertThrows(IllegalArgumentException.class, () -> encoder.encode(listWithNull));
+        assertThrows(IllegalArgumentException.class, () -> encoder.encodeTheList(listWithNull));
     }
 
     @Test
     void testEncodeNegativeNumber() {
         List<Long> listWithNegativeNumber = Arrays.asList(-1L, 10L, 100L);
 
-        assertThrows(IllegalArgumentException.class, () -> encoder.encode(listWithNegativeNumber));
+        assertThrows(IllegalArgumentException.class, () -> encoder.encodeTheList(listWithNegativeNumber));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class Base62EncoderTest {
         List<Long> numbers = Arrays.asList(0L, 1L, 62L, 123L, 238327L);
         List<String> expected = Arrays.asList("0", "1", "10", "1Z", "ZZZ");
 
-        List<String> result = encoder.encode(numbers);
+        List<String> result = encoder.encodeTheList(numbers);
 
         assertEquals(expected.size(), result.size());
         for (int i = 0; i < expected.size(); i++) {
@@ -67,7 +67,7 @@ public class Base62EncoderTest {
     void testEncodeZero() {
         List<Long> numbers = Collections.singletonList(0L);
 
-        List<String> result = encoder.encode(numbers);
+        List<String> result = encoder.encodeTheList(numbers);
 
         assertEquals(1, result.size());
         assertEquals("0", result.get(0));

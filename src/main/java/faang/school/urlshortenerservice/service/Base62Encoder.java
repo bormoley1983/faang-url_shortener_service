@@ -8,29 +8,33 @@ import java.util.List;
 @Component
 public class Base62Encoder {
 
-    private static final String BASE62_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final char[] BASE62_CHARS_ARRAY =
+            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 
-    public List<String> encode(List<Long> numbers) {
+    public String encode(Long number) {
+        if (number == null || number < 0) {
+            throw new IllegalArgumentException("Number cannot be null");
+        }
+        if (number == 0) {
+            return String.valueOf(BASE62_CHARS_ARRAY[0]);
+        }
+
+        StringBuilder result = new StringBuilder();
+        while (number > 0) {
+            int remainder = (int) (number % BASE62_CHARS_ARRAY.length);
+            result.append(BASE62_CHARS_ARRAY[remainder]);
+            number /= BASE62_CHARS_ARRAY.length;
+        }
+
+        return result.reverse().toString();
+    }
+
+    public List<String> encodeTheList(List<Long> numbers) {
         List<String> encoded = new ArrayList<>();
 
         for (Long number : numbers) {
-            if (number == null || number < 0) {
-                throw new IllegalArgumentException("Number cannot be null");
-            }
-            if (number == 0) {
-                encoded.add("0");
-                continue;
-            }
-
-            StringBuilder result = new StringBuilder();
-            while (number > 0) {
-                int index = (int) (number % BASE62_CHARS.length());
-                result.append(BASE62_CHARS.charAt(index));
-                number /= BASE62_CHARS.length();
-            }
-            encoded.add(result.reverse().toString());
+            encoded.add(encode(number));
         }
-
         return encoded;
     }
 }

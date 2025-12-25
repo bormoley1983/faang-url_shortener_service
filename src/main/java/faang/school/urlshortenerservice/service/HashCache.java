@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class HashCash {
+public class HashCache {
 
     @Value("${hash.cash.capacity:5000}")
     private int capacity;
@@ -36,7 +36,7 @@ public class HashCash {
 
     public String getHash() {
         if (hashes.size() < capacity * percent / 100 &&
-                inProcess.getAndSet(true)) {
+                !inProcess.getAndSet(true)) {
             asyncGetHashes.getHashesAsync(capacity - hashes.size())
                     .thenAccept(hashes::addAll).thenRun(() -> inProcess.set(false));
         }

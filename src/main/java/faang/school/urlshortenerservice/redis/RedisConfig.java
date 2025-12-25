@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.redis;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,9 @@ import java.time.Duration;
 public class RedisConfig {
 
     private final RedisProperties redisProperties;
+
+    @Value("${spring.jpa.redis.config.cache-ttl:30}")
+    private int cacheTtl;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -55,7 +59,7 @@ public class RedisConfig {
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration
                 .defaultCacheConfig()
-                .entryTtl(Duration.ofDays(365))
+                .entryTtl(Duration.ofDays(cacheTtl))
                 .serializeKeysWith(RedisSerializationContext
                         .SerializationPair
                         .fromSerializer(new StringRedisSerializer()))

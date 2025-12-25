@@ -21,6 +21,8 @@ spring:
     redis:
       port: 6379
       host: localhost
+      config:
+        cache-ttl: 30
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -57,3 +59,9 @@ scheduler:
       cron: 0 0 0 * * *
     cleaner:
       cron: 0 0 2 * * *
+      batch-size: 10000
+thread:
+  core-pool-size: 4
+  max-pool-size: 10
+  queue-capacity: 100
+  await-termination-seconds: 60

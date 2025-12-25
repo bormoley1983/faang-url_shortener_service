@@ -30,7 +30,7 @@ public class UrlServiceTest {
     private UrlRepository urlRepository;
 
     @Mock
-    private HashCash hashCash;
+    private HashCache hashCash;
 
     @Mock
     private UrlCashRepository urlCacheRepository;
