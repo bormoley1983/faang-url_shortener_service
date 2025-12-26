@@ -3,7 +3,6 @@ package faang.school.urlshortenerservice.hash;
 import faang.school.urlshortenerservice.entity.Hash;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -39,7 +38,6 @@ public class HashCache {
         return hash;
     }
 
-    @Async("taskExecutor")
     private void checkHashLoading() {
         if (!isLoadingHashCache.compareAndSet(false, true)) {
             return;
