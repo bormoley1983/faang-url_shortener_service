@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,6 +18,13 @@ public class UrlExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDataValidationException(DataValidationException ex,
                                                                        HttpServletRequest request) {
         log.error("Data validation failed", ex);
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), getFullPath(request));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex,
+                                                                              HttpServletRequest request) {
+        log.error("Validation failed", ex);
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), getFullPath(request));
     }
 
@@ -37,6 +45,13 @@ public class UrlExceptionHandler {
                 status.value(), message, LocalDateTime.now(), path
         );
         return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex,
+                                                                       HttpServletRequest request) {
+        log.error("Entity not found", ex);
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), getFullPath(request));
     }
 
     private String getFullPath(HttpServletRequest request) {

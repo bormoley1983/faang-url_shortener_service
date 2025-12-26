@@ -12,7 +12,17 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        generate_statistics: true
         format_sql: true
+        jdbc:
+          batch_size: 1000
+          order_inserts: true
+          order_updates: true
+    redis:
+      port: 6379
+      host: localhost
+      config:
+        cache-ttl: 30
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -24,10 +34,34 @@ logging:
   level:
     root: info
 
-batch:
-  size: 10000
+hash:
+  cash:
+    executor:
+      core-pool-size: 4
+      max-pool-size: 10
+      queue-capacity: 100
+      keep-alive-time: 60
+      thread-name-prefix: hash-cache-
+    capacity: 2000
+    percent: 20
+
+url:
+  ttl-days: 100
+  prefix-url: https://sh.c/
+
+hash-generator:
+  batch:
+    size: 10000
 scheduler:
   enabled: true
   tasks:
     generate-batch:
+      cron: 0 0 0 * * *
+    cleaner:
       cron: 0 0 2 * * *
+      batch-size: 10000
+thread:
+  core-pool-size: 4
+  max-pool-size: 10
+  queue-capacity: 100
+  await-termination-seconds: 60
