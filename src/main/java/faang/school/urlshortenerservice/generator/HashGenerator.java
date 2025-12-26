@@ -29,7 +29,7 @@ public class HashGenerator {
         List<Long> range = repository.getNextRange(maxRange);
         List<Hash> hashes = range.stream()
                 .map(this::applyBase62Encoding)
-                .map(Hash::new)
+                .map(Hash::new) // пришлось создавать отдельный конструктор под String в Hash
                 .toList();
         repository.saveAll(hashes);
     }
