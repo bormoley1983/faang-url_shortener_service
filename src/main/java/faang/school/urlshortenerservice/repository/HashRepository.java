@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.repository;
 
+import faang.school.urlshortenerservice.config.RetryExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ import java.util.List;
 public class HashRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final RetryExecutor retryExecutor;
 
     @Value("${hash.batch-size}")
     private int batchSize;
@@ -25,7 +27,9 @@ public class HashRepository {
 
     public List<Long> getUniqueNumbers(int num) {
         String sql = "SELECT nextval('unique_number_seq') FROM generate_series(1, ?)";
-        return jdbcTemplate.queryForList(sql, Long.class, num);
+        return retryExecutor.execute(() -> 
+            jdbcTemplate.queryForList(sql, Long.class, num)
+        );
     }
 
     public void save(List<String> hashes) {
@@ -68,7 +72,9 @@ public class HashRepository {
                 )
                 RETURNING hash
                 """;
-        return jdbcTemplate.queryForList(sql, String.class, limit);
+        return retryExecutor.execute(() -> 
+            jdbcTemplate.queryForList(sql, String.class, limit)
+        );
     }
 
     public List<String> getHashBatch() {
@@ -87,7 +93,9 @@ public class HashRepository {
                 )
                 RETURNING hash
                 """;
-        return jdbcTemplate.queryForList(sql, String.class, limit);
+        return retryExecutor.execute(() -> 
+            jdbcTemplate.queryForList(sql, String.class, limit)
+        );
     }
 
     public void saveAsUsed(String hash) {
@@ -96,7 +104,10 @@ public class HashRepository {
                 VALUES (?, false)
                 ON CONFLICT (hash) DO UPDATE SET available = false
                 """;
-        jdbcTemplate.update(sql, hash);
+        retryExecutor.execute(() -> {
+            jdbcTemplate.update(sql, hash);
+            return null;
+        });
     }
 
     public List<String> getAvailableHashes(int limit) {

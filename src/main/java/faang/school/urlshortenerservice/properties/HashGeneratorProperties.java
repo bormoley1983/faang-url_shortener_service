@@ -14,12 +14,11 @@ import reactor.util.retry.Retry;
 public class HashGeneratorProperties {
 
     @Min(value = 1, message = "Batch size must be at least 1")
-    @Max(value = 1000, message = "Batch size must not exceed 10000")
+    @Max(value = 1000, message = "Batch size must not exceed 1000")
     private int batchSize = 100;
 
     @Valid
     private ThreadPool threadPool = new ThreadPool();
-
 
     @Valid
     private Retry retry = new Retry();
@@ -47,5 +46,4 @@ public class HashGeneratorProperties {
         @Max(value = 60000, message = "Delay must not exceed 60000ms (60 сек)")
         private long delayMs = 1000;
     }
-
 }

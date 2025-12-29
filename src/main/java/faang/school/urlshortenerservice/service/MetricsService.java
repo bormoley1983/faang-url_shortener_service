@@ -107,6 +107,26 @@ public class MetricsService {
                 .register(meterRegistry);
     }
 
+    public Timer hashGenerationDurationTimer() {
+        return Timer.builder("hash.generation.duration")
+                .description("Time taken to generate a batch of hashes")
+                .register(meterRegistry);
+    }
+
+    public Counter hashGenerationSuccessCounter(int batchSize) {
+        return Counter.builder("hash.generation.success")
+                .description("Number of successful hash batch generations")
+                .tag("batch_size", String.valueOf(batchSize))
+                .register(meterRegistry);
+    }
+
+    public Counter hashGenerationErrorCounter(String exceptionType) {
+        return Counter.builder("hash.generation.error")
+                .description("Number of hash generation errors")
+                .tag("exception", exceptionType)
+                .register(meterRegistry);
+    }
+
     public Counter rateLimitExceededCounter() {
         return Counter.builder("rate.limit.exceeded")
                 .description("Number of rate limit violations")
@@ -156,6 +176,21 @@ public class MetricsService {
             }
         })
                 .description("Current size of hash cache in Redis")
+                .register(meterRegistry);
+    }
+
+    public void registerHashPoolSize(Supplier<Number> sizeSupplier, String type, String poolKey) {
+        Gauge.builder("hash.pool.size", sizeSupplier, supplier -> {
+            try {
+                Number size = supplier.get();
+                return size != null ? size.doubleValue() : 0.0;
+            } catch (Exception e) {
+                return 0.0;
+            }
+        })
+                .description("Current size of hash pool in Redis")
+                .tag("type", type)
+                .tag("pool_key", poolKey)
                 .register(meterRegistry);
     }
 }

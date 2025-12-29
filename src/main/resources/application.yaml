@@ -126,3 +126,13 @@ url:
   retry:
     max-attempts: 3
     delay-ms: 100
+
+redirect:
+  validation:
+    blacklisted-domains:
+      # Known malicious domains can be added here
+      # Examples:
+      # - malicious-site.com
+      # - phishing-bank.net
+      # - iplogger.org
+      # - grabify.link

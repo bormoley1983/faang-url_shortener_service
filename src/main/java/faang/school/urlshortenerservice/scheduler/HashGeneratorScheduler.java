@@ -44,7 +44,7 @@ public class HashGeneratorScheduler {
             hashGenerator.generateHashBatch();
 
             if (hashCacheService instanceof HashCacheServiceRedis) {
-                ((HashCacheServiceRedis) hashCacheService).refillPool();
+                ((HashCacheServiceRedis) hashCacheService).fillRedisPool();
             }
             
             log.info("Scheduled hash generation job completed successfully");

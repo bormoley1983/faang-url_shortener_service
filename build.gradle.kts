@@ -46,6 +46,8 @@ dependencies {
      * Retry & Resilience
      */
     implementation("net.jodah:failsafe:2.4.4")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework:spring-aspects")
     
     /**
      * Rate Limiting

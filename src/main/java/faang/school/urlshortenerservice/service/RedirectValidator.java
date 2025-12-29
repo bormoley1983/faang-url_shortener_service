@@ -1,6 +1,7 @@
 package faang.school.urlshortenerservice.service;
 
 import faang.school.urlshortenerservice.exception.InvalidUrlException;
+import faang.school.urlshortenerservice.properties.RedirectValidationProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -9,7 +10,6 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -17,15 +17,7 @@ import java.util.Set;
 public class RedirectValidator {
 
     private final MetricsService metricsService;
-
-    private static final Set<String> BLACKLISTED_DOMAINS = Set.of(
-            // Can be extended with known malicious domains
-            // Examples:
-            // "malicious-site.com",
-            // "phishing-bank.net",
-            // "iplogger.org",
-            // "grabify.link"
-    );
+    private final RedirectValidationProperties redirectValidationProperties;
 
     /**
      * Validates URL before redirect to protect against Open Redirect Attack
@@ -121,7 +113,7 @@ public class RedirectValidator {
      */
     private boolean isBlacklisted(String host) {
         String hostLower = host.toLowerCase();
-        return BLACKLISTED_DOMAINS.stream()
+        return redirectValidationProperties.getBlacklistedDomains().stream()
                 .anyMatch(blacklisted -> {
                     String blacklistedLower = blacklisted.toLowerCase();
 

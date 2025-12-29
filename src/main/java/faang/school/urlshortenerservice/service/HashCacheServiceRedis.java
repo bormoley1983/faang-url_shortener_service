@@ -1,9 +1,8 @@
 package faang.school.urlshortenerservice.service;
 
+import faang.school.urlshortenerservice.config.RetryExecutor;
 import faang.school.urlshortenerservice.exception.NoAvailableHashException;
 import faang.school.urlshortenerservice.repository.HashRepository;
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +27,7 @@ public class HashCacheServiceRedis implements HashCacheService {
     private final HashRepository hashRepository;
     private final Base62Encoder base62Encoder;
     private final MetricsService metricsService;
-    private final MeterRegistry meterRegistry;
+    private final RetryExecutor retryExecutor;
     
     private static final String HASH_POOL_KEY = "hash:pool";
     
@@ -56,15 +55,10 @@ public class HashCacheServiceRedis implements HashCacheService {
             log.warn("Failed to register legacy hash.cache.size metric: {}", e.getMessage());
         }
         
-        // Register gauge metric for hash pool size in Redis (hash.pool.size)
         try {
             log.info("Attempting to register hash.pool.size gauge...");
             
-            Gauge.builder("hash.pool.size", this, HashCacheServiceRedis::getPoolSizeAsDouble)
-                    .description("Current size of hash pool in Redis")
-                    .tag("type", "redis")
-                    .tag("pool_key", HASH_POOL_KEY)
-                    .register(meterRegistry);
+            metricsService.registerHashPoolSize(this::getPoolSizeAsDouble, "redis", HASH_POOL_KEY);
             
             log.info("Successfully registered gauge metric: hash.pool.size");
 
@@ -78,11 +72,7 @@ public class HashCacheServiceRedis implements HashCacheService {
         fillRedisPool();
     }
 
-    public void refillPool() {
-        fillRedisPool();
-    }
-
-    private void fillRedisPool() {
+    public void fillRedisPool() {
         try {
             int currentSize = size();
             if (currentSize >= maxCacheSize) {
@@ -101,7 +91,9 @@ public class HashCacheServiceRedis implements HashCacheService {
                     if (size() >= maxCacheSize) {
                         break;
                     }
-                    redisTemplate.opsForList().rightPush(HASH_POOL_KEY, hash);
+                    retryExecutor.execute(() -> 
+                        redisTemplate.opsForList().rightPush(HASH_POOL_KEY, hash)
+                    );
                 }
                 
                 log.info("Filled Redis pool with {} hashes. Current pool size: {}", 
@@ -117,7 +109,9 @@ public class HashCacheServiceRedis implements HashCacheService {
     @Override
     public String getHash() {
         int poolSizeBefore = size();
-        String hash = redisTemplate.opsForList().leftPop(HASH_POOL_KEY);
+        String hash = retryExecutor.execute(() -> 
+            redisTemplate.opsForList().leftPop(HASH_POOL_KEY)
+        );
         int poolSizeAfter = size();
         
         if (hash != null && !hash.isEmpty()) {
@@ -135,7 +129,9 @@ public class HashCacheServiceRedis implements HashCacheService {
     @Override
     public void returnHash(String hash) {
         if (hash != null && !hash.isEmpty()) {
-            redisTemplate.opsForList().rightPush(HASH_POOL_KEY, hash);
+            retryExecutor.execute(() -> 
+                redisTemplate.opsForList().rightPush(HASH_POOL_KEY, hash)
+            );
             log.debug("Returned hash to Redis pool: {}", hash);
             metricsService.hashCacheReturnCounter().increment();
         }
@@ -143,7 +139,9 @@ public class HashCacheServiceRedis implements HashCacheService {
 
     @Override
     public int size() {
-        Long size = redisTemplate.opsForList().size(HASH_POOL_KEY);
+        Long size = retryExecutor.execute(() -> 
+            redisTemplate.opsForList().size(HASH_POOL_KEY)
+        );
         return size != null ? size.intValue() : 0;
     }
 
@@ -153,7 +151,9 @@ public class HashCacheServiceRedis implements HashCacheService {
      */
     private Double getPoolSizeAsDouble() {
         try {
-            Long size = redisTemplate.opsForList().size(HASH_POOL_KEY);
+            Long size = retryExecutor.execute(() -> 
+                redisTemplate.opsForList().size(HASH_POOL_KEY)
+            );
             return size != null ? size.doubleValue() : 0.0;
         } catch (Exception e) {
             log.warn("Failed to get pool size for metrics: {}", e.getMessage());
@@ -170,7 +170,9 @@ public class HashCacheServiceRedis implements HashCacheService {
             }
             
             try {
-                List<String> hashes = hashRepository.getHashBatchAtomic(1);
+                List<String> hashes = retryExecutor.execute(() -> 
+                    hashRepository.getHashBatchAtomic(1)
+                );
                 
                 if (hashes != null && !hashes.isEmpty()) {
                     String hash = hashes.get(0);
@@ -196,7 +198,9 @@ public class HashCacheServiceRedis implements HashCacheService {
     private String generateHashImmediately() {
         metricsService.hashGenerationCounter().increment();
         try {
-            List<Long> numbers = hashRepository.getUniqueNumbers(1);
+            List<Long> numbers = retryExecutor.execute(() -> 
+                hashRepository.getUniqueNumbers(1)
+            );
             
             if (numbers == null || numbers.isEmpty()) {
                 throw new NoAvailableHashException("Sequence exhausted");
@@ -204,7 +208,7 @@ public class HashCacheServiceRedis implements HashCacheService {
             
             String hash = base62Encoder.encode(numbers.get(0));
 
-            hashRepository.saveAsUsed(hash);
+            retryExecutor.execute(() -> hashRepository.saveAsUsed(hash));
             
             log.warn("Generated hash on-the-fly (last resort): {}", hash);
             return hash;
