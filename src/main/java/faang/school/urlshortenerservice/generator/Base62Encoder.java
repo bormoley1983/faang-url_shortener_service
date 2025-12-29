@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Base62 encoder for generating short URL hashes.
+ * Base62 encoder for generating short URL hashes. @Component
  * <p>
  * WARNING: MIN_HASH_LENGTH and BASE_62_CHAR are part of the algorithm.
  * Changing these values will break compatibility with existing URLs in the database.
