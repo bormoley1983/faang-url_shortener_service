@@ -1,0 +1,1 @@
+ALTER TABLE hash ALTER COLUMN id SET DEFAULT nextval('unique_hash_number_seq');
