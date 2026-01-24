@@ -6,8 +6,7 @@ CREATE SEQUENCE unique_number_seq
     CACHE 1;
 
 CREATE TABLE hash (
-    id BIGINT NOT NULL IDENTITY UNIQUE,
-    hash VARCHAR(7)
+    hash VARCHAR(6)
     PRIMARY KEY (id)
 
 );

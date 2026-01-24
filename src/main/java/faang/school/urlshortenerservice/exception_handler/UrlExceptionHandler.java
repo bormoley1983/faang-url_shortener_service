@@ -6,21 +6,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
 import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
 public class UrlExceptionHandler {
 
-    // 404 — кастомное "не найдено"
     @ExceptionHandler(UrlNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(UrlNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
-    // 400 — ошибки валидации
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String errorMsg = ex.getBindingResult().getFieldErrors()
@@ -31,7 +28,6 @@ public class UrlExceptionHandler {
                 .body(new ErrorResponse(errorMsg));
     }
 
-    // 500 — системные ошибки (можно обработать конкретные если знаешь что может "упасть")
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         log.error("Внутренняя ошибка сервера", ex);

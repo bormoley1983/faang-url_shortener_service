@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,11 +14,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class HashCache {
 
     private final HashGenerator hashGenerator;
+    private final HashAsyncService hashAsyncService;
 
     @Value("${hash.cache.capacity:10000}")
     private int cacheCapacity;
 
-    private AtomicBoolean filling;
+    @Value("${hash.cache.refill-threshold-percent:20}")
+    private int refillThresholdPercent;
+
+    private static final int PERCENT_TOTAL = 100;
+
+    private final AtomicBoolean filling = new AtomicBoolean(false);
 
     private final Queue<String> hashes = new ArrayBlockingQueue<>(cacheCapacity);
 
@@ -27,15 +34,14 @@ public class HashCache {
     }
 
     public String getHash() {
-        if (hashes.size() / (cacheCapacity / 100) < 20) { // 2000 / 100 < 0.2
-            if(filling.compareAndSet(false, true)) {
-                hashGenerator.getHashesAsync(cacheCapacity)
+        if ((hashes.size() * PERCENT_TOTAL / cacheCapacity) < refillThresholdPercent) {
+            if (filling.compareAndSet(false, true)) {
+                hashAsyncService.getHashesAsync(cacheCapacity)
                         .thenAccept(hashes::addAll)
-                        .thenRun(() -> {filling.set(false);});
-
+                        .whenComplete((result, ex) -> filling.set(false));
             }
-
         }
         return hashes.poll();
     }
 }
+
