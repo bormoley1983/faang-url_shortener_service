@@ -5,6 +5,7 @@ import faang.school.urlshortenerservice.service.UrlService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class UrlController {
     @GetMapping("/{hash}")
     public ResponseEntity<Void> redirect(@PathVariable String hash) {
         String longUrl = urlService.findLongUrlByHash(hash);
-        return ResponseEntity.status(302)
+        return ResponseEntity.status(HttpStatus.FOUND) // вместо 302
                 .header(HttpHeaders.LOCATION, longUrl)
                 .build();
     }
