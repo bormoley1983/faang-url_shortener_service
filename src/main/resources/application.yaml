@@ -26,3 +26,6 @@ logging:
 
 hash:
   batch-size: 100
+  generator:
+    pool-size: 2
+    queue-capacity: 500
