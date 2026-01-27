@@ -1,7 +1,7 @@
 package faang.school.urlshortenerservice.generator;
 
 import faang.school.urlshortenerservice.entity.Hash;
-import faang.school.urlshortenerservice.hash.Encoder;
+import faang.school.urlshortenerservice.hash.Base62Encoder;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +15,7 @@ import java.util.List;
 public class HashGenerator {
 
     private final HashRepository repository;
-    private final Encoder encoder;
+    private final Base62Encoder base62Encoder;
 
     @Value("${hash.range:10000}")
     private int maxRange;
@@ -29,7 +29,7 @@ public class HashGenerator {
     public void generateHash(long count) {
         List<Long> range = repository.getNextRange(count);
         List<Hash> hashes = range.stream()
-                .map(encoder::applyBase62Encoding)
+                .map(base62Encoder::applyBase62Encoding)
                 .map(Hash::new)
                 .toList();
         repository.saveAll(hashes);

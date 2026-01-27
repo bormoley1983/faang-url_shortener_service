@@ -2,13 +2,14 @@ package faang.school.urlshortenerservice.generator;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class HashCache {
@@ -38,7 +39,15 @@ public class HashCache {
             if (filling.compareAndSet(false, true)) {
                 hashAsyncService.getHashesAsync(cacheCapacity)
                         .thenAccept(hashes::addAll)
-                        .whenComplete((result, ex) -> filling.set(false));
+                        .whenComplete((result, ex) -> {
+                            try {
+                                if (ex != null) {
+                                    log.error("Failed to refill hash cache (capacity={})", cacheCapacity, ex);
+                                }
+                            } finally {
+                                filling.set(false);
+                            }
+                        });
             }
         }
         return hashes.poll();

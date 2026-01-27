@@ -25,7 +25,7 @@ public class UrlController {
     @GetMapping("/{hash}")
     public ResponseEntity<Void> redirect(@PathVariable String hash) {
         String longUrl = urlService.findLongUrlByHash(hash);
-        return ResponseEntity.status(HttpStatus.FOUND) // вместо 302
+        return ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, longUrl)
                 .build();
     }
