@@ -5,5 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UrlService {
 
-    public String createShortUrl(String longUrl);
+    String createShortUrl(String longUrl);
+
+    String getOriginalUrl(String hash);
 }

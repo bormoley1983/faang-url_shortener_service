@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import faang.school.urlshortenerservice.cache.HashCache;
 import faang.school.urlshortenerservice.entity.Url;
+import faang.school.urlshortenerservice.exception.UrlNotFoundException;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
 
@@ -29,5 +30,18 @@ public class UrlServiceImpl implements UrlService {
         urlCacheRepository.save(hash, originalUrl);
 
         return hash;
+    }
+
+    public String getOriginalUrl(String hash) {
+
+        return urlCacheRepository.findByHash(hash)
+                .orElseGet(() ->
+                        urlRepository.findById(hash)
+                                .map(entity -> {
+                                    urlCacheRepository.save(hash, entity.getOriginalUrl());
+                                    return entity.getOriginalUrl();
+                                })
+                                .orElseThrow(() -> new UrlNotFoundException(hash))
+                );
     }
 }
