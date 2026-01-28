@@ -29,3 +29,8 @@ hash:
   generator:
     pool-size: 2
     queue-capacity: 500
+  cache-refill:
+    size: 1000
+    pool-size: 1 
+    queue-capacity: 10 
+    threshold-percent: 20
