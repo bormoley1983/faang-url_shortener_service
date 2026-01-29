@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -35,11 +36,16 @@ public class HashCache {
     public String getHash() {
         checkAndTriggerRefill();
 
-        String hash = cache.poll();
-        if (hash == null) {
-            throw new IllegalStateException("Hash cache is warming up");
+        try {
+            String hash = cache.poll(30, TimeUnit.SECONDS);
+            if (hash == null) {
+                throw new IllegalStateException("Hash cache is empty. Please try again later.");
+            }
+            return hash;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for hash from cache", e);
         }
-        return hash;
     }
 
     private void checkAndTriggerRefill() {
@@ -50,7 +56,7 @@ public class HashCache {
         }
 
         if (refillInProgress.compareAndSet(false, true)) {
-            log.info("Hash cache below threshold, triggering refill");
+            log.info("Hash cache below threshold ({}), triggering refill", cache.size());
 
             hashCacheExecutor.submit(() -> {
                 try {
