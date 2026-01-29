@@ -33,13 +33,12 @@ public class HashCache {
     private final AtomicBoolean refillInProgress = new AtomicBoolean(false);
 
     public String getHash() {
-        String hash = cache.poll();
-
-        if (hash == null) {
-            throw new IllegalStateException("No available hashes in cache");
-        }
-
         checkAndTriggerRefill();
+
+        String hash = cache.poll();
+        if (hash == null) {
+            throw new IllegalStateException("Hash cache is warming up");
+        }
         return hash;
     }
 
