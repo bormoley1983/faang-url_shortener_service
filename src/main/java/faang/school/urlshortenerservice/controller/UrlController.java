@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/url")
 public class UrlController {
 
     private final UrlService urlService;
 
-    @PostMapping
+    @PostMapping("/")
     public UrlCreateResponse createShortUrl(
             @RequestBody @Valid UrlCreateRequest request
     ) {
