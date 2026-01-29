@@ -15,12 +15,12 @@ import org.springframework.validation.annotation.Validated;
 @Configuration
 public class RedisProperties {
 
-    @NotBlank(message = "Redis host not be null")
+    @NotBlank(message = "Redis host must be present")
     private String host;
 
     @Positive(message = "Redis port cannot be negative")
     private int port;
 
-    @NotBlank(message = "Redis password not be null")
+    @NotBlank(message = "Redis password must be present")
     private String password;
 }

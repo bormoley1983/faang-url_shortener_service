@@ -52,3 +52,6 @@ hash:
     pool-size: 1 
     queue-capacity: 10 
     threshold-percent: 20
+
+cleaner:
+  cron: "0 0 2 * * ?" 
