@@ -46,11 +46,6 @@ public class HashCache {
         refillCache();
     }
 
-    public String getHash() {
-        checkAndRefillIfNeeded();
-        return hashQueue.poll();
-    }
-
     public String getNextHash() {
         checkAndRefillIfNeeded();
         return hashQueue.poll();
@@ -69,7 +64,7 @@ public class HashCache {
             log.info("Starting cache refill. Current size: {}", hashQueue.size());
             List<Long> availableHashes = hashRepository.getUniqueNumbers(batchSize);
             if (availableHashes != null && !availableHashes.isEmpty()) {
-                availableHashes.forEach(number -> hashQueue.offer(number.toString()));
+                availableHashes.forEach(number -> hashQueue.offer(hashGenerator.encodeNumber(number)));
                 log.info("Refilled cache from DB with {} hashes.", availableHashes.size());
             } else {
                 log.info("No available hashes in DB.");

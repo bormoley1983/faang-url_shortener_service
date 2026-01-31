@@ -54,7 +54,7 @@ class UrlServiceTest {
                 .url(inputUrl)
                 .hash(generatedHash)
                 .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusDays(365))
+                .expiresAt(LocalDateTime.now().plusDays(365))
                 .build();
         when(urlRepository.save(any(Url.class))).thenReturn(savedUrl);
 
@@ -99,7 +99,7 @@ class UrlServiceTest {
                 .hash(hash)
                 .url(repoUrl)
                 .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusDays(365))
+                .expiresAt(LocalDateTime.now().plusDays(365))
                 .build();
         when(urlRepository.findByHash(hash)).thenReturn(Optional.of(url));
 

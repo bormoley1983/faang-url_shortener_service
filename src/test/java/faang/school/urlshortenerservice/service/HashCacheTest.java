@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,7 +62,7 @@ public class HashCacheTest {
 
         when(hashRepository.getUniqueNumbers(anyInt())).thenReturn(Arrays.asList(10L, 20L, 30L));
 
-        String hash = hashCache.getHash();
+        String hash = hashCache.getNextHash();
 
         assertEquals("hash1", hash);
         verify(executorService).submit(any(Runnable.class));

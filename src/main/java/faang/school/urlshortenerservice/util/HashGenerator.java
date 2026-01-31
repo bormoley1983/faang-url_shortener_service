@@ -8,6 +8,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import faang.school.urlshortenerservice.model.Hash;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -27,8 +30,15 @@ public class HashGenerator {
             throw new RuntimeException("There are no free Numbers for generating new hashes!");
         }
 
-        List<String> hashList = base62Encoder.encode(randomNumbersList);
+        List<Hash> hashList = base62Encoder.encodeFixed(randomNumbersList).stream()
+            .map(Hash::new)
+            .collect(Collectors.toList());
 
         hashRepository.saveAll(hashList);
     }
+
+    public String encodeNumber(Long number) {
+    // Assuming you have a Base62Encoder with a method encodeFixed that returns a 6-char string
+    return base62Encoder.encodeFixed(number);
+}
 }

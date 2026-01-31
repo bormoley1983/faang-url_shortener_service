@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface UrlRepository extends JpaRepository<Url, Long> {
     Optional<Url> findByHash(String hash);
 
-    @Query(value = "DELETE FROM url WHERE expired_at < NOW() RETURNING hash", nativeQuery = true)
+    @Query(value = "DELETE FROM url WHERE expires_at < NOW() RETURNING hash", nativeQuery = true)
     List<String> deleteExpiredUrlsAndReturnHashes();
 }

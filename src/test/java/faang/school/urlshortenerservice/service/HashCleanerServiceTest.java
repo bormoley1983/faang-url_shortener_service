@@ -3,6 +3,7 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
+import faang.school.urlshortenerservice.model.Hash;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -39,7 +41,11 @@ public class HashCleanerServiceTest {
         hashCleanerService.cleanupOutdatedHashes();
 
         verify(urlRepository).deleteExpiredUrlsAndReturnHashes();
-        verify(hashRepository).saveAll(retrievedHashes);
+        List<Hash> expectedHashes = retrievedHashes.stream()
+            .map(Hash::new)
+            .collect(Collectors.toList());
+        verify(hashRepository).saveAll(expectedHashes);
+
 
         verify(urlCacheRepository).deleteByHash("abc123");
         verify(urlCacheRepository).deleteByHash("def456");

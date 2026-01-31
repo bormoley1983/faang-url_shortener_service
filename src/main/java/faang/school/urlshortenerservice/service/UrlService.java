@@ -27,6 +27,9 @@ public class UrlService {
     @Value("${schedulers.config.numberOfDaysForOutdatedHashes:365}")
     private int numberOfDaysForOutdatedHashes;
 
+    @Value("${shortener.domain}")
+    private String domain;
+
     @Transactional
     public String generateShortUrl(String url) {
         log.info("Generating short URL for: {}", url);
@@ -37,16 +40,16 @@ public class UrlService {
         }
 
         Url urlObject = Url.builder()
-                .url(url)
-                .createdAt(LocalDateTime.now())
-                .expiredAt(LocalDateTime.now().plusDays(numberOfDaysForOutdatedHashes))
-                .hash(hash)
-                .build();
+            .hash(hash)
+            .url(url)
+            .createdAt(LocalDateTime.now())
+            .expiresAt(LocalDateTime.now().plusDays(numberOfDaysForOutdatedHashes))
+            .build();
         Url savedUrl = urlRepository.save(urlObject);
 
         urlCacheRepository.saveUrl(hash, url);
 
-        return savedUrl.getUrl();
+        return domain + "/" + savedUrl.getHash();
     }
 
     @Transactional(readOnly = true)

@@ -17,7 +17,8 @@ public interface  HashRepository extends JpaRepository<Hash, String> {
     @Query(value = "SELECT nextval('unique_number_seq') AS num FROM generate_series(1, :count)", nativeQuery = true)
     List<Long> getUniqueNumbers(@Param("count") int count);
 
-    void saveAll(List<String> hashes);
+    //Implemented by JpaRepository
+    //void saveAll(List<String> hashes);
 
     @Query(value = "DELETE FROM hash WHERE hash IN (SELECT hash FROM hash ORDER BY RANDOM() LIMIT :batchSize) RETURNING hash", nativeQuery = true)
     List<String> getHashBatch(@Param("batchSize") int batchSize);

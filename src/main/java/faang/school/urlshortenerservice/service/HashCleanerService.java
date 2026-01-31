@@ -3,12 +3,14 @@ package faang.school.urlshortenerservice.service;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
+import faang.school.urlshortenerservice.model.Hash;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +29,12 @@ public class HashCleanerService {
         }
 
         log.info("{} of outdated short links found and removed.", retrievedHashes.size());
-        hashRepository.saveAll(retrievedHashes);
+
+        List<Hash> hashEntities = retrievedHashes.stream()
+            .map(Hash::new)
+            .collect(Collectors.toList());
+
+        hashRepository.saveAll(hashEntities);
         retrievedHashes.forEach(urlCacheRepository::deleteByHash);
     }
 }

@@ -1,16 +1,17 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://host.docker.internal:5432/postgres
+    #url: jdbc:postgresql://127.0.0.1:5432/postgress
     username: user
     password: password
 
   redis:
-    host: localhost
+    host: host.docker.internal
+    #host: localhost
     port: 6379
 
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
     show-sql: true
@@ -30,6 +31,8 @@ server:
 logging:
   level:
     root: info
+    liquibase: info
+    org.springframework.boot.autoconfigure.liquibase: info
 
 api:
   title: "URL shortener service API"
@@ -66,3 +69,6 @@ schedulers:
       numberOfDaysForOutdatedHashes: 365
       threadNamePrefix: "cleanupOutdatedHashes-"
       cronExpression: "0 * * * * *" #once a day
+
+shortener:
+  domain: http://localhost:18080/url

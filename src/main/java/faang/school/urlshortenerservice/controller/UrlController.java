@@ -32,7 +32,7 @@ public class UrlController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping
+    @GetMapping("/{shortUrl}")
     public ResponseEntity<Void> getUrlByHash(
             @Parameter(description = "Hash of Original URL in service")
             @PathVariable String shortUrl) {
@@ -41,6 +41,10 @@ public class UrlController {
         }
 
         String originalUrl = urlService.getUrl(shortUrl);
+
+        if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
+            originalUrl = "http://" + originalUrl.replace("\"", "");
+        }
 
         return ResponseEntity
                 .status(HttpStatus.FOUND)

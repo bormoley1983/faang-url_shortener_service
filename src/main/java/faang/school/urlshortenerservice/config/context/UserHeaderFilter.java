@@ -25,23 +25,30 @@ public class UserHeaderFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        HttpServletRequest req = (HttpServletRequest) request;
+        
+        HttpServletRequest req = (HttpServletRequest) request;    
         String path = req.getRequestURI();
+    
         if (isSwaggerPath(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        String userId = req.getHeader("x-user-id");
-        if (userId != null) {
-            userContext.setUserId(Long.parseLong(userId));
+        if (!"GET".equalsIgnoreCase(req.getMethod())) {
+            String userId = req.getHeader("x-user-id");
+            if (userId != null) {
+                userContext.setUserId(Long.parseLong(userId));
+            } else {
+                throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
+            }
+            try {
+                chain.doFilter(request, response);
+            } finally {
+                userContext.clear();
+            }
         } else {
-            throw new IllegalArgumentException("Missing required header 'x-user-id'. Please include 'x-user-id' header with a valid user ID in your request.");
-        }
-        try {
+            // For GET requests, just continue the filter chain
             chain.doFilter(request, response);
-        } finally {
-            userContext.clear();
         }
     }
 
