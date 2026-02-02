@@ -1,27 +1,49 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://host.docker.internal:5432/postgres
-    #url: jdbc:postgresql://127.0.0.1:5432/postgress
-    username: user
-    password: password
+    url: ${DATABASE_URL:jdbc:postgresql://host.docker.internal:5432/postgres}
+    username: ${DATABASE_USERNAME:user}
+    password: ${DATABASE_PASSWORD:password}
+    hikari:
+      auto-commit: false
+      schema: ${DATABASE_SCHEMA:url_shortener_service}
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
-  redis:
-    host: host.docker.internal
-    #host: localhost
-    port: 6379
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: ${SHOW_SQL:true}
     properties:
       hibernate:
         format_sql: true
+        default_schema: ${DATABASE_SCHEMA:url_shortener_service}
+        globally_quoted_identifiers: true
+        hbm2ddl:
+          jdbc_metadata_extraction_strategy: individually
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     enabled: true
+    default-schema: ${DATABASE_SCHEMA:url_shortener_service}
+    liquibase-schema: ${DATABASE_SCHEMA:url_shortener_service}
+
+  data:
+    redis:
+      host:  ${REDIS_URL:host.docker.internal}
+      #host: localhost
+      port: ${REDIS_PORT:6379}
+
+springdoc:
+  swagger-ui:
+    enabled:  ${SWAGGERUI_ENABLED:true}
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:true}
 
 server:
   port: 18080
@@ -32,7 +54,6 @@ logging:
   level:
     root: info
     liquibase: info
-    org.springframework.boot.autoconfigure.liquibase: info
 
 api:
   title: "URL shortener service API"
