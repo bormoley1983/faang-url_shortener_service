@@ -30,9 +30,9 @@ docker run -p 8090:8090 account-service
 Main config: [src/main/resources/application.yaml](src/main/resources/application.yaml)  
 Test containers config: [src/test/java/faang/school/accountservice/util/BaseContextTest.java](src/test/java/faang/school/accountservice/util/BaseContextTest.java)
 
-
-
 The service will be available at [http://localhost:18080](http://localhost:18080).
 
 ---
 For more information, see the [faang-infra repository](https://github.com/bormoley1983/faang-infra).
+
+**Note:** Base code structure and architecture patterns are based on [FAANG School](https://github.com/faang-school) educational project.

@@ -35,13 +35,12 @@ spring:
 
   data:
     redis:
-      host:  ${REDIS_URL:host.docker.internal}
-      #host: localhost
+      host: ${REDIS_URL:host.docker.internal}
       port: ${REDIS_PORT:6379}
 
 springdoc:
   swagger-ui:
-    enabled:  ${SWAGGERUI_ENABLED:true}
+    enabled: ${SWAGGERUI_ENABLED:true}
   api-docs:
     enabled: ${API_DOCS_ENABLED:true}
 
