@@ -30,6 +30,8 @@ repositories {
     mavenCentral()
 }
 
+val mockitoAgent = configurations.create("mockitoAgent")
+
 dependencies {
     // Spring Boot starters
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -59,10 +61,12 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("com.redis:testcontainers-redis:2.2.4")
+    mockitoAgent("org.mockito:mockito-core") { isTransitive = false }
 }
 
-tasks.named<Test>("test") {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    jvmArgs("-Xshare:off", "-javaagent:${mockitoAgent.asPath}")
     testLogging.showStandardStreams = true
 }
 
