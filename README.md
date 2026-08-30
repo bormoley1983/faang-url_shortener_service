@@ -21,14 +21,14 @@ Run tests:
 Build and run in Docker:
 ```sh
 ./gradlew build
-docker build -t account-service .
-docker run -p 8090:8090 account-service
+docker build -t url-shortener-service .
+docker run -p 18080:18080 url-shortener-service
 ```
 
 ## Configuration
 
 Main config: [src/main/resources/application.yaml](src/main/resources/application.yaml)  
-Test containers config: [src/test/java/faang/school/accountservice/util/BaseContextTest.java](src/test/java/faang/school/accountservice/util/BaseContextTest.java)
+Test config: [src/test/resources/application-test.yaml](src/test/resources/application-test.yaml)
 
 The service will be available at [http://localhost:18080](http://localhost:18080).
 
