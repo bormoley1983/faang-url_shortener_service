@@ -47,7 +47,6 @@ springdoc:
 server:
   port: 18080
   baseurl: http://localhost:18080
-  hash_count: 5
 
 logging:
   level:
@@ -64,11 +63,14 @@ encoder:
     batchSize: 1000
 
 cache:
+  url:
+    prefix: ${URL_CACHE_PREFIX:url:redirect:v1:}
   hash:
     size: 1000
     threshold-percent: 20
     batch-size: 500
     db-threshold: 100
+    refill-wait-timeout-ms: ${HASH_CACHE_REFILL_WAIT_TIMEOUT_MS:5000}
 
 executor:
   core-pool-size: 2
@@ -92,3 +94,4 @@ schedulers:
 
 shortener:
   domain: http://localhost:18080/url
+  allow-private-network-targets: ${URL_ALLOW_PRIVATE_NETWORK_TARGETS:false}

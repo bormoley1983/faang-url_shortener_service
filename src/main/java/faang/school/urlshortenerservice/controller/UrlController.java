@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.controller;
 
+import faang.school.urlshortenerservice.dto.CreateShortUrlRequest;
 import faang.school.urlshortenerservice.service.UrlService;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
@@ -25,9 +26,9 @@ public class UrlController {
     @PostMapping
     public ResponseEntity<String> generateShortUrl(
             @Parameter(description = "Original URL to be shortened")
-            @RequestBody @Valid String url) {
+            @RequestBody @Valid CreateShortUrlRequest request) {
 
-        String result = urlService.generateShortUrl(url);
+        String result = urlService.generateShortUrl(request.url());
 
         return ResponseEntity.ok(result);
     }
@@ -41,10 +42,6 @@ public class UrlController {
         }
 
         String originalUrl = urlService.getUrl(shortUrl);
-
-        if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
-            originalUrl = "http://" + originalUrl.replace("\"", "");
-        }
 
         return ResponseEntity
                 .status(HttpStatus.FOUND)

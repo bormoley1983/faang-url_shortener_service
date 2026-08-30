@@ -20,9 +20,6 @@ public interface  HashRepository extends JpaRepository<Hash, String> {
     //Implemented by JpaRepository
     //void saveAll(List<String> hashes);
 
-    @Query(value = "DELETE FROM hash WHERE hash IN (SELECT hash FROM hash ORDER BY RANDOM() LIMIT :batchSize) RETURNING hash", nativeQuery = true)
-    List<String> getHashBatch(@Param("batchSize") int batchSize);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = "SELECT h FROM Hash h WHERE h.hash IN (SELECT h.hash FROM Hash h ORDER BY RANDOM() LIMIT :batchSize)")
     List<Hash> getHashBatchWithLock(@Param("batchSize") int batchSize);

@@ -4,8 +4,8 @@ import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +22,7 @@ public class HashGenerator {
     @Value("${encoder.settings.batchSize}")
     private int batchSize;
 
-    @Async("HashesGeneratorThreadPool")
+    @Transactional
     public void generateBatch() {
         List<Long> randomNumbersList = hashRepository.getUniqueNumbers(batchSize);
 
@@ -38,7 +38,6 @@ public class HashGenerator {
     }
 
     public String encodeNumber(Long number) {
-    // Assuming you have a Base62Encoder with a method encodeFixed that returns a 6-char string
-    return base62Encoder.encodeFixed(number);
-}
+        return base62Encoder.encodeFixed(number);
+    }
 }

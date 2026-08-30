@@ -7,18 +7,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
+
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,29 +30,34 @@ public class HashCacheTest {
     private HashRepository hashRepository;
 
     @Mock
+    private HashPoolService hashPoolService;
+
+    @Mock
     private ExecutorService executorService;
 
     @Mock
     private HashGenerator hashGenerator;
 
     @Mock
-    private JdbcTemplate jdbcTemplate;
+    private DataSource dataSource;
 
     private HashCache hashCache;
 
     @BeforeEach
     void setUp() {
-        hashCache = new HashCache(hashRepository, executorService, hashGenerator, jdbcTemplate);
+        hashCache = new HashCache(hashRepository, hashPoolService, executorService, hashGenerator, dataSource);
 
         ReflectionTestUtils.setField(hashCache, "maxCacheSize", 100);
-        ReflectionTestUtils.setField(hashCache, "thresholdPercent", 20);
+        ReflectionTestUtils.setField(hashCache, "thresholdPercent", 1);
         ReflectionTestUtils.setField(hashCache, "batchSize", 50);
+        ReflectionTestUtils.setField(hashCache, "dbThreshold", 10);
+        ReflectionTestUtils.setField(hashCache, "refillWaitTimeoutMs", 5L);
 
-        doAnswer(invocation -> {
+        lenient().doAnswer(invocation -> {
             Runnable runnable = invocation.getArgument(0);
             runnable.run();
             return null;
-        }).when(executorService).submit(any(Runnable.class));
+        }).when(executorService).execute(any(Runnable.class));
     }
 
     @Test
@@ -59,14 +66,17 @@ public class HashCacheTest {
         queue.add("hash1");
         ReflectionTestUtils.setField(hashCache, "hashQueue", queue);
         ReflectionTestUtils.setField(hashCache, "isRefilling", new AtomicBoolean(false));
+        ReflectionTestUtils.setField(hashCache, "thresholdPercent", 20);
 
-        when(hashRepository.getUniqueNumbers(anyInt())).thenReturn(Arrays.asList(10L, 20L, 30L));
+        when(hashPoolService.takeBatch(50)).thenReturn(Arrays.asList("AAA001", "AAA002", "AAA003"));
+        when(hashRepository.countAvailableHashes()).thenReturn(100);
 
         String hash = hashCache.getNextHash();
 
         assertEquals("hash1", hash);
-        verify(executorService).submit(any(Runnable.class));
-        verify(hashRepository).getUniqueNumbers(50);
+        verify(executorService).execute(any(Runnable.class));
+        verify(hashPoolService).takeBatch(50);
+        verify(hashGenerator, never()).generateBatch();
     }
 
     @Test
@@ -84,5 +94,12 @@ public class HashCacheTest {
         assertEquals("hash1", first);
         assertEquals("hash2", second);
         assertEquals("hash3", third);
+    }
+
+    @Test
+    void getNextHash_shouldReturnAfterTimeout_whenAnotherRefillIsStuck() {
+        ReflectionTestUtils.setField(hashCache, "isRefilling", new AtomicBoolean(true));
+
+        assertNull(hashCache.getNextHash());
     }
 }
