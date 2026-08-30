@@ -1,19 +1,18 @@
 package faang.school.urlshortenerservice.service;
 
-import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.repository.UrlCacheRepository;
 import faang.school.urlshortenerservice.repository.UrlRepository;
-import faang.school.urlshortenerservice.model.Hash;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -22,13 +21,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class HashCleanerServiceTest {
     @Mock
-    private HashRepository hashRepository;
-
-    @Mock
     private UrlRepository urlRepository;
 
     @Mock
     private UrlCacheRepository urlCacheRepository;
+
+    @Mock
+    private JdbcTemplate jdbcTemplate;
 
     @InjectMocks
     private HashCleanerService hashCleanerService;
@@ -41,11 +40,10 @@ public class HashCleanerServiceTest {
         hashCleanerService.cleanupOutdatedHashes();
 
         verify(urlRepository).deleteExpiredUrlsAndReturnHashes();
-        List<Hash> expectedHashes = retrievedHashes.stream()
-            .map(Hash::new)
-            .collect(Collectors.toList());
-        verify(hashRepository).saveAll(expectedHashes);
-
+        // hashes are recycled idempotently via JdbcTemplate (ON CONFLICT DO NOTHING)
+        verify(jdbcTemplate).update(anyString(), eq("abc123"));
+        verify(jdbcTemplate).update(anyString(), eq("def456"));
+        verify(jdbcTemplate).update(anyString(), eq("ghi789"));
 
         verify(urlCacheRepository).deleteByHash("abc123");
         verify(urlCacheRepository).deleteByHash("def456");
@@ -60,7 +58,7 @@ public class HashCleanerServiceTest {
         hashCleanerService.cleanupOutdatedHashes();
 
         verify(urlRepository).deleteExpiredUrlsAndReturnHashes();
-        verify(hashRepository, never()).save(any());
+        verify(jdbcTemplate, never()).update(anyString(), (Object) anyString());
         verifyNoInteractions(urlCacheRepository);
     }
 }
