@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.github.ben-manes.versions") version "0.61.0"
@@ -68,6 +69,57 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     jvmArgs("-Xshare:off", "-javaagent:${mockitoAgent.asPath}")
     testLogging.showStandardStreams = true
+}
+
+jacoco {
+    toolVersion = "0.8.15"
+}
+
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
+
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco"))
+    }
+}
+
+// Coverage gate for hand-written application logic.
+// Excluded: bootstrap, config property holders/bean wiring (config.* except context), DTOs/entities without custom behavior,
+// Spring Data repository & Feign client interfaces, exception classes with no logic.
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            includes = listOf(
+                "faang.school.urlshortenerservice.service.*",
+                "faang.school.urlshortenerservice.controller.*",
+                "faang.school.urlshortenerservice.util.*",
+                "faang.school.urlshortenerservice.config.context.*",
+                "faang.school.urlshortenerservice.config.UrlRateLimitInterceptor",
+                "faang.school.urlshortenerservice.exception.UrlExceptionHandler"
+            )
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                // Baseline gate per DEVPLAN_UNITSTESTS-RULES.md §3: starts at measured baseline, rises non-decreasingly.
+                // Measured 2026-08-31: lowest in-scope class is Base62Encoder at 84% instruction coverage.
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

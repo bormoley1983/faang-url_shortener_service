@@ -46,7 +46,7 @@ springdoc:
 
 server:
   port: 18080
-  baseurl: http://localhost:18080
+  baseurl: ${URL_SHORTENER_BASE_URL:http://localhost:18080}
 
 logging:
   level:
@@ -93,5 +93,5 @@ schedulers:
       cronExpression: "0 * * * * *" #once a day
 
 shortener:
-  domain: http://localhost:18080/url
+  domain: ${URL_SHORTENER_PUBLIC_URL:http://localhost:18080/url}
   allow-private-network-targets: ${URL_ALLOW_PRIVATE_NETWORK_TARGETS:false}

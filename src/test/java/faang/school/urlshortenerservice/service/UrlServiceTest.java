@@ -178,4 +178,203 @@ class UrlServiceTest {
         assertThrows(UrlExpiredException.class, () -> urlService.getUrl(hash));
         verify(urlCacheRepository).deleteByHash(hash);
     }
+
+    @Test
+    void getUrl_shouldReturnUrl_whenNoExpirySet() {
+        String hash = "hash1";
+        String repoUrl = "http://no-expiry.com";
+
+        when(urlCacheRepository.getUrl(hash)).thenReturn(null);
+        when(urlRepository.findByHash(hash)).thenReturn(Optional.of(Url.builder()
+                .hash(hash)
+                .url(repoUrl)
+                .createdAt(LocalDateTime.now())
+                .build()));
+
+        String result = urlService.getUrl(hash);
+
+        assertEquals(repoUrl, result);
+        verify(urlCacheRepository, never()).saveUrl(anyString(), anyString(), any(Duration.class));
+    }
+
+    @Test
+    void getUrl_shouldThrowUrlNotFoundException_whenStoredUrlBlank() {
+        String hash = "hash1";
+
+        when(urlCacheRepository.getUrl(hash)).thenReturn("");
+        when(urlRepository.findByHash(hash)).thenReturn(Optional.of(Url.builder()
+                .hash(hash)
+                .url("")
+                .createdAt(LocalDateTime.now())
+                .build()));
+
+        assertThrows(UrlNotFoundException.class, () -> urlService.getUrl(hash));
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenUrlBlank() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("   "));
+
+        assertEquals("URL must not be blank", exception.getMessage());
+        verify(hashCache, never()).getNextHash();
+    }
+
+    @Test
+    void generateShortUrl_shouldStripSurroundingQuotes_whenQuotedUrl() {
+        String inputUrl = "\"http://example.com\"";
+        String generatedHash = "abc123";
+
+        when(hashCache.getNextHash()).thenReturn(generatedHash);
+        Url savedUrl = Url.builder().url("http://example.com").hash(generatedHash).build();
+        when(urlRepository.save(any(Url.class))).thenReturn(savedUrl);
+
+        String result = urlService.generateShortUrl(inputUrl);
+
+        assertTrue(result.endsWith("/" + generatedHash));
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenUriMalformed() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://exa mple.com/bad uri"));
+
+        assertEquals("URL is not a valid URI", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowRuntimeException_whenSaveFails() {
+        when(hashCache.getNextHash()).thenReturn("abc123");
+        when(urlRepository.save(any(Url.class))).thenThrow(new RuntimeException("db down"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> urlService.generateShortUrl("http://example.com"));
+
+        assertEquals("db down", exception.getMessage());
+    }
+
+    // NOTE: the "ttl already zero" branch in UrlService.getUrl (skip cache refill when
+    // Duration.between(now, expiresAt) <= 0) is timing-dependent and cannot be asserted
+    // deterministically without a Clock seam; documented as untestable-without-clock-seam.
+
+    @Test
+    void generateShortUrl_shouldRejectMulticastAddress_whenPrivateTargetsDisallowed() throws Exception {
+        when(hostAddressResolver.resolve("multicast.example.com"))
+                .thenReturn(new InetAddress[]{InetAddress.getByName("224.0.0.1")});
+
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://multicast.example.com"));
+
+        assertEquals("Private network addresses are not allowed", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldRejectLinkLocalAddress_whenPrivateTargetsDisallowed() throws Exception {
+        when(hostAddressResolver.resolve("linklocal.example.com"))
+                .thenReturn(new InetAddress[]{InetAddress.getByName("169.254.0.1")});
+
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://linklocal.example.com"));
+
+        assertEquals("Private network addresses are not allowed", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenOpaqueUri() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("mailto:someone@example.com"));
+
+        assertEquals("URL must be hierarchical", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenSchemeMissing() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("example.com/path"));
+
+        assertEquals("URL scheme is required", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenHostMissing() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http:///path-only"));
+
+        assertEquals("URL host is required", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenLocalhost() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://localhost:8080/path"));
+
+        assertEquals("Local hosts are not allowed", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenLocalTld() {
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://myhost.local/path"));
+
+        assertEquals("Local hosts are not allowed", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenHostUnresolvable() throws Exception {
+        when(hostAddressResolver.resolve("missing.example.com"))
+                .thenThrow(new java.net.UnknownHostException("missing.example.com"));
+
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://missing.example.com/path"));
+
+        assertEquals("URL host cannot be resolved", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldAllowPrivateTarget_whenFlagEnabled() throws Exception {
+        // with allowPrivateNetworkTargets=true the SSRF check is skipped entirely,
+        // so hostAddressResolver must NOT be consulted for private targets
+        ReflectionTestUtils.setField(urlService, "allowPrivateNetworkTargets", true);
+        String generatedHash = "abc123";
+        when(hashCache.getNextHash()).thenReturn(generatedHash);
+        Url savedUrl = Url.builder().url("http://10.0.0.5").hash(generatedHash).build();
+        when(urlRepository.save(any(Url.class))).thenReturn(savedUrl);
+
+        String result = urlService.generateShortUrl("http://10.0.0.5");
+
+        assertTrue(result.endsWith("/" + generatedHash));
+        verify(hostAddressResolver, never()).resolve(anyString());
+    }
+
+    @Test
+    void generateShortUrl_shouldRejectCgNatAddress_whenPrivateTargetsDisallowed() throws Exception {
+        when(hostAddressResolver.resolve("cgnat.example.com"))
+                .thenReturn(new InetAddress[]{InetAddress.getByName("100.64.0.1")});
+
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://cgnat.example.com"));
+
+        assertEquals("Private network addresses are not allowed", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowInvalidUrlException_whenUrlTooLong() {
+        String longPath = "a".repeat(2048);
+
+        InvalidUrlException exception = assertThrows(InvalidUrlException.class,
+                () -> urlService.generateShortUrl("http://example.com/" + longPath));
+
+        assertEquals("URL must not exceed 2048 characters", exception.getMessage());
+    }
+
+    @Test
+    void generateShortUrl_shouldThrowRuntimeException_whenHashCacheExhausted() {
+        when(hashCache.getNextHash()).thenReturn("");
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> urlService.generateShortUrl("http://example.com"));
+
+        assertEquals("Failed to generate hash for URL", exception.getMessage());
+        verify(urlRepository, never()).save(any(Url.class));
+    }
 }

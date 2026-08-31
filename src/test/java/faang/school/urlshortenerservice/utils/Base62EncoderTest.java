@@ -51,4 +51,66 @@ class Base62EncoderTest {
                 base62Encoder.encode(duplicateList)
         );
     }
+
+    @Test
+    void encode_shouldEncodeZeroAsA() {
+        assertEquals(List.of("A"), base62Encoder.encode(List.of(0L)));
+    }
+
+    @Test
+    void encode_shouldEncodeBaseBoundaryValues() {
+        // alphabet is A-Z (0-25), a-z (26-51), 0-9 (52-61): 61 -> "9", 62 -> "BA"
+        assertEquals(List.of("9", "BA"), base62Encoder.encode(List.of(61L, 62L)));
+    }
+
+    @Test
+    void encode_shouldRoundTripWithDecode() {
+        List<Long> numbers = Arrays.asList(0L, 1L, 61L, 62L, 3844L, 238328L);
+
+        List<String> encoded = base62Encoder.encode(numbers);
+
+        for (int i = 0; i < numbers.size(); i++) {
+            assertEquals(numbers.get(i), decode(encoded.get(i)), "round-trip failed for " + numbers.get(i));
+        }
+    }
+
+    @Test
+    void encodeFixed_shouldPadWithLeadingA() {
+        assertEquals("AAAAAA", base62Encoder.encodeFixed(0L));
+        assertEquals("AAAAAB", base62Encoder.encodeFixed(1L));
+    }
+
+    @Test
+    void encodeFixed_shouldThrow_whenNumberDoesNotFit() {
+        // 62^6 = 56,800,235,584 is the first value that does not fit in 6 chars
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> base62Encoder.encodeFixed(56_800_235_584L));
+
+        assertTrue(exception.getMessage().contains("does not fit in 6 base62 chars"));
+    }
+
+    @Test
+    void encodeFixed_shouldEncodeMaximumSupportedValue() {
+        // 62^6 - 1 = 56,800,235,583 fits exactly in 6 chars; last alphabet char is "9"
+        assertEquals("999999", base62Encoder.encodeFixed(56_800_235_583L));
+    }
+
+    @Test
+    void encodeFixedList_shouldThrow_whenEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> base62Encoder.encodeFixed(List.of()));
+    }
+
+    @Test
+    void encodeFixedList_shouldThrow_whenDuplicates() {
+        assertThrows(IllegalArgumentException.class, () -> base62Encoder.encodeFixed(Arrays.asList(1L, 1L)));
+    }
+
+    private static Long decode(String value) {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        long result = 0;
+        for (char c : value.toCharArray()) {
+            result = result * 62 + alphabet.indexOf(c);
+        }
+        return result;
+    }
 }

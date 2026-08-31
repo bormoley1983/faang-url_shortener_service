@@ -164,4 +164,14 @@ public class HashGeneratorTest {
         List<Hash> savedHashes = hashesCaptor.getValue();
         assertEquals(0, savedHashes.size());
     }
+
+    @Test
+    void encodeNumber_shouldDelegateToBase62Encoder() {
+        when(base62Encoder.encodeFixed(123L)).thenReturn("ABC");
+
+        String result = hashGenerator.encodeNumber(123L);
+
+        assertEquals("ABC", result);
+        verify(base62Encoder).encodeFixed(123L);
+    }
 }
