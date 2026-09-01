@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.utils;
 
+import faang.school.urlshortenerservice.exception.HashPoolExhaustedException;
 import faang.school.urlshortenerservice.model.Hash;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import faang.school.urlshortenerservice.util.Base62Encoder;
@@ -89,11 +90,11 @@ public class HashGeneratorTest {
 
         when(hashRepository.getUniqueNumbers(batchSize)).thenReturn(List.of());
 
-        Exception exception = assertThrows(RuntimeException.class, () -> {
+        HashPoolExhaustedException exception = assertThrows(HashPoolExhaustedException.class, () -> {
             hashGenerator.generateBatch();
         });
 
-        assertEquals("There are no free Numbers for generating new hashes!", exception.getMessage());
+        assertEquals(batchSize, exception.getBatchSize());
         verify(hashRepository).getUniqueNumbers(batchSize);
     }
 
@@ -141,8 +142,8 @@ public class HashGeneratorTest {
 
         when(hashRepository.getUniqueNumbers(batchSize)).thenReturn(List.of());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> hashGenerator.generateBatch());
-        assertEquals("There are no free Numbers for generating new hashes!", exception.getMessage());
+        HashPoolExhaustedException exception = assertThrows(HashPoolExhaustedException.class, () -> hashGenerator.generateBatch());
+        assertEquals(batchSize, exception.getBatchSize());
     }
 
     @Test

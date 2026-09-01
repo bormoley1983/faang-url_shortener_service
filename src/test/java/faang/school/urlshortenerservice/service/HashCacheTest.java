@@ -112,14 +112,15 @@ public class HashCacheTest {
     }
 
     @Test
-    void init_shouldGenerateBatch_whenPoolEmptyAndDbBelowThreshold() throws Exception {
+    void init_shouldScheduleAsyncWarmUp_whenPoolEmptyAndDbBelowThreshold() throws Exception {
         when(hashPoolService.takeBatch(50)).thenReturn(List.of());
         when(hashRepository.countAvailableHashes()).thenReturn(5);
         mockLockAcquired();
 
         hashCache.init();
 
-        // generation runs once for the empty pool and once for the low DB count
+        // Warm-up runs inline via the mock executor; generation happens for empty pool and low DB count.
+        verify(executorService).execute(any(Runnable.class));
         verify(hashGenerator, org.mockito.Mockito.atLeastOnce()).generateBatch();
     }
 
@@ -131,18 +132,31 @@ public class HashCacheTest {
 
         hashCache.init();
 
+        verify(executorService).execute(any(Runnable.class));
         verify(hashGenerator, never()).generateBatch();
     }
 
     @Test
-    void init_shouldPropagateSqlFailure_whenLockManagementFails() throws Exception {
+    void init_shouldNotBlockStartup_whenDatabaseUnavailable() throws Exception {
+        // DB down during warm-up: the async refill swallows the failure so context init is not blocked.
         lenient().when(hashPoolService.takeBatch(50)).thenReturn(List.of());
         lenient().when(hashRepository.countAvailableHashes()).thenReturn(5);
         when(dataSource.getConnection()).thenThrow(new java.sql.SQLException("db down"));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, hashCache::init);
+        hashCache.init();
 
-        assertEquals("Failed to manage hash generation lock", exception.getMessage());
+        verify(executorService).execute(any(Runnable.class));
+    }
+
+    @Test
+    void init_shouldNotBlockStartup_whenExecutorRejectsWarmUp() {
+        doThrow(new RejectedExecutionException("pool full"))
+                .when(executorService).execute(any(Runnable.class));
+
+        // Must not throw — startup proceeds and the first request refills synchronously.
+        hashCache.init();
+
+        verify(executorService).execute(any(Runnable.class));
     }
 
     @Test

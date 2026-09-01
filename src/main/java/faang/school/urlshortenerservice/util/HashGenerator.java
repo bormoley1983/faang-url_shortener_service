@@ -1,5 +1,6 @@
 package faang.school.urlshortenerservice.util;
 
+import faang.school.urlshortenerservice.exception.HashPoolExhaustedException;
 import faang.school.urlshortenerservice.repository.HashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,8 @@ public class HashGenerator {
         List<Long> randomNumbersList = hashRepository.getUniqueNumbers(batchSize);
 
         if (randomNumbersList.isEmpty()) {
-            throw new RuntimeException("There are no free Numbers for generating new hashes!");
+            log.warn("Hash number pool exhausted while requesting a batch of size {}", batchSize);
+            throw new HashPoolExhaustedException(batchSize);
         }
 
         List<Hash> hashList = base62Encoder.encodeFixed(randomNumbersList).stream()

@@ -54,7 +54,14 @@ public class HashCache {
 
     @PostConstruct
     public void init() {
-        refillCacheSync();
+        // Warm up the cache asynchronously so a slow or unavailable database at startup
+        // does not block Spring context initialization. The first getNextHash() call has a
+        // synchronous fallback (refillCacheSync), so an async warm-up is safe.
+        try {
+            executorService.execute(this::refillCacheQuietly);
+        } catch (RuntimeException ex) {
+            log.warn("Could not schedule initial hash cache warm-up; first request will refill synchronously", ex);
+        }
     }
 
     public String getNextHash() {
